@@ -1,0 +1,13 @@
+{
+  "$schema": "https://drips.network/schema.json",
+  "drips": {
+    "use-stellar": {
+      "source": "github",
+      "url": "https://github.com/YOUR_HANDLE/use-stellar",
+      "splits": [{ "address": "YOUR_STELLAR_ADDRESS", "percent": 100 }]
+    }
+  },
+  "dependencies": [
+    "github/stellar/stellar-sdk"
+  ]
+}
