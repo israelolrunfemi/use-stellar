@@ -8,27 +8,42 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.2
       - uses: actions/setup-node@v4
-        with: { node-version: "20" }
-      - run: npm install
-      - run: npm run test
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
 
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.2
       - uses: actions/setup-node@v4
-        with: { node-version: "20" }
-      - run: npm install
-      - run: npm run typecheck
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
 
   build:
     name: Build SDK
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.2
       - uses: actions/setup-node@v4
-        with: { node-version: "20" }
-      - run: npm install
-      - run: npm run build
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build

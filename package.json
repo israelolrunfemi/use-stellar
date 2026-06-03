@@ -1,19 +1,20 @@
 {
-  "name":        "use-stellar",
-  "private":     true,
-  "version":     "0.1.0",
+  "name": "use-stellar",
+  "private": true,
+  "version": "0.1.0",
   "description": "React hooks for the Stellar network",
-  "workspaces":  ["packages/*"],
+  "packageManager": "pnpm@10.30.2",
+  "workspaces": ["packages/*"],
   "scripts": {
-    "dev":        "npm run dev   -w packages/demo",
-    "build":      "npm run build -w packages/core",
-    "test":       "npm run test  -w packages/core",
-    "lint":       "eslint packages/*/src/**/*.ts packages/*/src/**/*.tsx",
-    "typecheck":  "tsc --noEmit -p packages/core/tsconfig.json"
+    "dev": "pnpm --filter @use-stellar/demo dev",
+    "build": "pnpm --filter use-stellar build",
+    "test": "pnpm --filter use-stellar test",
+    "lint": "eslint \"packages/*/src/**/*.ts\" \"packages/*/src/**/*.tsx\"",
+    "typecheck": "tsc --noEmit -p packages/core/tsconfig.json"
   },
   "devDependencies": {
-    "typescript":              "^5.4.0",
-    "@types/react":            "^18.2.0",
-    "eslint":                  "^8.0.0"
+    "typescript": "^5.4.0",
+    "@types/react": "^18.2.0",
+    "eslint": "^8.0.0"
   }
 }

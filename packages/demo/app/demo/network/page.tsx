@@ -1,6 +1,6 @@
 "use client";
 import { useNetwork }  from "use-stellar";
-import { DemoCard }    from "../../components/DemoCard";
+import { DemoCard }    from "../../../components/DemoCard";
 
 export default function NetworkDemo() {
   const { network, networkConfig, isTestnet, isMainnet } = useNetwork();
