@@ -1,6 +1,6 @@
 "use client";
 import { useWallet, shortenAddress } from "use-stellar";
-import { DemoCard }                  from "../../components/DemoCard";
+import { DemoCard }                  from "../../../components/DemoCard";
 
 export default function WalletDemo() {
   const { connect, disconnect, connected, address, connecting, error, network } = useWallet();

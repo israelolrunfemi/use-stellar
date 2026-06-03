@@ -12,7 +12,7 @@ export function useWallet(): UseWalletReturn {
 
   const connect = useCallback(
     async (walletType: WalletType = "freighter") => {
-      setWallet({ ...wallet, connecting: true, error: null });
+      setWallet(prev => ({ ...prev, connecting: true, error: null }));
 
       try {
         let address: string;
@@ -35,14 +35,14 @@ export function useWallet(): UseWalletReturn {
           error:      null,
         });
       } catch (err) {
-        setWallet({
-          ...wallet,
+        setWallet(prev => ({
+          ...prev,
           connecting: false,
           error:      err instanceof Error ? err.message : "Failed to connect wallet",
-        });
+        }));
       }
     },
-    [wallet, setWallet, network]
+    [setWallet, network]
   );
 
   const disconnect = useCallback(() => {

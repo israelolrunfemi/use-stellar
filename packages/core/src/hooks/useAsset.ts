@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useStellarContext }   from "../context/StellarProvider";
 import { getHorizonServer }    from "../utils";
 
@@ -34,7 +34,7 @@ export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
 
-  async function fetchAsset() {
+  const fetchAsset = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -54,6 +54,7 @@ export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
         issuer:      raw.asset_issuer,
         supply:      raw.amount,
         numAccounts: raw.num_accounts,
+        homeDomain:  raw.home_domain,
         flags: {
           authRequired:  raw.flags.auth_required,
           authRevocable: raw.flags.auth_revocable,
@@ -65,11 +66,11 @@ export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
     } finally {
       setLoading(false);
     }
-  }
+  }, [code, issuer, network]);
 
   useEffect(() => {
     fetchAsset();
-  }, [code, issuer, network]);
+  }, [fetchAsset]);
 
   return { asset, loading, error, refetch: fetchAsset };
 }

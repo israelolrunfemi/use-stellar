@@ -72,8 +72,7 @@ export function useSendPayment(): UseSendPaymentReturn {
         });
 
         // ── Submit ───────────────────────────────────────────────────────
-        const { TransactionBuilder: TB } = await import("@stellar/stellar-sdk");
-        const signed = TB.fromXDR(signedTxXdr, networkPass);
+        const signed = TransactionBuilder.fromXDR(signedTxXdr, networkPass);
         const res    = await server.submitTransaction(signed);
 
         const outcome: SendPaymentResult = {

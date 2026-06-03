@@ -1,7 +1,7 @@
 "use client";
 import { useState }                    from "react";
 import { useBalance, useWallet }       from "use-stellar";
-import { DemoCard }                    from "../../components/DemoCard";
+import { DemoCard }                    from "../../../components/DemoCard";
 
 export default function BalanceDemo() {
   const { address }           = useWallet();

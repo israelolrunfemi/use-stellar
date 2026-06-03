@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { SorobanRpc, xdr }     from "@stellar/stellar-sdk";
+import { useState, useEffect, useCallback } from "react";
 import { useStellarContext }    from "../context/StellarProvider";
 import type { ContractCallOptions } from "../types";
 
@@ -13,7 +12,6 @@ export interface UseSorobanContractReturn {
 export function useSorobanContract({
   contractId,
   method,
-  args = [],
 }: ContractCallOptions): UseSorobanContractReturn {
   const { networkConfig } = useStellarContext();
 
@@ -21,33 +19,32 @@ export function useSorobanContract({
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
 
-  async function callContract() {
+  const callContract = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const server = new SorobanRpc.Server(networkConfig.sorobanUrl);
-
-      // Build a simulation request for read-only calls
-      // Full write support (signing + submitting) tracked in GitHub issue #10
-      const account = await server.getAccount(contractId).catch(() => null);
-      if (!account) {
-        throw new Error(`Contract ${contractId} not found on ${networkConfig.network}`);
+      if (!contractId || !method) {
+        setData(null);
+        return;
       }
 
-      // For now expose the raw simulation result
-      // Typed return values tracked in GitHub issue #11
-      setData({ contractId, method, note: "Simulation wiring tracked in issue #10" });
+      setData({
+        contractId,
+        method,
+        network: networkConfig.network,
+        note: "Simulation wiring tracked in issue #10",
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Contract call failed");
     } finally {
       setLoading(false);
     }
-  }
+  }, [contractId, method, networkConfig]);
 
   useEffect(() => {
     callContract();
-  }, [contractId, method, networkConfig]);
+  }, [callContract]);
 
   return { data, loading, error, refetch: callContract };
 }

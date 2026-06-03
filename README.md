@@ -3,7 +3,7 @@
 React hooks for the Stellar network. The simplest way to build dApps on Stellar.
 
 ```bash
-npm install use-stellar
+pnpm install use-stellar
 ```
 
 ---

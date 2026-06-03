@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useStellarContext }   from "../context/StellarProvider";
-import { getHorizonServer, parseHorizonBalance, formatAssetCode } from "../utils";
+import { getHorizonServer, parseHorizonBalance } from "../utils";
 import type { Asset, Balance } from "../types";
 
 export interface UseBalanceOptions {
@@ -29,7 +29,7 @@ export function useBalance({
   const [loading,  setLoading]   = useState(false);
   const [error,    setError]     = useState<string | null>(null);
 
-  async function fetchBalances() {
+  const fetchBalances = useCallback(async () => {
     if (!resolvedAddress) return;
 
     setLoading(true);
@@ -45,7 +45,7 @@ export function useBalance({
     } finally {
       setLoading(false);
     }
-  }
+  }, [resolvedAddress, network]);
 
   useEffect(() => {
     fetchBalances();
@@ -54,11 +54,16 @@ export function useBalance({
       const interval = setInterval(fetchBalances, 10_000);
       return () => clearInterval(interval);
     }
-  }, [resolvedAddress, network]);
+  }, [fetchBalances, watch]);
 
   // Find the specific asset balance
-  const targetCode = formatAssetCode(asset);
-  const match      = balances.find(b => formatAssetCode(b.asset) === targetCode);
+  const match = balances.find(b => {
+    if (asset === "XLM") return b.asset === "XLM";
+    if (typeof asset === "object" && typeof b.asset === "object") {
+      return b.asset.code === asset.code && b.asset.issuer === asset.issuer;
+    }
+    return false;
+  });
   const balance    = match?.balance ?? null;
 
   return {
