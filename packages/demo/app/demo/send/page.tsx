@@ -1,95 +1,165 @@
 "use client";
+
 import { useState } from "react";
-import { useSendPayment, useWallet } from "use-stellar";
+import type { CSSProperties, ReactNode } from "react";
+import { shortenAddress, useSendPayment, useWallet } from "use-stellar";
+import type { Asset } from "use-stellar";
 import { DemoCard } from "../../../components/DemoCard";
 
+const DEFAULT_DESTINATION = "GAIH3ULLFQ4DGSECF2AR555KZ4KNDGEKN4AFI4SU2M7B43MGK3QJZNSR";
 const TESTNET_USDC_ISSUER = "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN";
 
 export default function SendDemo() {
   const wallet = useWallet();
-  const { send, loading, error, result } = useSendPayment();
-  const [to, setTo] = useState("");
-  const [amount, setAmount] = useState("");
-  const [asset, setAsset] = useState<"XLM" | "USDC">("XLM");
+  const { send, loading, error, result, reset } = useSendPayment();
+  const [destination, setDestination] = useState(DEFAULT_DESTINATION);
+  const [amount, setAmount] = useState("1");
+  const [assetCode, setAssetCode] = useState<"XLM" | "USDC">("XLM");
   const [memo, setMemo] = useState("");
 
-  async function onSend() {
+  const disabled = !wallet.connected || loading || !destination.trim() || !amount.trim();
+
+  async function handleSend() {
+    reset();
+    const asset: Asset = assetCode === "XLM" ? "XLM" : { code: "USDC", issuer: TESTNET_USDC_ISSUER };
+
     await send({
-      to,
+      to: destination.trim(),
       amount,
-      memo: memo || undefined,
-      asset: asset === "XLM" ? "XLM" : { code: "USDC", issuer: TESTNET_USDC_ISSUER },
+      asset,
+      memo: memo.trim() || undefined,
     }).catch(() => undefined);
   }
 
   return (
     <DemoCard
       hook="useSendPayment"
-      description="Build, sign with Freighter, and submit an XLM or issued-asset payment."
-      code={`const { send, loading, result } = useSendPayment()
+      description="Send XLM or testnet USDC through Freighter and submit the signed transaction."
+      code={`const { send, loading, error, result, reset } = useSendPayment()
 
+reset()
 await send({
   to: "G...",
-  amount: "10",
   asset: "XLM",
+  amount: "1",
   memo: "optional",
 })`}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <Input placeholder="Destination G... address" value={to} onChange={setTo} />
-        <Input placeholder="Amount" value={amount} onChange={setAmount} />
-        <select value={asset} onChange={e => setAsset(e.target.value as "XLM" | "USDC")} style={inputStyle}>
-          <option value="XLM">XLM</option>
-          <option value="USDC">USDC</option>
-        </select>
-        <Input placeholder="Memo (optional)" value={memo} onChange={setMemo} />
-        {!wallet.connected && <Text value="Connect wallet first" color="#fbbf24" />}
-        <button disabled={!wallet.connected || loading} onClick={onSend} style={btnStyle(!wallet.connected || loading)}>
-          {loading ? "Sending..." : "Send"}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {!wallet.connected && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <Text color="#facc15">Connect Freighter on testnet before sending a payment.</Text>
+            <button onClick={() => wallet.connect("freighter")} disabled={wallet.connecting} style={buttonStyle(wallet.connecting)}>
+              {wallet.connecting ? "Connecting..." : "Connect wallet"}
+            </button>
+          </div>
+        )}
+
+        <Field label="Destination">
+          <input
+            value={destination}
+            onChange={event => setDestination(event.target.value)}
+            placeholder="Destination G... address"
+            style={inputStyle}
+          />
+        </Field>
+
+        <Field label="Asset">
+          <select value={assetCode} onChange={event => setAssetCode(event.target.value as "XLM" | "USDC")} style={inputStyle}>
+            <option value="XLM">XLM</option>
+            <option value="USDC">USDC</option>
+          </select>
+        </Field>
+
+        <Field label="Amount">
+          <input
+            type="number"
+            step="0.0000001"
+            min="0"
+            value={amount}
+            onChange={event => setAmount(event.target.value)}
+            style={inputStyle}
+          />
+        </Field>
+
+        <Field label="Memo">
+          <input
+            value={memo}
+            onChange={event => setMemo(event.target.value)}
+            placeholder="Optional text memo"
+            style={inputStyle}
+          />
+        </Field>
+
+        <button onClick={handleSend} disabled={disabled} style={buttonStyle(disabled)}>
+          {loading ? "Waiting for signature..." : "Send payment"}
         </button>
-        {result && <Row label="Hash" value={result.hash} />}
-        {error && <Text value={error} color="#f87171" />}
+
+        {error && <Text color="#f87171">{error}</Text>}
+        {result && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <StatusBadge status={result.status} />
+            <Row label="Hash" value={shortenAddress(result.hash)} />
+          </div>
+        )}
       </div>
     </DemoCard>
   );
 }
 
-function Input({ placeholder, value, onChange }: { placeholder: string; value: string; onChange: (value: string) => void }) {
-  return <input style={inputStyle} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)} />;
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <span style={{ color: "#666", fontSize: 13 }}>{label}</span>
+      {children}
+    </label>
+  );
 }
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 12 }}>
+    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 13 }}>
       <span style={{ color: "#666", flexShrink: 0 }}>{label}</span>
-      <span style={{ color: "#7dd3fc", fontFamily: "monospace", textAlign: "right", wordBreak: "break-all" }}>{value}</span>
+      <span style={{ color: "#e0e0e0", fontFamily: "monospace" }}>{value}</span>
     </div>
   );
 }
 
-function Text({ value, color = "#e0e0e0" }: { value: string; color?: string }) {
-  return <p style={{ margin: 0, color, fontSize: 13 }}>{value}</p>;
+function StatusBadge({ status }: { status: string }) {
+  const color = status === "success" ? "#4ade80" : status === "failed" ? "#f87171" : "#facc15";
+  return (
+    <span style={{ color, fontFamily: "monospace", fontSize: 13 }}>
+      Status: {status}
+    </span>
+  );
 }
 
-const inputStyle: React.CSSProperties = {
+function Text({ children, color = "#e0e0e0" }: { children: string; color?: string }) {
+  return <p style={{ margin: 0, color, fontSize: 13 }}>{children}</p>;
+}
+
+const inputStyle: CSSProperties = {
   background: "#111",
   border: "1px solid #333",
   borderRadius: 6,
-  padding: "8px 10px",
   color: "#e0e0e0",
-  fontSize: 12,
+  padding: "8px 10px",
+  fontSize: 13,
   fontFamily: "monospace",
+  width: "100%",
+  boxSizing: "border-box",
 };
 
-function btnStyle(disabled: boolean): React.CSSProperties {
+function buttonStyle(disabled: boolean): CSSProperties {
   return {
     padding: "10px 20px",
-    background: disabled ? "#333" : "#1d4ed8",
-    color: "#fff",
-    border: "none",
     borderRadius: 8,
-    cursor: disabled ? "not-allowed" : "pointer",
-    fontSize: 14,
+    border: "none",
+    cursor: disabled ? "default" : "pointer",
     fontWeight: 500,
+    fontSize: 14,
+    opacity: disabled ? 0.5 : 1,
+    background: "#7dd3fc",
+    color: "#0f0f0f",
   };
 }

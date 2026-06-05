@@ -7,7 +7,7 @@ import {
 
 // ── isValidStellarAddress ──────────────────────────────────────────────────
 describe("isValidStellarAddress", () => {
-  const VALID = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN";
+  const VALID = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN";
 
   it("accepts a valid G address",         () => expect(isValidStellarAddress(VALID)).toBe(true));
   it("rejects an S (secret) key",         () => expect(isValidStellarAddress("S" + VALID.slice(1))).toBe(false));
@@ -18,7 +18,7 @@ describe("isValidStellarAddress", () => {
 
 // ── shortenAddress ─────────────────────────────────────────────────────────
 describe("shortenAddress", () => {
-  const ADDR = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN";
+  const ADDR = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN";
 
   it("returns first and last N chars with ...", () => {
     const result = shortenAddress(ADDR, 4);
@@ -28,7 +28,7 @@ describe("shortenAddress", () => {
   it("defaults to 6 chars each side", () => {
     const result = shortenAddress(ADDR);
     expect(result.startsWith("GAAZI4")).toBe(true);
-    expect(result.endsWith("CCWN")).toBe(false);
+    expect(result.endsWith("OACCWN")).toBe(true);
     expect(result.includes("...")).toBe(true);
   });
 

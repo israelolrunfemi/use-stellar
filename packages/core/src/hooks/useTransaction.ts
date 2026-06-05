@@ -43,9 +43,9 @@ export function useTransaction({
       setTransaction({
         hash:      raw.hash,
         status,
-        ledger:    raw.ledger,
+        ledger:    Number(raw.ledger),
         createdAt: raw.created_at,
-        fee:       raw.fee_charged,
+        fee:       String(raw.fee_charged),
       });
     } catch (err: unknown) {
       // 404 means not found / still pending

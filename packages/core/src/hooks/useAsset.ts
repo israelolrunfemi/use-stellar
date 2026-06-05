@@ -48,13 +48,14 @@ export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
 
       const raw = res.records[0];
       if (!raw) throw new Error(`Asset ${code}:${issuer} not found`);
+      const assetRecord = raw as typeof raw & { home_domain?: string };
 
       setAsset({
         code:        raw.asset_code,
         issuer:      raw.asset_issuer,
         supply:      raw.amount,
         numAccounts: raw.num_accounts,
-        homeDomain:  raw.home_domain,
+        homeDomain:  assetRecord.home_domain,
         flags: {
           authRequired:  raw.flags.auth_required,
           authRevocable: raw.flags.auth_revocable,

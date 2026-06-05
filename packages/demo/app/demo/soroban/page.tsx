@@ -1,34 +1,71 @@
 "use client";
+
 import { useState } from "react";
-import { useSorobanContract } from "use-stellar";
+import type { CSSProperties, ReactNode } from "react";
+import { useSorobanContract, useWallet } from "use-stellar";
 import { DemoCard } from "../../../components/DemoCard";
 
 export default function SorobanDemo() {
+  const wallet = useWallet();
   const [contractId, setContractId] = useState("");
-  const [method, setMethod] = useState("balance");
-  const [query, setQuery] = useState({ contractId: "", method: "balance" });
-  const { data, loading, error } = useSorobanContract(query);
+  const [method, setMethod] = useState("");
+  const [query, setQuery] = useState({ contractId: "", method: "" });
+  const { data, loading, error, refetch } = useSorobanContract(query);
+  const disabled = !wallet.connected || loading || !contractId.trim() || !method.trim();
+
+  function handleCall() {
+    setQuery({ contractId: contractId.trim(), method: method.trim() });
+    refetch();
+  }
 
   return (
     <DemoCard
       hook="useSorobanContract"
-      description="Preview the current Soroban hook stub while full simulation support is being built."
-      code={`const { data, loading, error } = useSorobanContract({
+      description="Preview a Soroban contract call result while the hook is under active development."
+      code={`const { data, loading, error, refetch } = useSorobanContract({
   contractId: "C...",
   method: "balance",
 })`}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <p style={{ margin: 0, color: "#fbbf24", fontSize: 13 }}>
-          Full Soroban simulation is in progress - tracked in issue #10.
-        </p>
-        <Input placeholder="Contract ID" value={contractId} onChange={setContractId} />
-        <Input placeholder="Method" value={method} onChange={setMethod} />
-        <button onClick={() => setQuery({ contractId, method })} style={btnStyle}>Call</button>
-        {loading && <Text value="Loading..." />}
-        {error && <Text value={error} color="#f87171" />}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <Text color="#facc15">
+          This hook is in active development. Write calls requiring signing are tracked in GitHub issue #8.
+        </Text>
+
+        {!wallet.connected && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <Text color="#facc15">Connect Freighter on testnet to simulate a Soroban call.</Text>
+            <button onClick={() => wallet.connect("freighter")} disabled={wallet.connecting} style={buttonStyle(wallet.connecting)}>
+              {wallet.connecting ? "Connecting..." : "Connect wallet"}
+            </button>
+          </div>
+        )}
+
+        <Field label="Contract ID">
+          <input
+            value={contractId}
+            onChange={event => setContractId(event.target.value)}
+            placeholder="C..."
+            style={inputStyle}
+          />
+        </Field>
+
+        <Field label="Method">
+          <input
+            value={method}
+            onChange={event => setMethod(event.target.value)}
+            placeholder="balance"
+            style={inputStyle}
+          />
+        </Field>
+
+        <button onClick={handleCall} disabled={disabled} style={buttonStyle(disabled)}>
+          {loading ? "Calling..." : "Call contract"}
+        </button>
+
+        {error && <Text color="#f87171">{error}</Text>}
         {data !== null && (
-          <pre style={{ margin: 0, color: "#e0e0e0", fontSize: 12, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+          <pre style={{ margin: 0, color: "#e0e0e0", fontSize: 13, fontFamily: "monospace", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
             {JSON.stringify(data, null, 2)}
           </pre>
         )}
@@ -37,31 +74,41 @@ export default function SorobanDemo() {
   );
 }
 
-function Input({ placeholder, value, onChange }: { placeholder: string; value: string; onChange: (value: string) => void }) {
-  return <input style={inputStyle} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)} />;
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <span style={{ color: "#666", fontSize: 13 }}>{label}</span>
+      {children}
+    </label>
+  );
 }
 
-function Text({ value, color = "#e0e0e0" }: { value: string; color?: string }) {
-  return <p style={{ margin: 0, color, fontSize: 13 }}>{value}</p>;
+function Text({ children, color = "#e0e0e0" }: { children: string; color?: string }) {
+  return <p style={{ margin: 0, color, fontSize: 13 }}>{children}</p>;
 }
 
-const inputStyle: React.CSSProperties = {
+const inputStyle: CSSProperties = {
   background: "#111",
   border: "1px solid #333",
   borderRadius: 6,
-  padding: "8px 10px",
   color: "#e0e0e0",
-  fontSize: 12,
+  padding: "8px 10px",
+  fontSize: 13,
   fontFamily: "monospace",
+  width: "100%",
+  boxSizing: "border-box",
 };
 
-const btnStyle: React.CSSProperties = {
-  padding: "10px 20px",
-  background: "#1d4ed8",
-  color: "#fff",
-  border: "none",
-  borderRadius: 8,
-  cursor: "pointer",
-  fontSize: 14,
-  fontWeight: 500,
-};
+function buttonStyle(disabled: boolean): CSSProperties {
+  return {
+    padding: "10px 20px",
+    borderRadius: 8,
+    border: "none",
+    cursor: disabled ? "default" : "pointer",
+    fontWeight: 500,
+    fontSize: 14,
+    opacity: disabled ? 0.5 : 1,
+    background: "#7dd3fc",
+    color: "#0f0f0f",
+  };
+}

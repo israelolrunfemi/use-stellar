@@ -33,6 +33,9 @@ importers:
       '@testing-library/react-hooks':
         specifier: ^8.0.0
         version: 8.0.1(@types/react@18.3.30)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/jest':
+        specifier: ^29.5.0
+        version: 29.5.14
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.41
@@ -839,6 +842,9 @@ packages:
 
   '@types/istanbul-reports@3.0.4':
     resolution: {integrity: sha512-pk2B1NWalF9toCRu6gjBzR69syFjP4Od8WRAX+0mmf9lAjCRicLOWc+ZrxZHx/0XRjotgkF9t6iaMJ+aXcOdZQ==}
+
+  '@types/jest@29.5.14':
+    resolution: {integrity: sha512-ZN+4sdnLUbo8EVvVc2ao0GFW6oVrQRPn4K2lglySj7APvSrgzxHiNNK99us4WDMi57xxA2yggblIAMNhXOotLQ==}
 
   '@types/jsdom@20.0.1':
     resolution: {integrity: sha512-d0r18sZPmMQr1eG35u12FZfhIXNrnsPU/g5wvRKCUf/tOGilKKwYMYGqh33BNR6ba+2gkHw1EUiHoN3mn7E5IQ==}
@@ -3451,6 +3457,11 @@ snapshots:
   '@types/istanbul-reports@3.0.4':
     dependencies:
       '@types/istanbul-lib-report': 3.0.3
+
+  '@types/jest@29.5.14':
+    dependencies:
+      expect: 29.7.0
+      pretty-format: 29.7.0
 
   '@types/jsdom@20.0.1':
     dependencies:
