@@ -1,4 +1,9 @@
 import { useCallback } from "react";
+import {
+  getNetworkDetails,
+  isConnected,
+  requestAccess,
+} from "@stellar/freighter-api";
 import { useStellarContext } from "../context/StellarProvider";
 import type { WalletState, WalletType } from "../types";
 
@@ -61,23 +66,27 @@ export function useWallet(): UseWalletReturn {
 
 // ── Freighter connector ────────────────────────────────────────────────────
 async function connectFreighter(network: string): Promise<string> {
-  // Freighter injects window.freighter
-  const freighter = (window as unknown as { freighter?: FreighterAPI }).freighter;
-
-  if (!freighter) {
+  const connection = await isConnected();
+  if (connection.error || !connection.isConnected) {
     throw new Error(
       "Freighter wallet not found. " +
       "Install the Freighter browser extension and try again."
     );
   }
 
-  const isAllowed = await freighter.isAllowed();
-  if (!isAllowed) {
-    await freighter.setAllowed();
+  const access = await requestAccess();
+  if (access.error) {
+    throw new Error(access.error.message);
   }
 
-  const { publicKey } = await freighter.getPublicKey();
-  const { networkPassphrase } = await freighter.getNetworkDetails();
+  if (!access.address) {
+    throw new Error("Freighter did not return a wallet address.");
+  }
+
+  const networkDetails = await getNetworkDetails();
+  if (networkDetails.error) {
+    throw new Error(networkDetails.error.message);
+  }
 
   // Validate we're on the right network
   const expectedPassphrase =
@@ -85,21 +94,11 @@ async function connectFreighter(network: string): Promise<string> {
       ? "Public Global Stellar Network ; September 2015"
       : "Test SDF Network ; September 2015";
 
-  if (networkPassphrase !== expectedPassphrase) {
+  if (networkDetails.networkPassphrase !== expectedPassphrase) {
     throw new Error(
       `Wrong network. Switch Freighter to ${network} and try again.`
     );
   }
 
-  return publicKey;
-}
-
-// ── Freighter API types ────────────────────────────────────────────────────
-// Full type definitions tracked in GitHub issue #9
-interface FreighterAPI {
-  isAllowed:         () => Promise<boolean>;
-  setAllowed:        () => Promise<void>;
-  getPublicKey:      () => Promise<{ publicKey: string }>;
-  getNetworkDetails: () => Promise<{ networkPassphrase: string; network: string }>;
-  signTransaction:   (xdr: string, opts?: object) => Promise<{ signedTxXdr: string }>;
+  return access.address;
 }

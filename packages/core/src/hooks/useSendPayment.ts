@@ -7,6 +7,7 @@ import {
   Asset as StellarAsset,
   Memo,
 } from "@stellar/stellar-sdk";
+import { signTransaction } from "@stellar/freighter-api";
 import { useStellarContext } from "../context/StellarProvider";
 import { getHorizonServer, isNativeAsset } from "../utils";
 import type { SendPaymentOptions, SendPaymentResult, Asset } from "../types";
@@ -64,15 +65,19 @@ export function useSendPayment(): UseSendPaymentReturn {
         const xdr = tx.toXDR();
 
         // ── Sign with Freighter ──────────────────────────────────────────
-        const freighter = (window as unknown as { freighter?: { signTransaction: (xdr: string, opts?: object) => Promise<{ signedTxXdr: string }> } }).freighter;
-        if (!freighter) throw new Error("Freighter wallet not found");
-
-        const { signedTxXdr } = await freighter.signTransaction(xdr, {
+        const signedTransaction = await signTransaction(xdr, {
           networkPassphrase: networkPass,
+          address: wallet.address,
         });
+        if (signedTransaction.error) {
+          throw new Error(signedTransaction.error.message);
+        }
+        if (!signedTransaction.signedTxXdr) {
+          throw new Error("Freighter did not return a signed transaction.");
+        }
 
         // ── Submit ───────────────────────────────────────────────────────
-        const signed = TransactionBuilder.fromXDR(signedTxXdr, networkPass);
+        const signed = TransactionBuilder.fromXDR(signedTransaction.signedTxXdr, networkPass);
         const res    = await server.submitTransaction(signed);
 
         const outcome: SendPaymentResult = {

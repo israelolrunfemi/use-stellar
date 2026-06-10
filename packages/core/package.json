@@ -1,6 +1,6 @@
 {
   "name": "use-stellar",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "React hooks for the Stellar network - the wagmi of Stellar",
   "repository": {
     "type": "git",
@@ -38,12 +38,13 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
+    "@stellar/freighter-api": "6.0.1",
     "@stellar/stellar-sdk": "^12.0.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/react-hooks": "^8.0.0",
-    "@testing-library/jest-dom": "^6.0.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
