@@ -110,6 +110,7 @@ export interface TransactionResult {
   ledger?: number;
   createdAt?: string;
   fee?: string;
+  envelope?: string;
 }
 
 /**

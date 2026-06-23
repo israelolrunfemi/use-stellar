@@ -19,7 +19,7 @@ export default function TransactionDemo() {
 })`}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <Text color="#666">Paste a hash from the send demo to see the submitted transaction here.</Text>
+        <Text color="#666">Paste a hash from the Send demo to see it here</Text>
         <input
           value={hash}
           onChange={event => setHash(event.target.value)}

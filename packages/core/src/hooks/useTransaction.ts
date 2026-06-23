@@ -40,7 +40,12 @@ export function useTransaction({
   transactionRef.current = transaction;
 
   const fetchTransaction = useCallback(async () => {
-    if (!hash) return;
+    if (!hash) {
+      setTransaction(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -57,6 +62,7 @@ export function useTransaction({
         ledger:    Number(raw.ledger),
         createdAt: raw.created_at,
         fee:       String(raw.fee_charged),
+        envelope:  raw.envelope_xdr,
       });
     } catch (err: unknown) {
       // 404 means not found / still pending
