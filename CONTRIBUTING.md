@@ -50,6 +50,26 @@ To test hooks that require a wallet (like `useWallet` and `useSendPayment`), ins
 
 ---
 
+## Code quality
+
+This project uses Husky to enforce code quality automatically.
+
+Before every commit — Prettier formats your staged files and ESLint checks
+them. If either fails your commit is blocked. Fix the errors and try again.
+
+Before every push — the SDK is built and all tests are run. If either fails
+your push is blocked.
+
+To run checks manually at any time:
+
+```bash
+pnpm format       # format all files
+pnpm lint         # run ESLint
+pnpm typecheck    # run TypeScript compiler check
+```
+
+---
+
 ## Adding a new hook
 
 This is the most common contribution and follows a clear pattern.

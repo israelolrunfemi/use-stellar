@@ -1,34 +1,34 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import type { CSSProperties, ReactNode } from "react";
-import { shortenAddress, useSendPayment, useWallet } from "use-stellar";
-import type { Asset } from "use-stellar";
-import { DemoCard } from "../../../components/DemoCard";
+import { useState } from "react"
+import type { CSSProperties, ReactNode } from "react"
+import { shortenAddress, useSendPayment, useWallet } from "use-stellar"
+import type { Asset } from "use-stellar"
+import { DemoCard } from "../../../components/DemoCard"
 
-const DEFAULT_DESTINATION = "GAIH3ULLFQ4DGSECF2AR555KZ4KNDGEKN4AFI4SU2M7B43MGK3QJZNSR";
-const TESTNET_USDC_ISSUER = "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN";
+const DEFAULT_DESTINATION = "GAIH3ULLFQ4DGSECF2AR555KZ4KNDGEKN4AFI4SU2M7B43MGK3QJZNSR"
+const TESTNET_USDC_ISSUER = "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
 
 export default function SendDemo() {
-  const wallet = useWallet();
-  const { send, loading, error, result, reset } = useSendPayment();
-  const [destination, setDestination] = useState(DEFAULT_DESTINATION);
-  const [amount, setAmount] = useState("1");
-  const [assetCode, setAssetCode] = useState<"XLM" | "USDC">("XLM");
-  const [memo, setMemo] = useState("");
+  const wallet = useWallet()
+  const { send, loading, error, result, reset } = useSendPayment()
+  const [destination, setDestination] = useState(DEFAULT_DESTINATION)
+  const [amount, setAmount] = useState("1")
+  const [assetCode, setAssetCode] = useState<"XLM" | "USDC">("XLM")
+  const [memo, setMemo] = useState("")
 
-  const disabled = !wallet.connected || loading || !destination.trim() || !amount.trim();
+  const disabled = !wallet.connected || loading || !destination.trim() || !amount.trim()
 
   async function handleSend() {
-    reset();
-    const asset: Asset = assetCode === "XLM" ? "XLM" : { code: "USDC", issuer: TESTNET_USDC_ISSUER };
+    reset()
+    const asset: Asset = assetCode === "XLM" ? "XLM" : { code: "USDC", issuer: TESTNET_USDC_ISSUER }
 
     await send({
       to: destination.trim(),
       amount,
       asset,
       memo: memo.trim() || undefined,
-    }).catch(() => undefined);
+    }).catch(() => undefined)
   }
 
   return (
@@ -49,7 +49,11 @@ await send({
         {!wallet.connected && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <Text color="#facc15">Connect Freighter on testnet before sending a payment.</Text>
-            <button onClick={() => wallet.connect("freighter")} disabled={wallet.connecting} style={buttonStyle(wallet.connecting)}>
+            <button
+              onClick={() => wallet.connect("freighter")}
+              disabled={wallet.connecting}
+              style={buttonStyle(wallet.connecting)}
+            >
               {wallet.connecting ? "Connecting..." : "Connect wallet"}
             </button>
           </div>
@@ -65,7 +69,11 @@ await send({
         </Field>
 
         <Field label="Asset">
-          <select value={assetCode} onChange={event => setAssetCode(event.target.value as "XLM" | "USDC")} style={inputStyle}>
+          <select
+            value={assetCode}
+            onChange={event => setAssetCode(event.target.value as "XLM" | "USDC")}
+            style={inputStyle}
+          >
             <option value="XLM">XLM</option>
             <option value="USDC">USDC</option>
           </select>
@@ -104,7 +112,7 @@ await send({
         )}
       </div>
     </DemoCard>
-  );
+  )
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -113,7 +121,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
       <span style={{ color: "#666", fontSize: 13 }}>{label}</span>
       {children}
     </label>
-  );
+  )
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -122,20 +130,16 @@ function Row({ label, value }: { label: string; value: string }) {
       <span style={{ color: "#666", flexShrink: 0 }}>{label}</span>
       <span style={{ color: "#e0e0e0", fontFamily: "monospace" }}>{value}</span>
     </div>
-  );
+  )
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const color = status === "success" ? "#4ade80" : status === "failed" ? "#f87171" : "#facc15";
-  return (
-    <span style={{ color, fontFamily: "monospace", fontSize: 13 }}>
-      Status: {status}
-    </span>
-  );
+  const color = status === "success" ? "#4ade80" : status === "failed" ? "#f87171" : "#facc15"
+  return <span style={{ color, fontFamily: "monospace", fontSize: 13 }}>Status: {status}</span>
 }
 
 function Text({ children, color = "#e0e0e0" }: { children: string; color?: string }) {
-  return <p style={{ margin: 0, color, fontSize: 13 }}>{children}</p>;
+  return <p style={{ margin: 0, color, fontSize: 13 }}>{children}</p>
 }
 
 const inputStyle: CSSProperties = {
@@ -148,7 +152,7 @@ const inputStyle: CSSProperties = {
   fontFamily: "monospace",
   width: "100%",
   boxSizing: "border-box",
-};
+}
 
 function buttonStyle(disabled: boolean): CSSProperties {
   return {
@@ -161,5 +165,5 @@ function buttonStyle(disabled: boolean): CSSProperties {
     opacity: disabled ? 0.5 : 1,
     background: "#7dd3fc",
     color: "#0f0f0f",
-  };
+  }
 }

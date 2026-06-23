@@ -1,17 +1,17 @@
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react"
 
 /**
  * Represents the Stellar network environment.
  */
-export type StellarNetwork = "testnet" | "mainnet";
+export type StellarNetwork = "testnet" | "mainnet"
 
 /**
  * Configuration details for a specific Stellar network.
  */
 export interface NetworkConfig {
-  network: StellarNetwork;
-  horizonUrl: string;
-  sorobanUrl: string;
+  network: StellarNetwork
+  horizonUrl: string
+  sorobanUrl: string
 }
 
 /**
@@ -28,124 +28,124 @@ export const NETWORK_CONFIGS: Record<StellarNetwork, NetworkConfig> = {
     horizonUrl: "https://horizon.stellar.org",
     sorobanUrl: "https://soroban.stellar.org",
   },
-};
+}
 
 /**
  * Supported wallet providers.
  */
-export type WalletType = "freighter" | "albedo" | "rabet";
+export type WalletType = "freighter" | "albedo" | "rabet"
 
 /**
  * The current state of the wallet connection.
  */
 export interface WalletState {
-  connected: boolean;
-  address: string | null;
-  network: StellarNetwork | null;
-  wallet: WalletType | null;
-  connecting: boolean;
-  error: string | null;
+  connected: boolean
+  address: string | null
+  network: StellarNetwork | null
+  wallet: WalletType | null
+  connecting: boolean
+  error: string | null
 }
 
 /**
  * Represents the native Stellar asset (XLM).
  */
-export type NativeAsset = "XLM";
+export type NativeAsset = "XLM"
 
 /**
  * Represents a custom issued asset on the Stellar network.
  */
 export interface IssuedAsset {
-  code: string;
-  issuer: string;
+  code: string
+  issuer: string
 }
 
 /**
  * Can be either a native asset or an issued asset.
  */
-export type Asset = NativeAsset | IssuedAsset;
+export type Asset = NativeAsset | IssuedAsset
 
 /**
  * Represents a balance entry for an account.
  */
 export interface Balance {
-  asset: Asset;
-  balance: string;
-  limit?: string;
-  buying?: string;
-  selling?: string;
+  asset: Asset
+  balance: string
+  limit?: string
+  buying?: string
+  selling?: string
 }
 
 /**
  * Detailed account information from the Stellar network.
  */
 export interface AccountInfo {
-  address: string;
-  sequence: string;
-  balances: Balance[];
-  subentryCount: number;
+  address: string
+  sequence: string
+  balances: Balance[]
+  subentryCount: number
   thresholds: {
-    lowThreshold: number;
-    medThreshold: number;
-    highThreshold: number;
-  };
+    lowThreshold: number
+    medThreshold: number
+    highThreshold: number
+  }
   signers: {
-    key: string;
-    weight: number;
-    type: string;
-  }[];
+    key: string
+    weight: number
+    type: string
+  }[]
 }
 
 /**
  * The current status of a transaction on the network.
  */
-export type TransactionStatus = "pending" | "success" | "failed" | "not_found";
+export type TransactionStatus = "pending" | "success" | "failed" | "not_found"
 
 /**
  * Result details from a submitted or queried transaction.
  */
 export interface TransactionResult {
-  hash: string;
-  status: TransactionStatus;
-  ledger?: number;
-  createdAt?: string;
-  fee?: string;
-  envelope?: string;
+  hash: string
+  status: TransactionStatus
+  ledger?: number
+  createdAt?: string
+  fee?: string
+  envelope?: string
 }
 
 /**
  * Options for sending a payment transaction.
  */
 export interface SendPaymentOptions {
-  to: string;
-  asset: Asset;
-  amount: string;
-  memo?: string;
+  to: string
+  asset: Asset
+  amount: string
+  memo?: string
 }
 
 /**
  * Result returned after a payment is sent.
  */
 export interface SendPaymentResult {
-  hash: string;
-  status: TransactionStatus;
+  hash: string
+  status: TransactionStatus
 }
 
 /**
  * Options for calling a Soroban smart contract.
  */
 export interface ContractCallOptions {
-  contractId: string;
-  method: string;
-  args?: unknown[];
+  contractId: string
+  method: string
+  args?: unknown[]
 }
 
 /**
  * Context value provided by the StellarProvider.
  */
 export interface StellarContextValue {
-  network: StellarNetwork;
-  networkConfig: NetworkConfig;
-  wallet: WalletState;
-  setWallet: Dispatch<SetStateAction<WalletState>>;
+  network: StellarNetwork
+  networkConfig: NetworkConfig
+  wallet: WalletState
+  setWallet: Dispatch<SetStateAction<WalletState>>
 }
