@@ -156,8 +156,13 @@ async function gettingStarted() {
 }
 
 async function hookPage(doc: typeof hookDocs[keyof typeof hookDocs]) {
+  const optionRows = doc.options.length > 0
+    ? doc.options.map(([name, type, def, description]) => ({ name, type, default: def, description }))
+    : [{ name: "options", type: "undefined", default: "none", description: "This hook does not take options. Call it directly inside a StellarProvider tree." }];
+
   return <Article title={doc.title} lead={doc.lead}>
-    {doc.options.length > 0 ? <><h2 style={h2}>Options</h2><ApiTable rows={doc.options.map(([name, type, def, description]) => ({ name, type, default: def, description }))} /></> : <Callout type="tip">This hook does not take options. Call it directly inside a StellarProvider tree.</Callout>}
+    <h2 style={h2}>Options</h2>
+    <ApiTable rows={optionRows} />
     <h2 style={h2}>Return values</h2>
     <ApiTable rows={doc.returns.map(([name, type, description]) => ({ name, type, description }))} />
     <h2 style={h2}>Examples</h2>

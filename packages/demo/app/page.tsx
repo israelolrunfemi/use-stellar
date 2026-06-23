@@ -103,7 +103,7 @@ export default async function Home() {
 
       <footer style={{ borderTop: "1px solid #2a2a2a", padding: "22px 24px", color: "#666666" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", gap: 18, flexWrap: "wrap", justifyContent: "space-between" }}>
-          <span>npm: use-stellar</span><a href="https://github.com/israelolrunfemi/use-stellar" style={footerLink}>GitHub</a><span>MIT license</span><span>Built on Stellar</span>
+          <a href="https://www.npmjs.com/package/use-stellar" style={footerLink} aria-label="use-stellar on npm"><img src="https://img.shields.io/npm/v/use-stellar?style=flat-square&color=7dd3fc&label=npm" alt="npm version" style={{ display: "block", height: 20 }} /></a><a href="https://github.com/israelolrunfemi/use-stellar" style={footerLink}>GitHub</a><span>MIT license</span><span>Built on Stellar</span>
         </div>
       </footer>
     </main>
