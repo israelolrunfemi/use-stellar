@@ -30,6 +30,27 @@ const navGroups: NavGroup[] = [
   ]},
 ];
 
+const docPaths = [
+  [],
+  ["getting-started"],
+  ["hooks", "use-wallet"],
+  ["hooks", "use-balance"],
+  ["hooks", "use-account"],
+  ["hooks", "use-send-payment"],
+  ["hooks", "use-transaction"],
+  ["hooks", "use-network"],
+  ["hooks", "use-asset"],
+  ["hooks", "use-soroban-contract"],
+  ["typescript"],
+  ["networks"],
+  ["wallets"],
+  ["errors"],
+];
+
+export function generateStaticParams() {
+  return docPaths.map(slug => ({ slug }));
+}
+
 const hookDocs = {
   "use-wallet": {
     title: "useWallet",
@@ -170,8 +191,10 @@ async function walletsPage() {
 }
 
 async function errorsPage() {
-  return <Article title="Error handling" lead="Current hooks expose string errors. Use a small app-level StellarError wrapper when you need consistent UI states.">
-    <ApiTable rows={[{ name: "wallet_missing", type: "StellarError", description: "Freighter is not installed or unavailable." }, { name: "wrong_network", type: "StellarError", description: "Wallet and provider network differ." }, { name: "horizon_error", type: "StellarError", description: "Horizon request failed." }, { name: "transaction_failed", type: "StellarError", description: "Signing or submission failed." }]} />
+  return <Article title="Error handling" lead="Current hooks expose string errors. Wrap them in an app-level StellarError shape when you need consistent UI states.">
+    <Callout type="info">The package does not export a StellarError type yet. Hook return values currently use error: string | null.</Callout>
+    <ApiTable rows={[{ name: "wallet_missing", type: "StellarErrorCode", description: "Freighter is not installed or unavailable." }, { name: "wrong_network", type: "StellarErrorCode", description: "Wallet and provider network differ." }, { name: "horizon_error", type: "StellarErrorCode", description: "Horizon request failed." }, { name: "transaction_failed", type: "StellarErrorCode", description: "Signing or submission failed." }]} />
+    {await CodeBlock({ code: `type StellarErrorCode =\n  | "wallet_missing"\n  | "wrong_network"\n  | "horizon_error"\n  | "transaction_failed"\n\ntype StellarError = {\n  code: StellarErrorCode\n  message: string\n  cause?: unknown\n}` })}
     {await CodeBlock({ code: `const { error } = useBalance({ watch: true })\n\nif (error) {\n  return <ErrorNotice message={error} />\n}` })}
   </Article>;
 }
@@ -186,5 +209,3 @@ function LinkGrid({ items }: { items: { label: string; href: string }[] }) {
 
 const h2: CSSProperties = { margin: "14px 0 0", fontSize: 24 };
 const p: CSSProperties = { color: "#a8a8a8", lineHeight: 1.7 };
-
-

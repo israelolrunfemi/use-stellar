@@ -7,7 +7,8 @@
   "workspaces": ["packages/*"],
   "scripts": {
     "dev": "pnpm --filter @use-stellar/demo dev",
-    "build": "pnpm --filter use-stellar build",
+    "build": "pnpm --filter @use-stellar/demo build",
+    "build:core": "pnpm --filter use-stellar build",
     "test": "pnpm --filter use-stellar test",
     "lint": "eslint \"packages/*/src/**/*.ts\" \"packages/*/src/**/*.tsx\"",
     "typecheck": "tsc --noEmit -p packages/core/tsconfig.json"

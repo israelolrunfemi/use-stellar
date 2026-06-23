@@ -37,7 +37,8 @@ export function DocsFrame({ groups, children }: { groups: NavGroup[]; children: 
         <div key={group.title} style={{ marginBottom: 24 }}>
           <div style={{ color: "#666666", fontSize: 12, textTransform: "uppercase", marginBottom: 8 }}>{group.title}</div>
           {group.items.map(item => {
-            const active = pathname === item.href;
+            const baseHref = item.href.split("#")[0];
+            const active = pathname === baseHref;
             return (
               <Link key={item.href} href={item.href} onClick={() => setOpen(false)} style={{ display: "block", padding: "8px 10px", borderRadius: 8, color: active ? "#f0f0f0" : "#a8a8a8", background: active ? "#1a1a1a" : "transparent", border: active ? "1px solid #2a2a2a" : "1px solid transparent", textDecoration: "none", fontSize: 14 }}>
                 {item.label}
