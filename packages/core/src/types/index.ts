@@ -130,6 +130,25 @@ export interface SendPaymentResult {
   hash: string;
   status: TransactionStatus;
 }
+/**
+ * Stable error codes that apps can use for consistent Stellar error UI.
+ */
+export type StellarErrorCode =
+  | "wallet_missing"
+  | "wrong_network"
+  | "horizon_error"
+  | "transaction_failed"
+  | "contract_error"
+  | "unknown";
+
+/**
+ * App-level Stellar error shape for normalizing hook and integration errors.
+ */
+export interface StellarError {
+  code: StellarErrorCode;
+  message: string;
+  cause?: unknown;
+}
 
 /**
  * Options for calling a Soroban smart contract.

@@ -24,6 +24,8 @@ export type {
   AccountInfo,
   TransactionResult,
   TransactionStatus,
+  StellarError,
+  StellarErrorCode,
   SendPaymentOptions,
   SendPaymentResult,
   ContractCallOptions,

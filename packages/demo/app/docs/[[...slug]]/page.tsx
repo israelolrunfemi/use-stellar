@@ -167,7 +167,8 @@ async function hookPage(doc: typeof hookDocs[keyof typeof hookDocs]) {
 
 async function typescriptPage() {
   return <Article title="TypeScript" lead="use-stellar exports the public types used by every hook.">
-    {await CodeBlock({ code: `import type {\n  StellarNetwork, NetworkConfig, WalletType, WalletState, Asset,\n  Balance, AccountInfo, TransactionResult, SendPaymentOptions,\n  SendPaymentResult, ContractCallOptions, StellarContextValue\n} from "use-stellar"` })}
+    {await CodeBlock({ code: `import type {\n  StellarNetwork, NetworkConfig, WalletType, WalletState, Asset,\n  Balance, AccountInfo, TransactionResult, SendPaymentOptions,\n  SendPaymentResult, StellarError, StellarErrorCode,
+  ContractCallOptions, StellarContextValue\n} from "use-stellar"` })}
     {await CodeBlock({ code: `function labelAsset(asset: Asset) {\n  if (asset === "XLM") return "Native XLM"\n  return asset.code + ":" + asset.issuer\n}` })}
     <Callout type="info">Asset is a discriminated union by value: native XLM is the string "XLM", issued assets are objects with code and issuer.</Callout>
   </Article>;
@@ -191,14 +192,21 @@ async function walletsPage() {
 }
 
 async function errorsPage() {
-  return <Article title="Error handling" lead="Current hooks expose string errors. Wrap them in an app-level StellarError shape when you need consistent UI states.">
-    <Callout type="info">The package does not export a StellarError type yet. Hook return values currently use error: string | null.</Callout>
-    <ApiTable rows={[{ name: "wallet_missing", type: "StellarErrorCode", description: "Freighter is not installed or unavailable." }, { name: "wrong_network", type: "StellarErrorCode", description: "Wallet and provider network differ." }, { name: "horizon_error", type: "StellarErrorCode", description: "Horizon request failed." }, { name: "transaction_failed", type: "StellarErrorCode", description: "Signing or submission failed." }]} />
-    {await CodeBlock({ code: `type StellarErrorCode =\n  | "wallet_missing"\n  | "wrong_network"\n  | "horizon_error"\n  | "transaction_failed"\n\ntype StellarError = {\n  code: StellarErrorCode\n  message: string\n  cause?: unknown\n}` })}
-    {await CodeBlock({ code: `const { error } = useBalance({ watch: true })\n\nif (error) {\n  return <ErrorNotice message={error} />\n}` })}
+  return <Article title="Error handling" lead="Normalize hook errors into the exported StellarError shape when you need consistent UI states.">
+    <ApiTable rows={[{ name: "wallet_missing", type: "StellarErrorCode", description: "Freighter is not installed or unavailable." }, { name: "wrong_network", type: "StellarErrorCode", description: "Wallet and provider network differ." }, { name: "horizon_error", type: "StellarErrorCode", description: "Horizon request failed." }, { name: "transaction_failed", type: "StellarErrorCode", description: "Signing or submission failed." }, { name: "contract_error", type: "StellarErrorCode", description: "Soroban contract call failed." }, { name: "unknown", type: "StellarErrorCode", description: "Fallback for unexpected errors." }]} />
+    {await CodeBlock({ code: `import type { StellarError } from "use-stellar"
+
+const walletMissing: StellarError = {
+  code: "wallet_missing",
+  message: "Install Freighter and try again",
+}` })}
+    {await CodeBlock({ code: `const { error } = useBalance({ watch: true })
+
+if (error) {
+  return <ErrorNotice message={error} />
+}` })}
   </Article>;
 }
-
 function Article({ title, lead, children }: { title: string; lead: string; children: React.ReactNode }) {
   return <article><h1 style={{ margin: "0 0 12px", fontSize: 44, lineHeight: 1.1 }}>{title}</h1><p style={{ ...p, fontSize: 18, marginBottom: 30 }}>{lead}</p><div style={{ display: "grid", gap: 22 }}>{children}</div></article>;
 }
