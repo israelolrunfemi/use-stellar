@@ -86,6 +86,18 @@ export function DemoCard({ hook, description, code, children }: Props) {
           </div>
         </div>
       </div>
+      <p
+        style={{
+          fontSize: "0.875rem",
+          color: "#71717a",
+          marginTop: 24,
+          lineHeight: 1.6,
+        }}
+      >
+        <strong>N.B:</strong> Testnet is a sandbox network for building and testing applications
+        with free, non-real assets, while Mainnet is the live production network where transactions
+        use real assets and have real-world consequences.
+      </p>
     </main>
   )
 }

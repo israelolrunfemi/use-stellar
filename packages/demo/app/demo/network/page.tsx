@@ -40,10 +40,13 @@ function Row({ label, value, small }: { label: string; value: string; small?: bo
       <span style={{ color: "#666", flexShrink: 0 }}>{label}</span>
       <span
         style={{
-          color: "#7dd3fc",
+          color: value === "testnet" || value === "mainnet" ? "white" : "#7dd3fc",
           fontFamily: "monospace",
           textAlign: "right",
           wordBreak: "break-all",
+          background: value === "testnet" ? "orange" : value === "mainnet" ? "green" : "",
+          padding: "0 6px",
+          borderRadius: 6,
         }}
       >
         {value}
