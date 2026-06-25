@@ -11,27 +11,25 @@ import type {
 } from "../types";
 import { NETWORK_CONFIGS } from "../types";
 
-// ── Default wallet state ───────────────────────────────────────────────────
 const DEFAULT_WALLET: WalletState = {
-  connected:  false,
-  address:    null,
-  network:    null,
-  wallet:     null,
+  connected: false,
+  address: null,
+  network: null,
+  wallet: null,
+  walletName: null,
   connecting: false,
-  error:      null,
+  error: null,
 };
 
-// ── Context ────────────────────────────────────────────────────────────────
 const StellarContext = createContext<StellarContextValue | null>(null);
 
-// ── Provider ───────────────────────────────────────────────────────────────
 export interface StellarProviderProps {
-  network?:  StellarNetwork;
-  children:  ReactNode;
+  network?: StellarNetwork;
+  children: ReactNode;
 }
 
 export function StellarProvider({
-  network  = "testnet",
+  network = "testnet",
   children,
 }: StellarProviderProps) {
   const [wallet, setWallet] = useState<WalletState>(DEFAULT_WALLET);
@@ -50,7 +48,6 @@ export function StellarProvider({
   );
 }
 
-// ── Hook to consume context ────────────────────────────────────────────────
 export function useStellarContext(): StellarContextValue {
   const ctx = useContext(StellarContext);
   if (!ctx) {

@@ -1,14 +1,10 @@
 import { useCallback } from "react";
-import {
-  getNetworkDetails,
-  isConnected,
-  requestAccess,
-} from "@stellar/freighter-api";
 import { useStellarContext } from "../context/StellarProvider";
 import type { WalletState, WalletType } from "../types";
+import { getWalletAdapter } from "../wallets";
 
 export interface UseWalletReturn extends WalletState {
-  connect:    (wallet?: WalletType) => Promise<void>;
+  connect: (wallet?: WalletType) => Promise<void>;
   disconnect: () => void;
 }
 
@@ -20,30 +16,23 @@ export function useWallet(): UseWalletReturn {
       setWallet(prev => ({ ...prev, connecting: true, error: null }));
 
       try {
-        let address: string;
-
-        if (walletType === "freighter") {
-          address = await connectFreighter(network);
-        } else {
-          throw new Error(
-            `Wallet "${walletType}" not yet supported. ` +
-            `Contributions welcome — see GitHub issues.`
-          );
-        }
+        const adapter = getWalletAdapter(walletType);
+        const connection = await adapter.connect(network);
 
         setWallet({
-          connected:  true,
-          address,
-          network,
-          wallet:     walletType,
+          connected: true,
+          address: connection.address,
+          network: connection.network,
+          wallet: connection.wallet,
+          walletName: adapter.metadata.name,
           connecting: false,
-          error:      null,
+          error: null,
         });
       } catch (err) {
         setWallet(prev => ({
           ...prev,
           connecting: false,
-          error:      err instanceof Error ? err.message : "Failed to connect wallet",
+          error: err instanceof Error ? err.message : "Failed to connect wallet",
         }));
       }
     },
@@ -51,54 +40,20 @@ export function useWallet(): UseWalletReturn {
   );
 
   const disconnect = useCallback(() => {
+    if (wallet.wallet) {
+      void getWalletAdapter(wallet.wallet).disconnect?.();
+    }
+
     setWallet({
-      connected:  false,
-      address:    null,
-      network:    null,
-      wallet:     null,
+      connected: false,
+      address: null,
+      network: null,
+      wallet: null,
+      walletName: null,
       connecting: false,
-      error:      null,
+      error: null,
     });
-  }, [setWallet]);
+  }, [setWallet, wallet.wallet]);
 
   return { ...wallet, connect, disconnect };
-}
-
-// ── Freighter connector ────────────────────────────────────────────────────
-async function connectFreighter(network: string): Promise<string> {
-  const connection = await isConnected();
-  if (connection.error || !connection.isConnected) {
-    throw new Error(
-      "Freighter wallet not found. " +
-      "Install the Freighter browser extension and try again."
-    );
-  }
-
-  const access = await requestAccess();
-  if (access.error) {
-    throw new Error(access.error.message);
-  }
-
-  if (!access.address) {
-    throw new Error("Freighter did not return a wallet address.");
-  }
-
-  const networkDetails = await getNetworkDetails();
-  if (networkDetails.error) {
-    throw new Error(networkDetails.error.message);
-  }
-
-  // Validate we're on the right network
-  const expectedPassphrase =
-    network === "mainnet"
-      ? "Public Global Stellar Network ; September 2015"
-      : "Test SDF Network ; September 2015";
-
-  if (networkDetails.networkPassphrase !== expectedPassphrase) {
-    throw new Error(
-      `Wrong network. Switch Freighter to ${network} and try again.`
-    );
-  }
-
-  return access.address;
 }
