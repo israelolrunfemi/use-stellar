@@ -1,42 +1,16 @@
 import Link from "next/link"
 
-type HookCard = { hook: string; path: string; desc: string; comingSoon?: boolean }
-
-const hooks: HookCard[] = [
-  { hook: "useWallet", path: "/demo/wallet", desc: "Connect and disconnect a Stellar wallet" },
-  { hook: "useBalance", path: "/demo/balance", desc: "Fetch XLM or any asset balance" },
-  {
-    hook: "useAccount",
-    path: "/demo/account",
-    desc: "Full account info — balances, signers, sequence",
-    comingSoon: true,
-  },
-  {
-    hook: "useSendPayment",
-    path: "/demo/send",
-    desc: "Build, sign, and submit a payment",
-    comingSoon: true,
-  },
-  {
-    hook: "useTransaction",
-    path: "/demo/transaction",
-    desc: "Look up a transaction by hash",
-    comingSoon: true,
-  },
-  { hook: "useNetwork", path: "/demo/network", desc: "Current network and config" },
-  {
-    hook: "useAsset",
-    path: "/demo/asset",
-    desc: "Asset metadata — supply, home domain",
-    comingSoon: true,
-  },
-  {
-    hook: "useSorobanContract",
-    path: "/demo/soroban",
-    desc: "Call a Soroban smart contract",
-    comingSoon: true,
-  },
-]
+const hooks = [
+  { name: "useWallet",          desc: "Connect Freighter, get address",               href: "/demo/wallet"      },
+  { name: "useBalance",         desc: "Fetch XLM or any asset balance",               href: "/demo/balance"     },
+  { name: "useAccount",         desc: "Full account info — balances, signers",        href: "/demo/account"     },
+  { name: "useSendPayment",     desc: "Send XLM or USDC with one hook",               href: "/demo/send"        },
+  { name: "useTransaction",     desc: "Fetch and watch a transaction by hash",        href: "/demo/transaction" },
+  { name: "useNetwork",         desc: "Current network, testnet/mainnet helper",      href: "/demo/network"     },
+  { name: "useAsset",           desc: "Asset metadata — supply, issuer, home domain", href: "/demo/asset"       },
+  { name: "useSorobanContract",   desc: "Call a read function on a Soroban contract",          href: "/demo/soroban"   },
+  { name: "useClaimableBalance", desc: "Fetch claimable balances — airdrops, vesting, escrow", href: "/demo/claimable" },
+];
 
 export default function Home() {
   return (

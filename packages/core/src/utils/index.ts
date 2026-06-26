@@ -2,6 +2,12 @@ import { Horizon } from "@stellar/stellar-sdk"
 import type { Asset, Balance, NetworkConfig, StellarNetwork } from "../types"
 import { NETWORK_CONFIGS } from "../types"
 
+// ── Environment helpers ───────────────────────────────────────────────────
+/** Returns `true` only when running in a browser (not Node / SSR). */
+export function isBrowser(): boolean {
+  return typeof window !== "undefined";
+}
+
 // ── Network helpers ────────────────────────────────────────────────────────
 /**
  * Retrieves the configuration details for a given Stellar network.
@@ -105,3 +111,5 @@ export function formatAmount(amount: string, decimals = 7): string {
   if (isNaN(num)) return "0"
   return num.toFixed(decimals).replace(/\.?0+$/, "")
 }
+
+export * from "./errorParser";

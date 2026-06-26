@@ -7,26 +7,27 @@
   "workspaces": [
     "packages/*"
   ],
-  "scripts": {
-    "dev": "pnpm --filter @use-stellar/demo dev",
-    "build": "pnpm --filter use-stellar build",
-    "test": "pnpm --filter use-stellar test",
-    "format": "prettier --write \"packages/**/*.{ts,tsx,json}\"",
-    "format:check": "prettier --check \"packages/**/*.{ts,tsx,json}\"",
-    "lint": "eslint packages/*/src/**/*.{ts,tsx} --max-warnings 0",
-    "lint:fix": "eslint packages/*/src/**/*.{ts,tsx} --fix --max-warnings 0",
-    "typecheck": "tsc --noEmit -p packages/core/tsconfig.json",
-    "prepare": "husky"
-  },
-  "lint-staged": {
-    "packages/**/*.{ts,tsx}": [
-      "prettier --write",
-      "eslint --fix --max-warnings 0"
-    ],
-    "packages/**/*.{json,yaml,yml}": [
-      "prettier --write"
-    ]
-  },
+"scripts": {
+  "dev": "pnpm --filter @use-stellar/demo dev",
+  "build": "pnpm --filter use-stellar build",
+  "test": "pnpm --filter use-stellar test",
+  "test:package": "pnpm --filter use-stellar test:package",
+  "format": "prettier --write \"packages/**/*.{ts,tsx,json}\"",
+  "format:check": "prettier --check \"packages/**/*.{ts,tsx,json}\"",
+  "lint": "eslint packages/*/src/**/*.{ts,tsx} --max-warnings 0",
+  "lint:fix": "eslint packages/*/src/**/*.{ts,tsx} --fix --max-warnings 0",
+  "typecheck": "tsc --noEmit -p packages/core/tsconfig.json",
+  "prepare": "husky"
+},
+ "lint-staged": {
+  "packages/**/*.{ts,tsx}": [
+    "prettier --write",
+    "eslint --fix --max-warnings 0"
+  ],
+  "packages/**/*.{json,yaml,yml}": [
+    "prettier --write"
+  ]
+},
   "devDependencies": {
     "@types/react": "^18.2.0",
     "@typescript-eslint/eslint-plugin": "^8.62.0",

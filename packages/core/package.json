@@ -30,7 +30,11 @@
   },
   "scripts": {
     "build": "tsup",
+    "test": "jest --testPathIgnorePatterns=integration",
+    "test:integration": "jest --testPathPattern=integration",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
+    "test:package": "node scripts/smoke-test.js",
     "dev": "tsup --watch"
   },
   "peerDependencies": {
