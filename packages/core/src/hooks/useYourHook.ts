@@ -15,7 +15,7 @@ export interface UseYourHookReturn {
 
 export function useYourHook(): UseYourHookReturn {
   const { network } = useStellarContext()
-  const [data, _setData] = useState<SomeType | null>(null)
+const [data] = useState<SomeType | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<StellarError | null>(null)
 
