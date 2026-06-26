@@ -21,20 +21,17 @@ export default function SorobanDemo() {
   return (
     <DemoCard
       hook="useSorobanContract"
-      description="Preview a Soroban contract call result while the hook is under active development."
+      description="Simulate a read-only Soroban contract method via the Soroban RPC. Results are decoded to native JS values where possible."
       code={`const { data, loading, error, refetch } = useSorobanContract({
-  contractId: "C...",
+  contractId: "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
   method: "balance",
+  args: ["GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"],
 })`}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <Text color="#facc15">
-          This hook is in active development. Write calls requiring signing are tracked in GitHub issue #8.
-        </Text>
-
         {!wallet.connected && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <Text color="#facc15">Connect Freighter on testnet to simulate a Soroban call.</Text>
+            <Text color="#94a3b8">Connect Freighter on testnet to simulate a read-only Soroban call.</Text>
             <button onClick={() => wallet.connect("freighter")} disabled={wallet.connecting} style={buttonStyle(wallet.connecting)}>
               {wallet.connecting ? "Connecting..." : "Connect wallet"}
             </button>
