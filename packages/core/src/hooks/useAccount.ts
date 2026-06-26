@@ -8,10 +8,10 @@ export interface UseAccountOptions {
 }
 
 export interface UseAccountReturn {
-  account: AccountInfo | null;
-  loading: boolean;
-  error: string | null;
-  refetch: () => void;
+  account: AccountInfo | null
+  loading: boolean
+  error: string | null
+  refetch: () => void
 }
 
 /**

@@ -25,8 +25,9 @@ export function useWallet(): UseWalletReturn {
       if (!isBrowser()) {
         setWallet(prev => ({
           ...prev,
-          error: "Wallet connection is only available in the browser. " +
-                 "Move your component to a \"use client\" boundary in Next.js / Remix.",
+          error:
+            "Wallet connection is only available in the browser. " +
+            'Move your component to a "use client" boundary in Next.js / Remix.',
         }))
         return
       }
@@ -83,9 +84,7 @@ async function connectFreighter(network: string): Promise<string> {
   // Dynamic import keeps @stellar/freighter-api out of the SSR bundle.
   let freighterApi = await import("@stellar/freighter-api")
   const { isConnected, requestAccess, getNetworkDetails } =
-    typeof freighterApi.isConnected === "function"
-      ? freighterApi
-      : (freighterApi as any).default
+    typeof freighterApi.isConnected === "function" ? freighterApi : (freighterApi as any).default
 
   const connection = await isConnected()
   if (connection.error || !connection.isConnected) {

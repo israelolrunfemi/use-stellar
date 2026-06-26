@@ -4,14 +4,14 @@ import {
   shortenAddress,
   formatAmount,
   formatAssetCode,
-} from "./utils";
+} from "./utils"
 
 // ── isBrowser ─────────────────────────────────────────────────────────────
 describe("isBrowser", () => {
   it("returns true in jsdom (window is defined)", () => {
-    expect(isBrowser()).toBe(true);
-  });
-});
+    expect(isBrowser()).toBe(true)
+  })
+})
 
 // ── isValidStellarAddress ──────────────────────────────────────────────────
 describe("isValidStellarAddress", () => {

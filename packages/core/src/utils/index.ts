@@ -5,7 +5,7 @@ import { NETWORK_CONFIGS } from "../types"
 // ── Environment helpers ───────────────────────────────────────────────────
 /** Returns `true` only when running in a browser (not Node / SSR). */
 export function isBrowser(): boolean {
-  return typeof window !== "undefined";
+  return typeof window !== "undefined"
 }
 
 // ── Network helpers ────────────────────────────────────────────────────────
@@ -112,4 +112,4 @@ export function formatAmount(amount: string, decimals = 7): string {
   return num.toFixed(decimals).replace(/\.?0+$/, "")
 }
 
-export * from "./errorParser";
+export * from "./errorParser"
