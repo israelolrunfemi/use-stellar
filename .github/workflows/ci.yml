@@ -47,3 +47,5 @@ jobs:
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: CI=false pnpm build
+      - run: pnpm build
+      - run: pnpm test:package

@@ -10,6 +10,7 @@
     "build": "pnpm --filter @use-stellar/demo build",
     "build:core": "pnpm --filter use-stellar build",
     "test": "pnpm --filter use-stellar test",
+    "test:package": "pnpm --filter use-stellar test:package",
     "lint": "eslint \"packages/*/src/**/*.ts\" \"packages/*/src/**/*.tsx\"",
     "typecheck": "tsc --noEmit -p packages/core/tsconfig.json"
   },

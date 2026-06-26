@@ -1,10 +1,12 @@
 import { useCallback } from "react";
-import {
-  getNetworkDetails,
-  isConnected,
-  requestAccess,
-} from "@stellar/freighter-api";
+import freighterApi from "@stellar/freighter-api";
+
+const { getNetworkDetails, isConnected, requestAccess } =
+  typeof freighterApi.isConnected === "function"
+    ? freighterApi
+    : (freighterApi as any).default;
 import { useStellarContext } from "../context/StellarProvider";
+import { isBrowser }         from "../utils";
 import type { WalletState, WalletType } from "../types";
 
 export interface UseWalletReturn extends WalletState {
@@ -26,6 +28,15 @@ export function useWallet(): UseWalletReturn {
 
   const connect = useCallback(
     async (walletType: WalletType = "freighter") => {
+      if (!isBrowser()) {
+        setWallet(prev => ({
+          ...prev,
+          error: "Wallet connection is only available in the browser. " +
+                 "Move your component to a \"use client\" boundary in Next.js / Remix.",
+        }));
+        return;
+      }
+
       setWallet(prev => ({ ...prev, connecting: true, error: null }));
 
       try {
@@ -75,6 +86,10 @@ export function useWallet(): UseWalletReturn {
 
 // ── Freighter connector ────────────────────────────────────────────────────
 async function connectFreighter(network: string): Promise<string> {
+  // Dynamic import keeps @stellar/freighter-api out of the SSR bundle.
+  const { isConnected, requestAccess, getNetworkDetails } =
+    await import("@stellar/freighter-api");
+
   const connection = await isConnected();
   if (connection.error || !connection.isConnected) {
     throw new Error(

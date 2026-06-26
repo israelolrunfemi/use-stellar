@@ -33,6 +33,22 @@ export const NETWORK_CONFIGS: Record<StellarNetwork, NetworkConfig> = {
 /**
  * Supported wallet providers.
  */
+export type StellarErrorCode =
+  | "ACCOUNT_NOT_FOUND"
+  | "INSUFFICIENT_BALANCE"
+  | "NO_TRUSTLINE"
+  | "TRANSACTION_REJECTED"
+  | "WALLET_NOT_INSTALLED"
+  | "WALLET_NOT_CONNECTED"
+  | "NETWORK_ERROR"
+  | "UNKNOWN";
+
+export interface StellarError {
+  code: StellarErrorCode;
+  message: string;
+  raw?: unknown;
+}
+
 export type WalletType = "freighter" | "albedo" | "rabet";
 
 /**
@@ -162,6 +178,19 @@ export interface ContractCallOptions {
 /**
  * Context value provided by the StellarProvider.
  */
+export interface ClaimableBalanceClaimant {
+  destination: string;
+  predicate: object;
+}
+
+export interface ClaimableBalance {
+  id: string;
+  asset: string;
+  amount: string;
+  claimants: ClaimableBalanceClaimant[];
+  sponsor?: string;
+}
+
 export interface StellarContextValue {
   network: StellarNetwork;
   networkConfig: NetworkConfig;
