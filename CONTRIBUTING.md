@@ -20,15 +20,16 @@ Thank you for your interest in contributing. This project is designed to be easy
 ### Requirements
 
 - Node.js 20+
-- npm
+- pnpm (We use pnpm workspaces)
 
 No Rust, no Stellar CLI, no wallet required to run tests or work on most hooks.
 
 ### Clone and install
 
 ```bash
-git clone https://github.com/YOUR_HANDLE/use-stellar
+git clone [https://github.com/YOUR_HANDLE/use-stellar](https://github.com/YOUR_HANDLE/use-stellar)
 cd use-stellar
+pnpm install
 npm install
 ```
 

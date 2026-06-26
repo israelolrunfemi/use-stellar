@@ -94,6 +94,19 @@ export interface ContractCallOptions {
   args?: unknown[];
 }
 
+export interface ClaimableBalanceClaimant {
+  destination: string;
+  predicate: object;
+}
+
+export interface ClaimableBalance {
+  id: string;
+  asset: string;
+  amount: string;
+  claimants: ClaimableBalanceClaimant[];
+  sponsor?: string;
+}
+
 export interface StellarContextValue {
   network: StellarNetwork;
   networkConfig: NetworkConfig;

@@ -10,6 +10,7 @@ export { useTransaction }       from "./hooks/useTransaction";
 export { useNetwork }           from "./hooks/useNetwork";
 export { useAsset }             from "./hooks/useAsset";
 export { useSorobanContract }   from "./hooks/useSorobanContract";
+export { useClaimableBalance }  from "./hooks/useClaimableBalance";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 export type {
@@ -28,6 +29,8 @@ export type {
   SendPaymentResult,
   ContractCallOptions,
   StellarContextValue,
+  ClaimableBalance,
+  ClaimableBalanceClaimant,
 } from "./types";
 
 // ── Utils (public) ─────────────────────────────────────────────────────────
