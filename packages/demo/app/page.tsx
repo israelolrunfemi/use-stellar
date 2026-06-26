@@ -10,6 +10,8 @@ const hooks = [
   { name: "useAsset",           desc: "Asset metadata — supply, issuer, home domain", href: "/demo/asset"       },
   { name: "useSorobanContract", desc: "Call a read function on a Soroban contract",   href: "/demo/soroban"     },
   { name: "usePayments",        desc: "Fetch and paginate payment history",           href: "/demo/payments"    },
+  { name: "useSorobanContract",   desc: "Call a read function on a Soroban contract",          href: "/demo/soroban"   },
+  { name: "useClaimableBalance", desc: "Fetch claimable balances — airdrops, vesting, escrow", href: "/demo/claimable" },
 ];
 
 export default function Home() {

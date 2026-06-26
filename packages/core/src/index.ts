@@ -11,6 +11,7 @@ export { useNetwork }           from "./hooks/useNetwork";
 export { useAsset }             from "./hooks/useAsset";
 export { useSorobanContract }   from "./hooks/useSorobanContract";
 export { usePayments }          from "./hooks/usePayments";
+export { useClaimableBalance }  from "./hooks/useClaimableBalance";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 export type {
@@ -32,6 +33,8 @@ export type {
   NormalizedPayment,
   UsePaymentsOptions,
   UsePaymentsReturn,
+  ClaimableBalance,
+  ClaimableBalanceClaimant,
 } from "./types";
 
 // ── Utils (public) ─────────────────────────────────────────────────────────

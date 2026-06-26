@@ -1,9 +1,10 @@
 import { useCallback } from "react";
-import {
-  getNetworkDetails,
-  isConnected,
-  requestAccess,
-} from "@stellar/freighter-api";
+import freighterApi from "@stellar/freighter-api";
+
+const { getNetworkDetails, isConnected, requestAccess } =
+  typeof freighterApi.isConnected === "function"
+    ? freighterApi
+    : (freighterApi as any).default;
 import { useStellarContext } from "../context/StellarProvider";
 import type { WalletState, WalletType } from "../types";
 
