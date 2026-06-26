@@ -1,6 +1,9 @@
+/**
+ * @jest-environment node
+ */
 import { 
   Keypair, 
-  Server, 
+  Horizon, 
   TransactionBuilder, 
   Networks, 
   Asset, 
@@ -10,7 +13,7 @@ import {
 jest.setTimeout(120000); // 2 minutes, as we have to fund twice and submit a tx
 
 describe("Integration: Payment Flow", () => {
-  const server = new Server("https://horizon-testnet.stellar.org");
+  const server = new Horizon.Server("https://horizon-testnet.stellar.org");
 
   it("should successfully send 10 XLM from account A to account B", async () => {
     // 1. Generate keypairs for Alice and Bob
@@ -23,7 +26,9 @@ describe("Integration: Payment Flow", () => {
 
     // 3. Verify Bob's initial balance
     let bobAccount = await server.loadAccount(bob.publicKey());
-    const initialBalanceObj = bobAccount.balances.find((b) => b.asset_type === "native");
+    const initialBalanceObj = bobAccount.balances.find(
+      (b: { asset_type: string; balance: string }) => b.asset_type === "native"
+    );
     const initialBalance = parseFloat(initialBalanceObj!.balance);
 
     // 4. Build and submit the payment transaction from Alice
@@ -50,7 +55,9 @@ describe("Integration: Payment Flow", () => {
 
     // 5. Verify Bob's balance increased by 10 XLM
     bobAccount = await server.loadAccount(bob.publicKey());
-    const finalBalanceObj = bobAccount.balances.find((b) => b.asset_type === "native");
+    const finalBalanceObj = bobAccount.balances.find(
+      (b: { asset_type: string; balance: string }) => b.asset_type === "native"
+    );
     const finalBalance = parseFloat(finalBalanceObj!.balance);
 
     expect(finalBalance).toBeCloseTo(initialBalance + 10, 5);
