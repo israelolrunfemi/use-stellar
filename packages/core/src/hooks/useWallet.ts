@@ -14,6 +14,15 @@ export interface UseWalletReturn extends WalletState {
   disconnect: () => void;
 }
 
+/**
+ * Manages wallet connection state and provides functions to connect and disconnect.
+ *
+ * @returns `{ connected, address, network, wallet, connecting, error, connect, disconnect }`
+ *
+ * @example
+ * const { address, connect, disconnect } = useWallet()
+ * await connect("freighter")
+ */
 export function useWallet(): UseWalletReturn {
   const { wallet, setWallet, network } = useStellarContext();
 

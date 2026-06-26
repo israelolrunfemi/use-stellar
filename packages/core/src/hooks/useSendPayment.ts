@@ -25,6 +25,15 @@ export interface UseSendPaymentReturn {
   reset:   () => void;
 }
 
+/**
+ * Builds, signs, and submits a payment transaction to the Stellar network.
+ *
+ * @returns `{ send, loading, error, result, reset }`
+ *
+ * @example
+ * const { send, loading } = useSendPayment()
+ * await send({ to: "G...", asset: "XLM", amount: "10" })
+ */
 export function useSendPayment(): UseSendPaymentReturn {
   const { network, networkConfig, wallet } = useStellarContext();
 

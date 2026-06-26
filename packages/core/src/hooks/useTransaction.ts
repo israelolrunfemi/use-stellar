@@ -15,6 +15,17 @@ export interface UseTransactionReturn {
   refetch:     () => void;
 }
 
+/**
+ * Fetches the status and details of a specific transaction by hash.
+ *
+ * @param options - Configuration options
+ * @param options.hash - The transaction hash to look up
+ * @param options.watch - When true, keeps polling until the transaction succeeds or fails
+ * @returns `{ transaction, loading, error, refetch }`
+ *
+ * @example
+ * const { transaction } = useTransaction({ hash: "...", watch: true })
+ */
 export function useTransaction({
   hash,
   watch = false,
@@ -29,7 +40,12 @@ export function useTransaction({
   transactionRef.current = transaction;
 
   const fetchTransaction = useCallback(async () => {
-    if (!hash) return;
+    if (!hash) {
+      setTransaction(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -46,6 +62,7 @@ export function useTransaction({
         ledger:    Number(raw.ledger),
         createdAt: raw.created_at,
         fee:       String(raw.fee_charged),
+        envelope:  raw.envelope_xdr,
       });
     } catch (err: unknown) {
       // 404 means not found / still pending

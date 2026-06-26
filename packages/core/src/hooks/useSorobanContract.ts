@@ -9,6 +9,18 @@ export interface UseSorobanContractReturn {
   refetch: () => void;
 }
 
+/**
+ * Calls a method on a Soroban smart contract.
+ *
+ * @param options - Configuration options
+ * @param options.contractId - The ID of the Soroban contract
+ * @param options.method - The method to call on the contract
+ * @param options.args - Optional arguments for the contract method
+ * @returns `{ data, loading, error, refetch }`
+ *
+ * @example
+ * const { data, loading } = useSorobanContract({ contractId: "C...", method: "increment" })
+ */
 export function useSorobanContract({
   contractId,
   method,

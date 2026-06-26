@@ -14,6 +14,16 @@ export interface UseAccountReturn {
   refetch:  () => void;
 }
 
+/**
+ * Fetches account information including balances, sequence number, and signers.
+ *
+ * @param options - Configuration options
+ * @param options.address - The Stellar address to fetch. Defaults to the connected wallet.
+ * @returns `{ account, loading, error, refetch }`
+ *
+ * @example
+ * const { account, loading } = useAccount({ address: "G..." })
+ */
 export function useAccount({ address }: UseAccountOptions = {}): UseAccountReturn {
   const { network, wallet }      = useStellarContext();
   const resolvedAddress          = address ?? wallet.address;

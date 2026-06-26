@@ -27,6 +27,17 @@ export interface UseAssetReturn {
   refetch: () => void;
 }
 
+/**
+ * Fetches details about a specific asset on the Stellar network.
+ *
+ * @param options - Configuration options
+ * @param options.code - The asset code (e.g., "USDC")
+ * @param options.issuer - The asset issuer's Stellar address
+ * @returns `{ asset, loading, error, refetch }`
+ *
+ * @example
+ * const { asset, loading } = useAsset({ code: "USDC", issuer: "G..." })
+ */
 export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
   const { network } = useStellarContext();
 

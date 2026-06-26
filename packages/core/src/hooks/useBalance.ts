@@ -17,6 +17,18 @@ export interface UseBalanceReturn {
   refetch:   () => void;
 }
 
+/**
+ * Fetches the XLM or asset balance for the connected wallet or any Stellar address.
+ *
+ * @param options - Configuration options
+ * @param options.address - The Stellar address to fetch balances for. Defaults to the connected wallet.
+ * @param options.asset - The asset to return in `balance`. Defaults to XLM.
+ * @param options.watch - When true, re-fetches every 10 seconds.
+ * @returns `{ balance, balances, loading, error, refetch }`
+ *
+ * @example
+ * const { balance, loading } = useBalance({ asset: "XLM", watch: true })
+ */
 export function useBalance({
   address,
   asset = "XLM",

@@ -8,6 +8,14 @@ export interface UseNetworkReturn {
   isMainnet:     boolean;
 }
 
+/**
+ * Returns information about the currently selected Stellar network.
+ *
+ * @returns `{ network, networkConfig, isTestnet, isMainnet }`
+ *
+ * @example
+ * const { network, isTestnet } = useNetwork()
+ */
 export function useNetwork(): UseNetworkReturn {
   const { network, networkConfig } = useStellarContext();
 

@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm --filter @use-stellar/demo build",
+  "outputDirectory": "packages/demo/.next",
+  "installCommand": "pnpm install"
+}
