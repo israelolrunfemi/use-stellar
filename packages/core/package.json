@@ -30,7 +30,9 @@
   },
   "scripts": {
     "build": "tsup",
-    "test": "jest",
+    "test": "jest --testPathIgnorePatterns=integration",
+    "test:integration": "jest --testPathPattern=integration",
+    "typecheck": "tsc --noEmit",
     "dev": "tsup --watch"
   },
   "peerDependencies": {
