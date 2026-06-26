@@ -35,8 +35,49 @@ export default function BalanceDemo() {
           value={custom}
           onChange={e => setCustom(e.target.value)}
         />
-        <Row label="XLM"  value={xlm.loading  ? "..." : (xlm.balance  ?? "—")} />
-        <Row label="USDC" value={usdc.loading ? "..." : (usdc.balance ?? "—")} />
+        
+        {/* Native Balance */}
+        <div style={{ marginBottom: 8 }}>
+          <h4 style={{ color: "#888", fontSize: 12, marginBottom: 4, textTransform: "uppercase" }}>
+            Native Balance
+          </h4>
+          <Row label="XLM" value={xlm.loading ? "..." : (xlm.balance ?? "—")} />
+        </div>
+
+        {/* Issued Assets */}
+        <div style={{ marginBottom: 8 }}>
+          <h4 style={{ color: "#888", fontSize: 12, marginBottom: 4, textTransform: "uppercase" }}>
+            Issued Assets
+          </h4>
+          <Row label="USDC" value={usdc.loading ? "..." : (usdc.balance ?? "—")} />
+        </div>
+
+        {/* Liquidity Pool Shares */}
+        <div style={{ marginBottom: 8 }}>
+          <h4 style={{ color: "#888", fontSize: 12, marginBottom: 4, textTransform: "uppercase" }}>
+            Liquidity Pool Shares
+          </h4>
+          {xlm.balances
+            .filter(b => b.asset === "liquidity_pool_shares")
+            .map((balance) => (
+              <div key={balance.liquidityPoolId} style={{ marginBottom: 4 }}>
+                <Row 
+                  label={`LP ${balance.liquidityPoolId.slice(0, 8)}...`} 
+                  value={balance.balance} 
+                />
+                <div style={{ fontSize: 10, color: "#555", marginLeft: 16 }}>
+                  Pool ID: {balance.liquidityPoolId}
+                </div>
+              </div>
+            ))
+          }
+          {xlm.balances.filter(b => b.asset === "liquidity_pool_shares").length === 0 && (
+            <div style={{ color: "#666", fontSize: 12, fontStyle: "italic" }}>
+              No liquidity pool shares
+            </div>
+          )}
+        </div>
+
         {xlm.error && <p style={{ color: "#f87171", fontSize: 12 }}>{xlm.error}</p>}
       </div>
     </DemoCard>

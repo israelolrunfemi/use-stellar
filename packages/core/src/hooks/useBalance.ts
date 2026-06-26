@@ -64,7 +64,7 @@ export function useBalance({
     }
     return false;
   });
-  const balance    = match?.balance ?? null;
+  const balance = match?.balance ?? null;
 
   return {
     balance,

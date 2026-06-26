@@ -55,15 +55,31 @@ export interface IssuedAsset {
   issuer: string;
 }
 
+export interface LiquidityPoolAsset {
+  asset: "liquidity_pool_shares";
+  liquidityPoolId: string;
+}
+
 export type Asset = NativeAsset | IssuedAsset;
 
-export interface Balance {
-  asset: Asset;
-  balance: string;
-  limit?: string;
-  buying?: string;
-  selling?: string;
-}
+export type Balance =
+  | {
+      asset: "XLM";
+      balance: string;
+    }
+  | {
+      asset: {
+        code: string;
+        issuer: string;
+      };
+      balance: string;
+      limit: string;
+    }
+  | {
+      asset: "liquidity_pool_shares";
+      balance: string;
+      liquidityPoolId: string;
+    };
 
 export interface AccountInfo {
   address: string;
