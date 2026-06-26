@@ -1,8 +1,8 @@
-import React, {
+import * as React from "react";
+import {
   createContext,
   useContext,
   useState,
-  type ReactNode,
 } from "react";
 import type {
   StellarContextValue,
@@ -27,7 +27,7 @@ const StellarContext = createContext<StellarContextValue | null>(null);
 // ── Provider ───────────────────────────────────────────────────────────────
 export interface StellarProviderProps {
   network?:  StellarNetwork;
-  children:  ReactNode;
+  children:  React.ReactNode;
 }
 
 export function StellarProvider({

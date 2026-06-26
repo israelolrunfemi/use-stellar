@@ -7,6 +7,12 @@ import {
   Asset as StellarAsset,
   Memo,
 } from "@stellar/stellar-sdk";
+import freighterApi from "@stellar/freighter-api";
+
+const { signTransaction } =
+  typeof freighterApi.signTransaction === "function"
+    ? freighterApi
+    : (freighterApi as any).default;
 import { useStellarContext } from "../context/StellarProvider";
 import { getHorizonServer, isNativeAsset, isBrowser } from "../utils";
 import type { SendPaymentOptions, SendPaymentResult, Asset } from "../types";
