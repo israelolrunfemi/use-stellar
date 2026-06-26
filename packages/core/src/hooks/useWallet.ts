@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useStellarContext } from "../context/StellarProvider";
+import { isBrowser } from "../utils";
 import type { WalletState, WalletType } from "../types";
 import { getWalletAdapter } from "../wallets";
 
@@ -13,6 +14,15 @@ export function useWallet(): UseWalletReturn {
 
   const connect = useCallback(
     async (walletType: WalletType = "freighter") => {
+      if (!isBrowser()) {
+        setWallet(prev => ({
+          ...prev,
+          error: "Wallet connection is only available in the browser. " +
+                 "Move your component to a \"use client\" boundary in Next.js / Remix.",
+        }));
+        return;
+      }
+
       setWallet(prev => ({ ...prev, connecting: true, error: null }));
 
       try {

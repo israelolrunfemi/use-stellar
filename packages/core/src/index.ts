@@ -8,6 +8,7 @@ export { useTransaction } from "./hooks/useTransaction";
 export { useNetwork } from "./hooks/useNetwork";
 export { useAsset } from "./hooks/useAsset";
 export { useSorobanContract } from "./hooks/useSorobanContract";
+export { useClaimableBalance } from "./hooks/useClaimableBalance";
 export {
   FREIGHTER_WALLET_TYPE,
   NETWORK_PASSPHRASES,
@@ -33,6 +34,8 @@ export type {
   SendPaymentResult,
   ContractCallOptions,
   StellarContextValue,
+  ClaimableBalance,
+  ClaimableBalanceClaimant,
 } from "./types";
 export type {
   SignTransactionOptions,
@@ -44,6 +47,7 @@ export type {
 } from "./wallets";
 
 export {
+  isBrowser,
   isValidStellarAddress,
   shortenAddress,
   formatAmount,

@@ -8,7 +8,8 @@ const hooks = [
   { name: "useTransaction",     desc: "Fetch and watch a transaction by hash",        href: "/demo/transaction" },
   { name: "useNetwork",         desc: "Current network, testnet/mainnet helper",      href: "/demo/network"     },
   { name: "useAsset",           desc: "Asset metadata — supply, issuer, home domain", href: "/demo/asset"       },
-  { name: "useSorobanContract", desc: "Call a read function on a Soroban contract",   href: "/demo/soroban"     },
+  { name: "useSorobanContract",   desc: "Call a read function on a Soroban contract",          href: "/demo/soroban"   },
+  { name: "useClaimableBalance", desc: "Fetch claimable balances — airdrops, vesting, escrow", href: "/demo/claimable" },
 ];
 
 export default function Home() {

@@ -1,0 +1,28 @@
+name: Integration Tests (Testnet)
+
+on:
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions UI
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Update this to match your project's node version
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Run Integration Tests
+        run: pnpm --filter @israelolrunfemi/use-stellar test:integration
+        # Note: adjust the filter name to match the exact "name" field in packages/core/package.json

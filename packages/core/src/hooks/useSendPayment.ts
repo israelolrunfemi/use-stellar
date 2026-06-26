@@ -8,7 +8,7 @@ import {
   Memo,
 } from "@stellar/stellar-sdk";
 import { useStellarContext } from "../context/StellarProvider";
-import { getHorizonServer, isNativeAsset } from "../utils";
+import { getHorizonServer, isNativeAsset, isBrowser } from "../utils";
 import { getWalletAdapter } from "../wallets";
 import type { SendPaymentOptions, SendPaymentResult, Asset } from "../types";
 
@@ -34,6 +34,13 @@ export function useSendPayment(): UseSendPaymentReturn {
       }
       if (!wallet.wallet) {
         throw new Error("No wallet adapter selected. Call connect() first.");
+      }
+
+      if (!isBrowser()) {
+        throw new Error(
+          "Transaction signing is only available in the browser. " +
+          "Move your component to a \"use client\" boundary in Next.js / Remix."
+        );
       }
 
       setLoading(true);
