@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * @jest-environment node
  *
@@ -6,6 +5,7 @@
  * (no window / DOM) does not crash — the key requirement for SSR
  * in Next.js, Remix, and similar frameworks.
  */
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 describe("SSR safety — import in Node environment", () => {
   it("can import StellarProvider without crashing", () => {
