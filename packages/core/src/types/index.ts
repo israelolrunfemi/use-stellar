@@ -21,6 +21,22 @@ export const NETWORK_CONFIGS: Record<StellarNetwork, NetworkConfig> = {
   },
 };
 
+export type StellarErrorCode =
+  | "ACCOUNT_NOT_FOUND"
+  | "INSUFFICIENT_BALANCE"
+  | "NO_TRUSTLINE"
+  | "TRANSACTION_REJECTED"
+  | "WALLET_NOT_INSTALLED"
+  | "WALLET_NOT_CONNECTED"
+  | "NETWORK_ERROR"
+  | "UNKNOWN";
+
+export interface StellarError {
+  code: StellarErrorCode;
+  message: string;
+  raw?: unknown;
+}
+
 export type WalletType = "freighter" | "albedo" | "rabet";
 
 export interface WalletState {
