@@ -24,6 +24,16 @@ export function useWallet(): UseWalletReturn {
   const connect = useCallback(
     async (walletType: WalletType = "freighter") => {
       setWallet(prev => ({ ...prev, connecting: true, error: null }))
+      if (!isBrowser()) {
+        setWallet(prev => ({
+          ...prev,
+          error: "Wallet connection is only available in the browser. " +
+                 "Move your component to a \"use client\" boundary in Next.js / Remix.",
+        }));
+        return;
+      }
+
+      setWallet(prev => ({ ...prev, connecting: true, error: null }));
 
       try {
         let address: string
@@ -86,6 +96,11 @@ async function connectAlbedo(): Promise<string> {
 // ── Freighter connector ────────────────────────────────────────────────────
 async function connectFreighter(network: string): Promise<string> {
   const connection = await isConnected()
+  // Dynamic import keeps @stellar/freighter-api out of the SSR bundle.
+  const { isConnected, requestAccess, getNetworkDetails } =
+    await import("@stellar/freighter-api");
+
+  const connection = await isConnected();
   if (connection.error || !connection.isConnected) {
     throw new Error(
       "Freighter wallet not found. " + "Install the Freighter browser extension and try again."

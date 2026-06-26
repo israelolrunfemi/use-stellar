@@ -26,6 +26,9 @@
     "packages/**/*.{json,yaml,yml}": [
       "prettier --write"
     ]
+    "test:package": "pnpm --filter use-stellar test:package",
+    "lint": "eslint \"packages/*/src/**/*.ts\" \"packages/*/src/**/*.tsx\"",
+    "typecheck": "tsc --noEmit -p packages/core/tsconfig.json"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

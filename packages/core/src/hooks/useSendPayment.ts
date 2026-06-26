@@ -6,12 +6,16 @@ import {
   Operation,
   Asset as StellarAsset,
   Memo,
-} from "@stellar/stellar-sdk"
-import { signTransaction } from "@stellar/freighter-api"
-import albedo from "@albedo-link/intent"
-import { useStellarContext } from "../context/StellarProvider"
-import { getHorizonServer, isNativeAsset } from "../utils"
-import type { SendPaymentOptions, SendPaymentResult, Asset } from "../types"
+} from "@stellar/stellar-sdk";
+import freighterApi from "@stellar/freighter-api";
+
+const { signTransaction } =
+  typeof freighterApi.signTransaction === "function"
+    ? freighterApi
+    : (freighterApi as any).default;
+import { useStellarContext } from "../context/StellarProvider";
+import { getHorizonServer, isNativeAsset, isBrowser } from "../utils";
+import type { SendPaymentOptions, SendPaymentResult, Asset } from "../types";
 
 export interface UseSendPaymentReturn {
   send: (options: SendPaymentOptions) => Promise<SendPaymentResult>
@@ -43,8 +47,15 @@ export function useSendPayment(): UseSendPaymentReturn {
         throw new Error("Wallet not connected. Call connect() first.")
       }
 
-      setLoading(true)
-      setError(null)
+      if (!isBrowser()) {
+        throw new Error(
+          "Transaction signing is only available in the browser. " +
+          "Move your component to a \"use client\" boundary in Next.js / Remix."
+        );
+      }
+
+      setLoading(true);
+      setError(null);
 
       try {
         const server = getHorizonServer(network)
@@ -115,6 +126,21 @@ export function useSendPayment(): UseSendPaymentReturn {
           const signed = TransactionBuilder.fromXDR(signedTransaction.signedTxXdr, networkPass)
           const res = await server.submitTransaction(signed)
           txHash = res.hash
+        const tx  = builder.build();
+        const xdr = tx.toXDR();
+
+        // ── Sign with Freighter ──────────────────────────────────────────
+        // Dynamic import keeps @stellar/freighter-api out of the SSR bundle.
+        const { signTransaction } = await import("@stellar/freighter-api");
+        const signedTransaction = await signTransaction(xdr, {
+          networkPassphrase: networkPass,
+          address: wallet.address,
+        });
+        if (signedTransaction.error) {
+          throw new Error(signedTransaction.error.message);
+        }
+        if (!signedTransaction.signedTxXdr) {
+          throw new Error("Freighter did not return a signed transaction.");
         }
 
         const outcome: SendPaymentResult = {
