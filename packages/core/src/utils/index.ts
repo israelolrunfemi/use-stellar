@@ -64,7 +64,16 @@ export function parseHorizonBalance(raw: Horizon.HorizonApi.BalanceLine): Balanc
     }
   }
 
-  const issued = raw as Horizon.HorizonApi.BalanceLineAsset
+  if (raw.asset_type === "liquidity_pool_shares") {
+    const lpBalance = raw as any; // Horizon API types may not include this yet
+    return {
+      asset: "liquidity_pool_shares",
+      balance: lpBalance.balance,
+      liquidityPoolId: lpBalance.liquidity_pool_id,
+    };
+  }
+
+  const issued = raw as Horizon.HorizonApi.BalanceLineAsset;
   return {
     asset: {
       code: issued.asset_code,

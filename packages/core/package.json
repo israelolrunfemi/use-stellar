@@ -30,7 +30,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "test": "jest",
+    "test": "jest --testPathIgnorePatterns=integration",
     "test:integration": "jest --testPathPattern=integration",
     "test:package": "node scripts/smoke-test.js",
     "typecheck": "tsc --noEmit",
@@ -62,17 +62,6 @@
     "tsup": "^8.0.0",
     "typescript": "^5.4.0"
   },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "jsdom",
-    "testMatch": [
-      "**/*.test.ts",
-      "**/*.test.tsx"
-    ],
-    "setupFilesAfterEnv": [
-      "@testing-library/jest-dom"
-    ]
-  },
   "keywords": [
     "stellar",
     "soroban",
@@ -80,6 +69,7 @@
     "hooks",
     "blockchain",
     "web3",
+    "crypto",
     "xlm",
     "usdc"
   ],

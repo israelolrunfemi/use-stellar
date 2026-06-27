@@ -76,21 +76,37 @@ export interface IssuedAsset {
   issuer: string
 }
 
+export interface LiquidityPoolAsset {
+  asset: "liquidity_pool_shares";
+  liquidityPoolId: string;
+}
+
 /**
  * Can be either a native asset or an issued asset.
  */
-export type Asset = NativeAsset | IssuedAsset
+export type Asset = NativeAsset | IssuedAsset;
 
 /**
  * Represents a balance entry for an account.
  */
-export interface Balance {
-  asset: Asset
-  balance: string
-  limit?: string
-  buying?: string
-  selling?: string
-}
+export type Balance =
+  | {
+      asset: "XLM";
+      balance: string;
+    }
+  | {
+      asset: {
+        code: string;
+        issuer: string;
+      };
+      balance: string;
+      limit: string;
+    }
+  | {
+      asset: "liquidity_pool_shares";
+      balance: string;
+      liquidityPoolId: string;
+    };
 
 /**
  * Detailed account information from the Stellar network.

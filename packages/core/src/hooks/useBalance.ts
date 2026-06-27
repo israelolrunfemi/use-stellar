@@ -74,9 +74,9 @@ export function useBalance({
     if (typeof asset === "object" && typeof b.asset === "object") {
       return b.asset.code === asset.code && b.asset.issuer === asset.issuer
     }
-    return false
-  })
-  const balance = match?.balance ?? null
+    return false;
+  });
+  const balance = match?.balance ?? null;
 
   return {
     balance,
