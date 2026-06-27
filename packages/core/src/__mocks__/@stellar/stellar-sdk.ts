@@ -63,7 +63,7 @@ export class MockHorizonServer {
     this.shouldThrow = errorType
   }
 
-  async loadAccount(address: string) {
+  async loadAccount(_address: string) {
     if (this.shouldThrow === "accountNotFound") {
       throw mockServerResponses.accountNotFound
     }
@@ -74,14 +74,13 @@ export class MockHorizonServer {
   }
 
   transactions() {
-    const self = this
     return {
       transaction: (_hash: string) => ({
         call: async () => {
-          if (self.shouldThrow === "transactionNotFound") {
+          if (this.shouldThrow === "transactionNotFound") {
             throw mockServerResponses.transactionNotFound
           }
-          if (self.shouldThrow === "networkError") {
+          if (this.shouldThrow === "networkError") {
             throw mockServerResponses.networkError
           }
           return mockTransactionRecord

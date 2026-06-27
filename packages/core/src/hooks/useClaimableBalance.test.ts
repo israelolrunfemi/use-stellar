@@ -14,7 +14,7 @@ jest.mock("../utils", () => {
   }
 })
 
-// @ts-expect-error
+// @ts-expect-error - import mocked internal state
 import { __mockServer as mockServer } from "../utils"
 
 const mockCall = jest.fn()
