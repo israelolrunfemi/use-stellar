@@ -6,30 +6,30 @@
  * so React and @testing-library/react-hooks have a stable DOM.
  */
 
-import React from "react";
-import { renderHook, act } from "@testing-library/react-hooks";
+import React from "react"
+import { renderHook, act } from "@testing-library/react-hooks"
 
 // jest.mock is hoisted to the top of the file by Jest.
 jest.mock("../utils", () => {
-  const actual = jest.requireActual("../utils");
-  return { ...actual, isBrowser: () => false };
-});
+  const actual = jest.requireActual("../utils")
+  return { ...actual, isBrowser: () => false }
+})
 
-import { StellarProvider } from "../context/StellarProvider";
-import { useWallet }       from "../hooks/useWallet";
+import { StellarProvider } from "../context/StellarProvider"
+import { useWallet } from "../hooks/useWallet"
 
 const wrapper = ({ children }: { children: React.ReactNode }) =>
-  React.createElement(StellarProvider, { network: "testnet", children });
+  React.createElement(StellarProvider, { network: "testnet", children })
 
 describe("SSR guard — useWallet.connect() when isBrowser() returns false", () => {
   it("sets a clear error instead of crashing when window is unavailable", async () => {
-    const { result } = renderHook(() => useWallet(), { wrapper });
+    const { result } = renderHook(() => useWallet(), { wrapper })
 
     await act(async () => {
-      await result.current.connect();
-    });
+      await result.current.connect()
+    })
 
-    expect(result.current.connected).toBe(false);
-    expect(result.current.error).toMatch(/only available in the browser/i);
-  });
-});
+    expect(result.current.connected).toBe(false)
+    expect(result.current.error).toMatch(/only available in the browser/i)
+  })
+})

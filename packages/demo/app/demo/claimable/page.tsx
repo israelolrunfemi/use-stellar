@@ -1,19 +1,19 @@
-"use client";
+"use client"
 
-import { useState }                              from "react";
-import type { CSSProperties }                    from "react";
-import { useClaimableBalance, useWallet }        from "use-stellar";
-import type { ClaimableBalance }                 from "use-stellar";
-import { DemoCard }                              from "../../../components/DemoCard";
+import { useState } from "react"
+import type { CSSProperties } from "react"
+import { useClaimableBalance, useWallet } from "use-stellar"
+import type { ClaimableBalance } from "use-stellar"
+import { DemoCard } from "../../../components/DemoCard"
 
 export default function ClaimableBalanceDemo() {
-  const { address }         = useWallet();
-  const [input, setInput]   = useState("");
-  const resolvedAddress     = input.trim() || address;
+  const { address } = useWallet()
+  const [input, setInput] = useState("")
+  const resolvedAddress = input.trim() || address
 
   const { balances, loading, error, refetch } = useClaimableBalance({
     address: resolvedAddress,
-  });
+  })
 
   return (
     <DemoCard
@@ -45,9 +45,7 @@ export default function ClaimableBalanceDemo() {
           </p>
         )}
 
-        {error && (
-          <p style={{ margin: 0, color: "#f87171", fontSize: 13 }}>{error}</p>
-        )}
+        {error && <p style={{ margin: 0, color: "#f87171", fontSize: 13 }}>{error}</p>}
 
         {!loading && !error && resolvedAddress && balances.length === 0 && (
           <p style={{ margin: 0, color: "#666", fontSize: 13 }}>
@@ -67,24 +65,21 @@ export default function ClaimableBalanceDemo() {
         )}
       </div>
     </DemoCard>
-  );
+  )
 }
 
 function BalanceCard({ balance }: { balance: ClaimableBalance }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(false)
 
   return (
     <div style={cardStyle}>
-      <Row label="ID"     value={`${balance.id.slice(0, 16)}...${balance.id.slice(-8)}`} />
-      <Row label="Asset"  value={balance.asset} />
+      <Row label="ID" value={`${balance.id.slice(0, 16)}...${balance.id.slice(-8)}`} />
+      <Row label="Asset" value={balance.asset} />
       <Row label="Amount" value={balance.amount} highlight />
       {balance.sponsor && <Row label="Sponsor" value={`${balance.sponsor.slice(0, 8)}...`} />}
       <Row label="Claimants" value={String(balance.claimants.length)} />
 
-      <button
-        onClick={() => setExpanded(v => !v)}
-        style={expandButtonStyle}
-      >
+      <button onClick={() => setExpanded(v => !v)} style={expandButtonStyle}>
         {expanded ? "Hide claimants ▲" : "Show claimants ▼"}
       </button>
 
@@ -93,7 +88,14 @@ function BalanceCard({ balance }: { balance: ClaimableBalance }) {
           {balance.claimants.map((c, i) => (
             <div key={c.destination} style={claimantRowStyle}>
               <span style={{ color: "#666", fontSize: 12, minWidth: 20 }}>#{i + 1}</span>
-              <span style={{ color: "#e0e0e0", fontFamily: "monospace", fontSize: 12, wordBreak: "break-all" }}>
+              <span
+                style={{
+                  color: "#e0e0e0",
+                  fontFamily: "monospace",
+                  fontSize: 12,
+                  wordBreak: "break-all",
+                }}
+              >
                 {c.destination}
               </span>
             </div>
@@ -101,7 +103,7 @@ function BalanceCard({ balance }: { balance: ClaimableBalance }) {
         </div>
       )}
     </div>
-  );
+  )
 }
 
 function Row({
@@ -109,84 +111,86 @@ function Row({
   value,
   highlight = false,
 }: {
-  label: string;
-  value: string;
-  highlight?: boolean;
+  label: string
+  value: string
+  highlight?: boolean
 }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 13 }}>
       <span style={{ color: "#666", flexShrink: 0 }}>{label}</span>
-      <span style={{
-        color:       highlight ? "#4ade80" : "#e0e0e0",
-        fontFamily:  "monospace",
-        textAlign:   "right",
-        wordBreak:   "break-all",
-      }}>
+      <span
+        style={{
+          color: highlight ? "#4ade80" : "#e0e0e0",
+          fontFamily: "monospace",
+          textAlign: "right",
+          wordBreak: "break-all",
+        }}
+      >
         {value}
       </span>
     </div>
-  );
+  )
 }
 
 // ── Styles ─────────────────────────────────────────────────────────────────
 
 const labelStyle: CSSProperties = {
-  color:    "#666",
+  color: "#666",
   fontSize: 13,
-};
+}
 
 const inputStyle: CSSProperties = {
-  background:   "#111",
-  border:       "1px solid #333",
+  background: "#111",
+  border: "1px solid #333",
   borderRadius: 6,
-  color:        "#e0e0e0",
-  padding:      "8px 10px",
-  fontSize:     13,
-  fontFamily:   "monospace",
-  width:        "100%",
-  boxSizing:    "border-box",
-};
+  color: "#e0e0e0",
+  padding: "8px 10px",
+  fontSize: 13,
+  fontFamily: "monospace",
+  width: "100%",
+  boxSizing: "border-box",
+}
 
 function buttonStyle(disabled: boolean): CSSProperties {
   return {
-    padding:      "10px 20px",
+    padding: "10px 20px",
     borderRadius: 8,
-    border:       "none",
-    cursor:       disabled ? "default" : "pointer",
-    fontWeight:   500,
-    fontSize:     14,
-    opacity:      disabled ? 0.5 : 1,
-    background:   "#7dd3fc",
-    color:        "#0f0f0f",
-  };
+    border: "none",
+    cursor: disabled ? "default" : "pointer",
+    fontWeight: 500,
+    fontSize: 14,
+    opacity: disabled ? 0.5 : 1,
+    background: "#7dd3fc",
+    color: "#0f0f0f",
+  }
 }
 
 const cardStyle: CSSProperties = {
-  background:    "#111",
-  border:        "1px solid #333",
-  borderRadius:  8,
-  padding:       "12px 14px",
-  display:       "flex",
+  background: "#111",
+  border: "1px solid #333",
+  borderRadius: 8,
+  padding: "12px 14px",
+  display: "flex",
   flexDirection: "column",
-  gap:           6,
-};
+  gap: 6,
+}
 
 const expandButtonStyle: CSSProperties = {
-  marginTop:  4,
+  marginTop: 4,
   background: "transparent",
-  border:     "none",
-  color:      "#7dd3fc",
-  cursor:     "pointer",
-  fontSize:   12,
-  padding:    0,
-  textAlign:  "left",
-};
+  border: "none",
+  color: "#7dd3fc",
+  cursor: "pointer",
+  fontSize: 12,
+  padding: 0,
+  textAlign: "left",
+}
 
 const claimantRowStyle: CSSProperties = {
-  display:      "flex",
-  gap:          8,
-  alignItems:   "flex-start",
-  background:   "#0a0a0a",
+  display: "flex",
+  gap: 8,
+  alignItems: "flex-start",
+  background: "#0a0a0a",
   borderRadius: 6,
-  padding:      "6px 8px",
-};
+  padding: "6px 8px",
+}

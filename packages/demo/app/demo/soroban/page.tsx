@@ -1,21 +1,21 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import type { CSSProperties, ReactNode } from "react";
-import { useSorobanContract, useWallet } from "use-stellar";
-import { DemoCard } from "../../../components/DemoCard";
+import { useState } from "react"
+import type { CSSProperties, ReactNode } from "react"
+import { useSorobanContract, useWallet } from "use-stellar"
+import { DemoCard } from "../../../components/DemoCard"
 
 export default function SorobanDemo() {
-  const wallet = useWallet();
-  const [contractId, setContractId] = useState("");
-  const [method, setMethod] = useState("");
-  const [query, setQuery] = useState({ contractId: "", method: "" });
-  const { data, loading, error, refetch } = useSorobanContract(query);
-  const disabled = !wallet.connected || loading || !contractId.trim() || !method.trim();
+  const wallet = useWallet()
+  const [contractId, setContractId] = useState("")
+  const [method, setMethod] = useState("")
+  const [query, setQuery] = useState({ contractId: "", method: "" })
+  const { data, loading, error, refetch } = useSorobanContract(query)
+  const disabled = !wallet.connected || loading || !contractId.trim() || !method.trim()
 
   function handleCall() {
-    setQuery({ contractId: contractId.trim(), method: method.trim() });
-    refetch();
+    setQuery({ contractId: contractId.trim(), method: method.trim() })
+    refetch()
   }
 
   return (
@@ -29,13 +29,18 @@ export default function SorobanDemo() {
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <Text color="#facc15">
-          This hook is in active development. Write calls requiring signing are tracked in GitHub issue #8.
+          This hook is in active development. Write calls requiring signing are tracked in GitHub
+          issue #8.
         </Text>
 
         {!wallet.connected && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <Text color="#facc15">Connect Freighter on testnet to simulate a Soroban call.</Text>
-            <button onClick={() => wallet.connect("freighter")} disabled={wallet.connecting} style={buttonStyle(wallet.connecting)}>
+            <button
+              onClick={() => wallet.connect("freighter")}
+              disabled={wallet.connecting}
+              style={buttonStyle(wallet.connecting)}
+            >
               {wallet.connecting ? "Connecting..." : "Connect wallet"}
             </button>
           </div>
@@ -65,13 +70,22 @@ export default function SorobanDemo() {
 
         {error && <Text color="#f87171">{error}</Text>}
         {data !== null && (
-          <pre style={{ margin: 0, color: "#e0e0e0", fontSize: 13, fontFamily: "monospace", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+          <pre
+            style={{
+              margin: 0,
+              color: "#e0e0e0",
+              fontSize: 13,
+              fontFamily: "monospace",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+            }}
+          >
             {JSON.stringify(data, null, 2)}
           </pre>
         )}
       </div>
     </DemoCard>
-  );
+  )
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -80,11 +94,11 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
       <span style={{ color: "#666", fontSize: 13 }}>{label}</span>
       {children}
     </label>
-  );
+  )
 }
 
 function Text({ children, color = "#e0e0e0" }: { children: string; color?: string }) {
-  return <p style={{ margin: 0, color, fontSize: 13 }}>{children}</p>;
+  return <p style={{ margin: 0, color, fontSize: 13 }}>{children}</p>
 }
 
 const inputStyle: CSSProperties = {
@@ -97,7 +111,7 @@ const inputStyle: CSSProperties = {
   fontFamily: "monospace",
   width: "100%",
   boxSizing: "border-box",
-};
+}
 
 function buttonStyle(disabled: boolean): CSSProperties {
   return {
@@ -110,5 +124,5 @@ function buttonStyle(disabled: boolean): CSSProperties {
     opacity: disabled ? 0.5 : 1,
     background: "#7dd3fc",
     color: "#0f0f0f",
-  };
+  }
 }
