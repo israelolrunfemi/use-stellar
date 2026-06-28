@@ -41,7 +41,7 @@ export function parseHorizonBalance(raw: Horizon.HorizonApi.BalanceLine): Balanc
       asset: "liquidity_pool_shares",
       balance: lp.balance,
       liquidityPoolId: lp.liquidity_pool_id,
-    } as Balance
+    } as unknown as Balance
   }
 
   const issued = raw as Horizon.HorizonApi.BalanceLineAsset
