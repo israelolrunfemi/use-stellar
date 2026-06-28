@@ -929,9 +929,10 @@ export function ContractReader() {
 
 ```ts
 import type {
-  StellarNetwork,     // "testnet" | "mainnet"
-  NetworkConfig,      // { network, horizonUrl, sorobanUrl }
-  WalletType,         // "freighter" | "albedo" | "rabet"
+  StellarNetwork,       // "testnet" | "mainnet"
+  NetworkConfig,        // { network, horizonUrl, sorobanUrl }
+  CustomNetworkConfig,  // { horizonUrl, sorobanUrl } — for StellarProvider networkConfig prop
+  WalletType,           // "freighter" | "albedo" | "rabet"
   WalletState,        // { connected, address, network, wallet, connecting, error }
   Asset,              // "XLM" | { code: string, issuer: string }
   NativeAsset,        // "XLM"
