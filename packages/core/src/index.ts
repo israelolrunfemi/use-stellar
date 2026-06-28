@@ -1,4 +1,6 @@
 // ── Provider ───────────────────────────────────────────────────────────────
+export { StellarProvider }      from "./context/StellarProvider";
+export type { StellarProviderProps } from "./context/StellarProvider";
 export { StellarProvider } from "./context/StellarProvider"
 
 // ── Hooks ──────────────────────────────────────────────────────────────────
@@ -16,6 +18,7 @@ export { useClaimableBalance } from "./hooks/useClaimableBalance"
 export type {
   StellarNetwork,
   NetworkConfig,
+  CustomNetworkConfig,
   WalletType,
   WalletState,
   Asset,

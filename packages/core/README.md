@@ -229,6 +229,7 @@ Every hook in `use-stellar` reads its configuration from `StellarProvider`. You 
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `network` | `"testnet"` \| `"mainnet"` | `"testnet"` | The Stellar network to connect to |
+| `networkConfig` | `{ horizonUrl: string; sorobanUrl: string }` | — | Optional custom Horizon and Soroban RPC URLs. When omitted, the built-in SDF public endpoints are used. Both fields are required if this prop is provided. |
 | `children` | `ReactNode` | — | Your application |
 
 ### Example
@@ -928,9 +929,10 @@ export function ContractReader() {
 
 ```ts
 import type {
-  StellarNetwork,     // "testnet" | "mainnet"
-  NetworkConfig,      // { network, horizonUrl, sorobanUrl }
-  WalletType,         // "freighter" | "albedo" | "rabet"
+  StellarNetwork,       // "testnet" | "mainnet"
+  NetworkConfig,        // { network, horizonUrl, sorobanUrl }
+  CustomNetworkConfig,  // { horizonUrl, sorobanUrl } — for StellarProvider networkConfig prop
+  WalletType,           // "freighter" | "albedo" | "rabet"
   WalletState,        // { connected, address, network, wallet, connecting, error }
   Asset,              // "XLM" | { code: string, issuer: string }
   NativeAsset,        // "XLM"
@@ -971,23 +973,69 @@ Pass the `network` prop to `StellarProvider`:
 ```tsx
 // testnet (development)
 <StellarProvider network="testnet">
+  <App />
+</StellarProvider>
 
 // mainnet (production)
 <StellarProvider network="mainnet">
+  <App />
+</StellarProvider>
+```
+
+### Custom endpoints
+
+By default, `StellarProvider` uses the public SDF endpoints. For production apps that need private infrastructure, rate-limit avoidance, or a custom RPC node, pass a `networkConfig` override:
+
+```tsx
+import { StellarProvider } from "use-stellar";
+
+// Custom mainnet node
+<StellarProvider
+  network="mainnet"
+  networkConfig={{
+    horizonUrl: "https://horizon.my-node.com",
+    sorobanUrl: "https://rpc.my-node.com",
+  }}
+>
+  <App />
+</StellarProvider>
+```
+
+Both `horizonUrl` and `sorobanUrl` are required when `networkConfig` is provided. Omitting either will throw a descriptive error at startup:
+
+```
+use-stellar: Invalid networkConfig — `horizonUrl` is required when providing
+a custom networkConfig. Example: { horizonUrl: "https://...", sorobanUrl: "..." }
+```
+
+Custom endpoints also work with `"testnet"`, which is useful for private test networks or local Stellar nodes:
+
+```tsx
+<StellarProvider
+  network="testnet"
+  networkConfig={{
+    horizonUrl: "http://localhost:8000",
+    sorobanUrl: "http://localhost:8001",
+  }}
+>
+  <App />
+</StellarProvider>
 ```
 
 ### Reading network config in a hook
 
-All hooks read the network from `StellarProvider` automatically. You can also access the full config directly:
+All hooks read the effective network config from `StellarProvider` automatically — including any custom URLs. You can also access it directly:
 
 ```tsx
 import { useNetwork } from "use-stellar";
 
-const { networkConfig } = useNetwork();
+const { network, networkConfig, isTestnet, isMainnet } = useNetwork();
 
-// networkConfig.horizonUrl   — Horizon REST API endpoint
-// networkConfig.sorobanUrl   — Soroban RPC endpoint
+// networkConfig.horizonUrl   — effective Horizon REST API endpoint
+// networkConfig.sorobanUrl   — effective Soroban RPC endpoint
 // networkConfig.network      — "testnet" | "mainnet"
+// isTestnet                  — boolean shorthand
+// isMainnet                  — boolean shorthand
 ```
 
 ### Default endpoints

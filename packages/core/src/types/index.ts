@@ -15,6 +15,24 @@ export interface NetworkConfig {
 }
 
 /**
+ * Partial override for custom Horizon / Soroban RPC endpoints.
+ * Pass this to `StellarProvider` to bypass the built-in SDF defaults.
+ *
+ * @example
+ * // Private infrastructure or rate-limit avoidance:
+ * <StellarProvider
+ *   network="mainnet"
+ *   networkConfig={{
+ *     horizonUrl: "https://horizon.my-node.com",
+ *     sorobanUrl: "https://rpc.my-node.com",
+ *   }}
+ * />
+ */
+export interface CustomNetworkConfig {
+  horizonUrl: string;
+  sorobanUrl: string;
+}
+
  * Pre-defined configurations for supported Stellar networks.
  */
 export const NETWORK_CONFIGS: Record<StellarNetwork, NetworkConfig> = {
