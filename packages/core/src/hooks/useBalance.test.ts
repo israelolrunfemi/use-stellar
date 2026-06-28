@@ -243,4 +243,61 @@ describe("useBalance", () => {
       expect(result.current.error).toBe("Network Error")
     })
   })
+
+  describe("stale responses and unmounting", () => {
+    it("should not set state if unmounted before fetch resolves", async () => {
+      let resolveFetch: (value: any) => void = () => {}
+      const promise = new Promise((resolve) => {
+        resolveFetch = resolve
+      })
+      mockServer.loadAccount.mockReturnValue(promise)
+
+      const { result, unmount } = renderHook(() => useBalance({ address: TEST_ADDRESS }), { wrapper })
+
+      expect(result.current.loading).toBe(true)
+
+      unmount()
+
+      await act(async () => {
+        resolveFetch(mockAccountData)
+      })
+    })
+
+    it("should not overwrite newer results with older stale responses", async () => {
+      let resolveFirst: (value: any) => void = () => {}
+      let resolveSecond: (value: any) => void = () => {}
+
+      const promise1 = new Promise((resolve) => { resolveFirst = resolve })
+      const promise2 = new Promise((resolve) => { resolveSecond = resolve })
+
+      mockServer.loadAccount
+        .mockReturnValueOnce(promise1)
+        .mockReturnValueOnce(promise2)
+
+      const { result, rerender } = renderHook(({ address }) => useBalance({ address }), {
+        initialProps: { address: TEST_ADDRESS },
+        wrapper,
+      })
+
+      expect(result.current.loading).toBe(true)
+
+      const NEW_ADDRESS = "GBAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
+      const secondMockData = { ...mockAccountData, id: NEW_ADDRESS, balances: [{ asset_type: "native", balance: "50.0000000" }] }
+
+      rerender({ address: NEW_ADDRESS })
+
+      await act(async () => {
+        resolveSecond(secondMockData)
+      })
+
+      expect(result.current.balance).toBe("50.0000000")
+      expect(result.current.loading).toBe(false)
+
+      await act(async () => {
+        resolveFirst(mockAccountData)
+      })
+
+      expect(result.current.balance).toBe("50.0000000")
+    })
+  })
 })

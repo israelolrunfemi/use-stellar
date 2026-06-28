@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, parseHorizonBalance } from "../utils"
 import type { Asset, Balance } from "../types"
@@ -41,9 +41,12 @@ export function useBalance({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const requestRef = useRef(0)
+
   const fetchBalances = useCallback(async () => {
     if (!resolvedAddress) return
 
+    const fetchId = ++requestRef.current
     setLoading(true)
     setError(null)
 
@@ -51,20 +54,30 @@ export function useBalance({
       const server = getHorizonServer(network)
       const account = await server.loadAccount(resolvedAddress)
       const parsed = account.balances.map(parseHorizonBalance)
+
+      if (fetchId !== requestRef.current) return
+
       setBalances(parsed)
     } catch (err) {
+      if (fetchId !== requestRef.current) return
       setError(err instanceof Error ? err.message : "Failed to fetch balance")
     } finally {
-      setLoading(false)
+      if (fetchId === requestRef.current) {
+        setLoading(false)
+      }
     }
   }, [resolvedAddress, network])
 
   useEffect(() => {
     fetchBalances()
 
-    if (watch) {
-      const interval = setInterval(fetchBalances, 10_000)
-      return () => clearInterval(interval)
+    const interval = watch ? setInterval(fetchBalances, 10_000) : null
+
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+      requestRef.current = -1
     }
   }, [fetchBalances, watch])
 
