@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import type { ContractCallOptions } from "../types"
 
@@ -31,15 +31,21 @@ export function useSorobanContract({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const requestRef = useRef(0)
+
   const callContract = useCallback(async () => {
+    const fetchId = ++requestRef.current
     setLoading(true)
     setError(null)
 
     try {
       if (!contractId || !method) {
+        if (fetchId !== requestRef.current) return
         setData(null)
         return
       }
+
+      if (fetchId !== requestRef.current) return
 
       setData({
         contractId,
@@ -48,14 +54,20 @@ export function useSorobanContract({
         note: "Simulation wiring tracked in issue #10",
       })
     } catch (err) {
+      if (fetchId !== requestRef.current) return
       setError(err instanceof Error ? err.message : "Contract call failed")
     } finally {
-      setLoading(false)
+      if (fetchId === requestRef.current) {
+        setLoading(false)
+      }
     }
   }, [contractId, method, networkConfig])
 
   useEffect(() => {
     callContract()
+    return () => {
+      requestRef.current = -1
+    }
   }, [callContract])
 
   return { data, loading, error, refetch: callContract }

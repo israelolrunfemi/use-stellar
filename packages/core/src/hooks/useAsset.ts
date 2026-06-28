@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
 
@@ -45,13 +45,18 @@ export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const requestRef = useRef(0)
+
   const fetchAsset = useCallback(async () => {
+    const fetchId = ++requestRef.current
     setLoading(true)
     setError(null)
 
     try {
       const server = getHorizonServer(network)
       const res = await server.assets().forCode(code).forIssuer(issuer).call()
+
+      if (fetchId !== requestRef.current) return
 
       const raw = res.records[0]
       if (!raw) throw new Error(`Asset ${code}:${issuer} not found`)
@@ -70,14 +75,20 @@ export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
         },
       })
     } catch (err) {
+      if (fetchId !== requestRef.current) return
       setError(err instanceof Error ? err.message : "Failed to fetch asset")
     } finally {
-      setLoading(false)
+      if (fetchId === requestRef.current) {
+        setLoading(false)
+      }
     }
   }, [code, issuer, network])
 
   useEffect(() => {
     fetchAsset()
+    return () => {
+      requestRef.current = -1
+    }
   }, [fetchAsset])
 
   return { asset, loading, error, refetch: fetchAsset }

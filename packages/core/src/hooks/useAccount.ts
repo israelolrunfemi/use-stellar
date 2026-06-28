@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, parseHorizonBalance } from "../utils"
 import type { AccountInfo } from "../types"
@@ -32,15 +32,20 @@ export function useAccount({ address }: UseAccountOptions = {}): UseAccountRetur
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const requestRef = useRef(0)
+
   async function fetchAccount() {
     if (!resolvedAddress) return
 
+    const fetchId = ++requestRef.current
     setLoading(true)
     setError(null)
 
     try {
       const server = getHorizonServer(network)
       const raw = await server.loadAccount(resolvedAddress)
+
+      if (fetchId !== requestRef.current) return
 
       const info: AccountInfo = {
         address: raw.id,
@@ -61,14 +66,20 @@ export function useAccount({ address }: UseAccountOptions = {}): UseAccountRetur
 
       setAccount(info)
     } catch (err) {
+      if (fetchId !== requestRef.current) return
       setError(err instanceof Error ? err.message : "Failed to fetch account")
     } finally {
-      setLoading(false)
+      if (fetchId === requestRef.current) {
+        setLoading(false)
+      }
     }
   }
 
   useEffect(() => {
     fetchAccount()
+    return () => {
+      requestRef.current = -1
+    }
   }, [resolvedAddress, network])
 
   return { account, loading, error, refetch: fetchAccount }
