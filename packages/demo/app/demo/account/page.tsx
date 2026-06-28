@@ -1,26 +1,21 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import type { CSSProperties } from "react";
-import {
-  formatAssetCode,
-  shortenAddress,
-  useAccount,
-  useWallet,
-} from "use-stellar";
-import { DemoCard } from "../../../components/DemoCard";
+import { useEffect, useState } from "react"
+import type { CSSProperties } from "react"
+import { formatAssetCode, shortenAddress, useAccount, useWallet } from "use-stellar"
+import { DemoCard } from "../../../components/DemoCard"
 
-type AccountBalance = NonNullable<ReturnType<typeof useAccount>["account"]>["balances"][number];
+type AccountBalance = NonNullable<ReturnType<typeof useAccount>["account"]>["balances"][number]
 
 export default function AccountDemo() {
-  const { address } = useWallet();
-  const [input, setInput] = useState("");
-  const inspectedAddress = input.trim() || address;
-  const { account, loading, error, refetch } = useAccount({ address: inspectedAddress });
+  const { address } = useWallet()
+  const [input, setInput] = useState("")
+  const inspectedAddress = input.trim() || address
+  const { account, loading, error, refetch } = useAccount({ address: inspectedAddress })
 
   useEffect(() => {
-    if (address && !input) setInput(address);
-  }, [address, input]);
+    if (address && !input) setInput(address)
+  }, [address, input])
 
   return (
     <DemoCard
@@ -38,11 +33,17 @@ export default function AccountDemo() {
           placeholder="Paste a G... address"
           style={inputStyle}
         />
-        <button onClick={refetch} disabled={!inspectedAddress || loading} style={buttonStyle(!inspectedAddress || loading)}>
+        <button
+          onClick={refetch}
+          disabled={!inspectedAddress || loading}
+          style={buttonStyle(!inspectedAddress || loading)}
+        >
           {loading ? "Loading..." : "Fetch account"}
         </button>
 
-        {!inspectedAddress && <Text color="#facc15">Connect a wallet or paste any testnet G... address.</Text>}
+        {!inspectedAddress && (
+          <Text color="#facc15">Connect a wallet or paste any testnet G... address.</Text>
+        )}
         {error && <Text color="#f87171">{error}</Text>}
 
         {account && (
@@ -63,7 +64,9 @@ export default function AccountDemo() {
             <section style={sectionStyle}>
               <Heading>Balances</Heading>
               {account.balances.length > 0 ? (
-                account.balances.map(balance => <BalanceRow key={balanceKey(balance)} balance={balance} />)
+                account.balances.map(balance => (
+                  <BalanceRow key={balanceKey(balance)} balance={balance} />
+                ))
               ) : (
                 <Text color="#666">No balances found.</Text>
               )}
@@ -75,11 +78,20 @@ export default function AccountDemo() {
                 account.signers.map(signer => (
                   <div
                     key={`${signer.key}:${signer.type}`}
-                    style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 10, fontSize: 13 }}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr auto auto",
+                      gap: 10,
+                      fontSize: 13,
+                    }}
                   >
-                    <span style={{ color: "#e0e0e0", fontFamily: "monospace" }}>{shortenAddress(signer.key)}</span>
+                    <span style={{ color: "#e0e0e0", fontFamily: "monospace" }}>
+                      {shortenAddress(signer.key)}
+                    </span>
                     <span style={{ color: "#666" }}>{signer.type}</span>
-                    <span style={{ color: "#4ade80", fontFamily: "monospace" }}>{signer.weight}</span>
+                    <span style={{ color: "#4ade80", fontFamily: "monospace" }}>
+                      {signer.weight}
+                    </span>
                   </div>
                 ))
               ) : (
@@ -90,55 +102,67 @@ export default function AccountDemo() {
         )}
       </div>
     </DemoCard>
-  );
+  )
 }
 
 function BalanceRow({ balance }: { balance: AccountBalance }) {
-  const assetLabel = formatAssetCode(balance.asset);
-  const issuer =
-    typeof balance.asset === "object" ? shortenAddress(balance.asset.issuer) : "native";
+  const assetLabel = formatAssetCode(balance.asset)
+  const issuer = typeof balance.asset === "object" ? shortenAddress(balance.asset.issuer) : "native"
 
   return (
     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 13 }}>
       <span style={{ color: "#e0e0e0", fontFamily: "monospace" }}>
         {assetLabel} <span style={{ color: "#666" }}>{issuer}</span>
       </span>
-      <span style={{ color: "#7dd3fc", fontFamily: "monospace", textAlign: "right" }}>{balance.balance}</span>
+      <span style={{ color: "#7dd3fc", fontFamily: "monospace", textAlign: "right" }}>
+        {balance.balance}
+      </span>
     </div>
-  );
+  )
 }
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 13 }}>
       <span style={{ color: "#666", flexShrink: 0 }}>{label}</span>
-      <span style={{ color: "#e0e0e0", fontFamily: "monospace", textAlign: "right", wordBreak: "break-all" }}>
+      <span
+        style={{
+          color: "#e0e0e0",
+          fontFamily: "monospace",
+          textAlign: "right",
+          wordBreak: "break-all",
+        }}
+      >
         {value}
       </span>
     </div>
-  );
+  )
 }
 
 function Heading({ children }: { children: string }) {
-  return <p style={{ margin: "0 0 4px", color: "#7dd3fc", fontFamily: "monospace", fontSize: 13 }}>{children}</p>;
+  return (
+    <p style={{ margin: "0 0 4px", color: "#7dd3fc", fontFamily: "monospace", fontSize: 13 }}>
+      {children}
+    </p>
+  )
 }
 
 function Text({ children, color = "#e0e0e0" }: { children: string; color?: string }) {
-  return <p style={{ margin: 0, color, fontSize: 13 }}>{children}</p>;
+  return <p style={{ margin: 0, color, fontSize: 13 }}>{children}</p>
 }
 
 function balanceKey(balance: AccountBalance) {
-  if (balance.asset === "XLM") return "XLM";
-  return `${balance.asset.code}:${balance.asset.issuer}`;
+  if (balance.asset === "XLM") return "XLM"
+  return `${balance.asset.code}:${balance.asset.issuer}`
 }
 
-const labelStyle: CSSProperties = { color: "#666", fontSize: 13 };
+const labelStyle: CSSProperties = { color: "#666", fontSize: 13 }
 
 const sectionStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
   gap: 8,
-};
+}
 
 const inputStyle: CSSProperties = {
   background: "#111",
@@ -150,7 +174,7 @@ const inputStyle: CSSProperties = {
   fontFamily: "monospace",
   width: "100%",
   boxSizing: "border-box",
-};
+}
 
 function buttonStyle(disabled: boolean): CSSProperties {
   return {
@@ -163,5 +187,5 @@ function buttonStyle(disabled: boolean): CSSProperties {
     opacity: disabled ? 0.5 : 1,
     background: "#7dd3fc",
     color: "#0f0f0f",
-  };
+  }
 }

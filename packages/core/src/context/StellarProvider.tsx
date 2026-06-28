@@ -12,19 +12,23 @@ import type {
   WalletState,
 } from "../types";
 import { NETWORK_CONFIGS } from "../types";
+import * as React from "react"
+import { createContext, useContext, useState, type ReactNode } from "react"
+import type { StellarContextValue, StellarNetwork, WalletState } from "../types"
+import { NETWORK_CONFIGS } from "../types"
 
 // ── Default wallet state ───────────────────────────────────────────────────
 const DEFAULT_WALLET: WalletState = {
-  connected:  false,
-  address:    null,
-  network:    null,
-  wallet:     null,
+  connected: false,
+  address: null,
+  network: null,
+  wallet: null,
   connecting: false,
-  error:      null,
-};
+  error: null,
+}
 
 // ── Context ────────────────────────────────────────────────────────────────
-const StellarContext = createContext<StellarContextValue | null>(null);
+const StellarContext = createContext<StellarContextValue | null>(null)
 
 // ── Validation ─────────────────────────────────────────────────────────────
 /**
@@ -101,29 +105,31 @@ export function StellarProvider({
   const resolvedNetworkConfig = resolveNetworkConfig(network, networkConfigOverride);
 
   const [wallet, setWallet] = useState<WalletState>(DEFAULT_WALLET);
+  network?: StellarNetwork
+  children: ReactNode
+}
+
+export function StellarProvider({ network = "testnet", children }: StellarProviderProps) {
+  const [wallet, setWallet] = useState<WalletState>(DEFAULT_WALLET)
 
   const value: StellarContextValue = {
     network,
     networkConfig: resolvedNetworkConfig,
     wallet,
     setWallet,
-  };
+  }
 
-  return (
-    <StellarContext.Provider value={value}>
-      {children}
-    </StellarContext.Provider>
-  );
+  return <StellarContext.Provider value={value}>{children}</StellarContext.Provider>
 }
 
 // ── Hook to consume context ────────────────────────────────────────────────
 export function useStellarContext(): StellarContextValue {
-  const ctx = useContext(StellarContext);
+  const ctx = useContext(StellarContext)
   if (!ctx) {
     throw new Error(
       "use-stellar: No StellarProvider found. " +
-      "Wrap your app in <StellarProvider> before using any use-stellar hooks."
-    );
+        "Wrap your app in <StellarProvider> before using any use-stellar hooks."
+    )
   }
-  return ctx;
+  return ctx
 }

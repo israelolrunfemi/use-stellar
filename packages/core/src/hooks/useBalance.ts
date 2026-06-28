@@ -1,70 +1,82 @@
-import { useState, useEffect, useCallback } from "react";
-import { useStellarContext }   from "../context/StellarProvider";
-import { getHorizonServer, parseHorizonBalance } from "../utils";
-import type { Asset, Balance } from "../types";
+import { useState, useEffect, useCallback } from "react"
+import { useStellarContext } from "../context/StellarProvider"
+import { getHorizonServer, parseHorizonBalance } from "../utils"
+import type { Asset, Balance } from "../types"
 
 export interface UseBalanceOptions {
-  address?: string | null;   // defaults to connected wallet address
-  asset?:   Asset;           // defaults to XLM
-  watch?:   boolean;         // re-fetch every 10s
+  address?: string | null // defaults to connected wallet address
+  asset?: Asset // defaults to XLM
+  watch?: boolean // re-fetch every 10s
 }
 
 export interface UseBalanceReturn {
-  balance:   string | null;
-  balances:  Balance[];
-  loading:   boolean;
-  error:     string | null;
-  refetch:   () => void;
+  balance: string | null
+  balances: Balance[]
+  loading: boolean
+  error: string | null
+  refetch: () => void
 }
 
+/**
+ * Fetches the XLM or asset balance for the connected wallet or any Stellar address.
+ *
+ * @param options - Configuration options
+ * @param options.address - The Stellar address to fetch balances for. Defaults to the connected wallet.
+ * @param options.asset - The asset to return in `balance`. Defaults to XLM.
+ * @param options.watch - When true, re-fetches every 10 seconds.
+ * @returns `{ balance, balances, loading, error, refetch }`
+ *
+ * @example
+ * const { balance, loading } = useBalance({ asset: "XLM", watch: true })
+ */
 export function useBalance({
   address,
   asset = "XLM",
   watch = false,
 }: UseBalanceOptions = {}): UseBalanceReturn {
-  const { network, wallet }      = useStellarContext();
-  const resolvedAddress          = address ?? wallet.address;
+  const { network, wallet } = useStellarContext()
+  const resolvedAddress = address ?? wallet.address
 
-  const [balances, setBalances]  = useState<Balance[]>([]);
-  const [loading,  setLoading]   = useState(false);
-  const [error,    setError]     = useState<string | null>(null);
+  const [balances, setBalances] = useState<Balance[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchBalances = useCallback(async () => {
-    if (!resolvedAddress) return;
+    if (!resolvedAddress) return
 
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
 
     try {
-      const server  = getHorizonServer(network);
-      const account = await server.loadAccount(resolvedAddress);
-      const parsed  = account.balances.map(parseHorizonBalance);
-      setBalances(parsed);
+      const server = getHorizonServer(network)
+      const account = await server.loadAccount(resolvedAddress)
+      const parsed = account.balances.map(parseHorizonBalance)
+      setBalances(parsed)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch balance");
+      setError(err instanceof Error ? err.message : "Failed to fetch balance")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [resolvedAddress, network]);
+  }, [resolvedAddress, network])
 
   useEffect(() => {
-    fetchBalances();
+    fetchBalances()
 
     if (watch) {
-      const interval = setInterval(fetchBalances, 10_000);
-      return () => clearInterval(interval);
+      const interval = setInterval(fetchBalances, 10_000)
+      return () => clearInterval(interval)
     }
-  }, [fetchBalances, watch]);
+  }, [fetchBalances, watch])
 
   // Find the specific asset balance
   const match = balances.find(b => {
-    if (asset === "XLM") return b.asset === "XLM";
+    if (asset === "XLM") return b.asset === "XLM"
     if (typeof asset === "object" && typeof b.asset === "object") {
-      return b.asset.code === asset.code && b.asset.issuer === asset.issuer;
+      return b.asset.code === asset.code && b.asset.issuer === asset.issuer
     }
-    return false;
-  });
-  const balance    = match?.balance ?? null;
+    return false
+  })
+  const balance = match?.balance ?? null
 
   return {
     balance,
@@ -72,5 +84,5 @@ export function useBalance({
     loading,
     error,
     refetch: fetchBalances,
-  };
+  }
 }

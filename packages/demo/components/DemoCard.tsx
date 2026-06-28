@@ -1,10 +1,10 @@
-import Link from "next/link";
+import Link from "next/link"
 
 interface Props {
-  hook:        string;
-  description: string;
-  code:        string;
-  children:    React.ReactNode;
+  hook: string
+  description: string
+  code: string
+  children: React.ReactNode
 }
 
 export function DemoCard({ hook, description, code, children }: Props) {
@@ -14,10 +14,15 @@ export function DemoCard({ hook, description, code, children }: Props) {
         ← All hooks
       </Link>
 
-      <h1 style={{
-        fontFamily: "monospace", fontSize: 28, fontWeight: 700,
-        color: "#7dd3fc", margin: "20px 0 8px",
-      }}>
+      <h1
+        style={{
+          fontFamily: "monospace",
+          fontSize: 28,
+          fontWeight: 700,
+          color: "#7dd3fc",
+          margin: "20px 0 8px",
+        }}
+      >
         {hook}
       </h1>
 
@@ -28,32 +33,59 @@ export function DemoCard({ hook, description, code, children }: Props) {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         {/* Code */}
         <div>
-          <p style={{ fontSize: 12, color: "#555", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+          <p
+            style={{
+              fontSize: 12,
+              color: "#555",
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 1,
+            }}
+          >
             Usage
           </p>
-          <pre style={{
-            background: "#1a1a1a", borderRadius: 10,
-            padding: "16px 18px", fontSize: 13,
-            lineHeight: 1.7, overflowX: "auto", color: "#e0e0e0",
-            margin: 0, whiteSpace: "pre-wrap",
-          }}>
+          <pre
+            style={{
+              background: "#1a1a1a",
+              borderRadius: 10,
+              padding: "16px 18px",
+              fontSize: 13,
+              lineHeight: 1.7,
+              overflowX: "auto",
+              color: "#e0e0e0",
+              margin: 0,
+              whiteSpace: "pre-wrap",
+            }}
+          >
             {code}
           </pre>
         </div>
 
         {/* Live output */}
         <div>
-          <p style={{ fontSize: 12, color: "#555", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+          <p
+            style={{
+              fontSize: 12,
+              color: "#555",
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 1,
+            }}
+          >
             Live output
           </p>
-          <div style={{
-            background: "#1a1a1a", borderRadius: 10,
-            padding: "16px 18px", minHeight: 120,
-          }}>
+          <div
+            style={{
+              background: "#1a1a1a",
+              borderRadius: 10,
+              padding: "16px 18px",
+              minHeight: 120,
+            }}
+          >
             {children}
           </div>
         </div>
       </div>
     </main>
-  );
+  )
 }

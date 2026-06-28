@@ -32,10 +32,10 @@
     "build": "tsup",
     "test": "jest --testPathIgnorePatterns=integration",
     "test:integration": "jest --testPathPattern=integration",
-    "typecheck": "tsc --noEmit",
-    "test": "jest",
     "test:package": "node scripts/smoke-test.js",
-    "dev": "tsup --watch"
+    "typecheck": "tsc --noEmit",
+    "dev": "tsup --watch",
+    "size": "size-limit"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
@@ -46,6 +46,7 @@
     "@stellar/stellar-sdk": "^12.0.0"
   },
   "devDependencies": {
+    "@size-limit/preset-small-lib": "^12.1.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/react-hooks": "^8.0.0",
@@ -56,20 +57,10 @@
     "jest-environment-jsdom": "^29.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "size-limit": "^12.1.0",
     "ts-jest": "^29.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.4.0"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "jsdom",
-    "testMatch": [
-      "**/*.test.ts",
-      "**/*.test.tsx"
-    ],
-    "setupFilesAfterEnv": [
-      "@testing-library/jest-dom"
-    ]
   },
   "keywords": [
     "stellar",
@@ -78,6 +69,7 @@
     "hooks",
     "blockchain",
     "web3",
+    "crypto",
     "xlm",
     "usdc"
   ],
