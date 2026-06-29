@@ -1,0 +1,17 @@
+echo "Running pre-push checks..."
+
+echo "→ Building SDK..."
+pnpm --filter use-stellar build
+if [ $? -ne 0 ]; then
+  echo "SDK build failed. Push aborted."
+  exit 1
+fi
+
+echo "→ Running tests..."
+pnpm --filter use-stellar test
+if [ $? -ne 0 ]; then
+  echo "Tests failed. Push aborted."
+  exit 1
+fi
+
+echo "All checks passed. Pushing..."
