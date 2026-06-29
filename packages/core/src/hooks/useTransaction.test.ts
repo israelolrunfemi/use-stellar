@@ -166,7 +166,7 @@ describe("useTransaction", () => {
       })
 
       expect(result.current.transaction).toBe(null)
-      expect(result.current.error).toBe("Network Error")
+      expect(result.current.error?.code).toBe("NETWORK_ERROR")
     })
 
     it("should handle unknown errors correctly", async () => {
@@ -180,7 +180,8 @@ describe("useTransaction", () => {
       })
 
       expect(result.current.transaction).toBe(null)
-      expect(result.current.error).toBe("Unknown server error")
+      expect(result.current.error?.code).toBe("UNKNOWN")
+      expect(result.current.error?.message).toBe("Unknown server error")
     })
   })
 
@@ -211,7 +212,7 @@ describe("useTransaction", () => {
       })
 
       expect(result.current.transaction?.status).toBe("success")
-      expect(result.current.error).toBe("Network Error")
+      expect(result.current.error?.code).toBe("NETWORK_ERROR")
     })
   })
 })

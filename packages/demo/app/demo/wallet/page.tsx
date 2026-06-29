@@ -30,7 +30,7 @@ disconnect()`}
         ) : (
           <>
             <Row label="Status" value="Not connected" color="#f87171" />
-            {error && <Row label="Error" value={error} color="#f87171" />}
+            {error && <Row label="Error" value={error.message} color="#f87171" />}
             <button
               onClick={() => connect("freighter")}
               disabled={connecting}

@@ -1,6 +1,7 @@
 import { useCallback } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { isBrowser } from "../utils"
+import { createStellarError, toStellarError } from "../errors"
 import type { WalletState, WalletType } from "../types"
 
 export interface UseWalletReturn extends WalletState {
@@ -25,9 +26,11 @@ export function useWallet(): UseWalletReturn {
       if (!isBrowser()) {
         setWallet(prev => ({
           ...prev,
-          error:
+          error: createStellarError(
+            "VALIDATION_ERROR",
             "Wallet connection is only available in the browser. " +
-            'Move your component to a "use client" boundary in Next.js / Remix.',
+              'Move your component to a "use client" boundary in Next.js / Remix.'
+          ),
         }))
         return
       }
@@ -40,7 +43,8 @@ export function useWallet(): UseWalletReturn {
         if (walletType === "freighter") {
           address = await connectFreighter(network)
         } else {
-          throw new Error(
+          throw createStellarError(
+            "VALIDATION_ERROR",
             `Wallet "${walletType}" not yet supported. ` +
               `Contributions welcome — see GitHub issues.`
           )
@@ -58,7 +62,7 @@ export function useWallet(): UseWalletReturn {
         setWallet(prev => ({
           ...prev,
           connecting: false,
-          error: err instanceof Error ? err.message : "Failed to connect wallet",
+          error: toStellarError(err),
         }))
       }
     },
@@ -91,18 +95,23 @@ async function connectFreighter(network: string): Promise<string> {
 
   const connection = await isConnected()
   if (connection.error || !connection.isConnected) {
-    throw new Error(
-      "Freighter wallet not found. " + "Install the Freighter browser extension and try again."
+    throw createStellarError(
+      "WALLET_NOT_INSTALLED",
+      "Freighter wallet not found. Install the Freighter browser extension and try again."
     )
   }
 
   const access = await requestAccess()
   if (access.error) {
+    // Let toStellarError classify (e.g. "User declined access" → rejected).
     throw new Error(access.error.message)
   }
 
   if (!access.address) {
-    throw new Error("Freighter did not return a wallet address.")
+    throw createStellarError(
+      "WALLET_REQUEST_REJECTED",
+      "Freighter did not return a wallet address."
+    )
   }
 
   const networkDetails = await getNetworkDetails()
@@ -117,7 +126,10 @@ async function connectFreighter(network: string): Promise<string> {
       : "Test SDF Network ; September 2015"
 
   if (networkDetails.networkPassphrase !== expectedPassphrase) {
-    throw new Error(`Wrong network. Switch Freighter to ${network} and try again.`)
+    throw createStellarError(
+      "WRONG_NETWORK",
+      `Wrong network. Switch Freighter to ${network} and try again.`
+    )
   }
 
   return access.address

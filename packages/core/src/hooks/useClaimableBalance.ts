@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
-import type { ClaimableBalance } from "../types"
+import { toStellarError } from "../errors"
+import type { ClaimableBalance, StellarError } from "../types"
 
 export interface UseClaimableBalanceOptions {
   address?: string | null // defaults to connected wallet address
@@ -10,7 +11,7 @@ export interface UseClaimableBalanceOptions {
 export interface UseClaimableBalanceReturn {
   balances: ClaimableBalance[]
   loading: boolean
-  error: string | null
+  error: StellarError | null
   refetch: () => void
 }
 
@@ -22,7 +23,7 @@ export function useClaimableBalance({
 
   const [balances, setBalances] = useState<ClaimableBalance[]>([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
 
   const requestRef = useRef(0)
 
@@ -56,11 +57,12 @@ export function useClaimableBalance({
       setBalances(parsed)
     } catch (err) {
       if (fetchId !== requestRef.current) return
+      const stellarError = toStellarError(err)
       // A 404 means the account has no claimable balances — treat as empty
-      if (err instanceof Error && err.message.includes("404")) {
+      if (stellarError.code === "ACCOUNT_NOT_FOUND") {
         setBalances([])
       } else {
-        setError(err instanceof Error ? err.message : "Failed to fetch claimable balances")
+        setError(stellarError)
       }
     } finally {
       if (fetchId === requestRef.current) {

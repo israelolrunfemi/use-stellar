@@ -80,7 +80,7 @@ export function WalletConnect() {
   return (
     <div>
       <button onClick={() => connect("freighter")}>Connect Freighter</button>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p style={{ color: "red" }}>{error.message}</p>}
     </div>
   );
 }
@@ -99,7 +99,7 @@ export function AccountBalance() {
   });
 
   if (loading) return <p>Loading balance...</p>;
-  if (error) return <p style={{ color: "red" }}>Error: {error}</p>;
+  if (error) return <p style={{ color: "red" }}>Error: {error.message}</p>;
 
   return <p>XLM Balance: <strong>{balance ?? "0"}</strong> XLM</p>;
 }
@@ -140,7 +140,7 @@ export function SendPayment() {
       {result?.status === "success" && (
         <p style={{ color: "green" }}>Success! Hash: <code>{result.hash}</code></p>
       )}
-      {error && <p style={{ color: "red" }}>Payment failed: {error}</p>}
+      {error && <p style={{ color: "red" }}>Payment failed: {error.message}</p>}
     </div>
   );
 }
@@ -192,6 +192,40 @@ Here are solutions to common integration and runtime errors:
 
 ---
 
+## Error handling
+
+Every hook exposes `error` as a typed `StellarError | null` rather than a raw
+string. A `StellarError` is a real `Error` subclass with two extra fields:
+
+- `code` — a stable, machine-readable [`StellarErrorCode`](packages/core/src/errors/codes.ts) (e.g. `NO_TRUSTLINE`, `INSUFFICIENT_BALANCE`, `WALLET_REQUEST_REJECTED`, `RATE_LIMITED`, `ACCOUNT_NOT_FOUND`, `NETWORK_ERROR`, `UNKNOWN`).
+- `message` — a human-readable string you can render directly.
+
+```tsx
+import { useSendPayment } from "use-stellar";
+
+function Send() {
+  const { send, error } = useSendPayment();
+
+  // Render the message...
+  if (error) return <p>{error.message}</p>;
+
+  // ...or branch on the stable code.
+  // if (error?.code === "NO_TRUSTLINE") { /* prompt to add a trustline */ }
+}
+```
+
+Any thrown value can be normalised with the shared helpers, which are also
+exported for advanced use:
+
+```ts
+import { toStellarError, createStellarError } from "use-stellar";
+
+const stellarError = toStellarError(unknownThrownValue); // → StellarError
+throw createStellarError("WALLET_NOT_CONNECTED"); // build one directly
+```
+
+---
+
 ## Examples
 
 ### Check a balance
@@ -207,7 +241,7 @@ function Balance() {
   });
 
   if (loading) return <p>Loading...</p>;
-  if (error)   return <p>Error: {error}</p>;
+  if (error)   return <p>Error: {error.message}</p>;
   return <p>{balance} XLM</p>;
 }
 ```

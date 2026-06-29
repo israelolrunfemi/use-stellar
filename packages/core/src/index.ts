@@ -12,6 +12,18 @@ export { useAsset } from "./hooks/useAsset"
 export { useSorobanContract } from "./hooks/useSorobanContract"
 export { useClaimableBalance } from "./hooks/useClaimableBalance"
 
+// ── Errors ─────────────────────────────────────────────────────────────────
+export {
+  StellarError,
+  createStellarError,
+  toStellarError,
+  isStellarError,
+  isStellarErrorCode,
+  STELLAR_ERROR_CODES,
+  DEFAULT_ERROR_MESSAGES,
+} from "./errors"
+export type { StellarErrorCode, StellarErrorOptions } from "./errors"
+
 // ── Types ──────────────────────────────────────────────────────────────────
 export type {
   StellarNetwork,

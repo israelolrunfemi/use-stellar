@@ -68,7 +68,7 @@ export default function SorobanDemo() {
           {loading ? "Calling..." : "Call contract"}
         </button>
 
-        {error && <Text color="#f87171">{error}</Text>}
+        {error && <Text color="#f87171">{error.message}</Text>}
         {data !== null && (
           <pre
             style={{

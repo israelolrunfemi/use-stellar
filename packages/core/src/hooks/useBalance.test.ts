@@ -195,7 +195,7 @@ describe("useBalance", () => {
 
       expect(result.current.balance).toBe(null)
       expect(result.current.balances).toEqual([])
-      expect(result.current.error).toBe("Request failed with status code 404")
+      expect(result.current.error?.code).toBe("ACCOUNT_NOT_FOUND")
     })
 
     it("should handle unexpected SDK errors", async () => {
@@ -210,7 +210,7 @@ describe("useBalance", () => {
 
       expect(result.current.balance).toBe(null)
       expect(result.current.balances).toEqual([])
-      expect(result.current.error).toBe("Network Error")
+      expect(result.current.error?.code).toBe("NETWORK_ERROR")
     })
   })
 
@@ -240,19 +240,21 @@ describe("useBalance", () => {
         expect(result.current.loading).toBe(false)
       })
 
-      expect(result.current.error).toBe("Network Error")
+      expect(result.current.error?.code).toBe("NETWORK_ERROR")
     })
   })
 
   describe("stale responses and unmounting", () => {
     it("should not set state if unmounted before fetch resolves", async () => {
-      let resolveFetch: (value: any) => void = () => {}
-      const promise = new Promise((resolve) => {
+      let resolveFetch: (value: unknown) => void = () => {}
+      const promise = new Promise(resolve => {
         resolveFetch = resolve
       })
       mockServer.loadAccount.mockReturnValue(promise)
 
-      const { result, unmount } = renderHook(() => useBalance({ address: TEST_ADDRESS }), { wrapper })
+      const { result, unmount } = renderHook(() => useBalance({ address: TEST_ADDRESS }), {
+        wrapper,
+      })
 
       expect(result.current.loading).toBe(true)
 
@@ -264,15 +266,17 @@ describe("useBalance", () => {
     })
 
     it("should not overwrite newer results with older stale responses", async () => {
-      let resolveFirst: (value: any) => void = () => {}
-      let resolveSecond: (value: any) => void = () => {}
+      let resolveFirst: (value: unknown) => void = () => {}
+      let resolveSecond: (value: unknown) => void = () => {}
 
-      const promise1 = new Promise((resolve) => { resolveFirst = resolve })
-      const promise2 = new Promise((resolve) => { resolveSecond = resolve })
+      const promise1 = new Promise(resolve => {
+        resolveFirst = resolve
+      })
+      const promise2 = new Promise(resolve => {
+        resolveSecond = resolve
+      })
 
-      mockServer.loadAccount
-        .mockReturnValueOnce(promise1)
-        .mockReturnValueOnce(promise2)
+      mockServer.loadAccount.mockReturnValueOnce(promise1).mockReturnValueOnce(promise2)
 
       const { result, rerender } = renderHook(({ address }) => useBalance({ address }), {
         initialProps: { address: TEST_ADDRESS },
@@ -282,7 +286,11 @@ describe("useBalance", () => {
       expect(result.current.loading).toBe(true)
 
       const NEW_ADDRESS = "GBAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
-      const secondMockData = { ...mockAccountData, id: NEW_ADDRESS, balances: [{ asset_type: "native", balance: "50.0000000" }] }
+      const secondMockData = {
+        ...mockAccountData,
+        id: NEW_ADDRESS,
+        balances: [{ asset_type: "native", balance: "50.0000000" }],
+      }
 
       rerender({ address: NEW_ADDRESS })
 
