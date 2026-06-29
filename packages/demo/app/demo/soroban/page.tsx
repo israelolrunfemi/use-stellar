@@ -29,10 +29,6 @@ export default function SorobanDemo() {
 })`}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {!wallet.connected && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <Text color="#94a3b8">Connect Freighter on testnet to simulate a read-only Soroban call.</Text>
-            <button onClick={() => wallet.connect("freighter")} disabled={wallet.connecting} style={buttonStyle(wallet.connecting)}>
         <Text color="#facc15">
           This hook is in active development. Write calls requiring signing are tracked in GitHub
           issue #8.
