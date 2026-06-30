@@ -1,4 +1,7 @@
 import type { Dispatch, SetStateAction } from "react"
+import type { StellarError } from "../errors"
+
+export type { StellarError, StellarErrorCode } from "../errors"
 
 /**
  * Represents the Stellar network environment.
@@ -30,6 +33,7 @@ export const NETWORK_CONFIGS: Record<StellarNetwork, NetworkConfig> = {
   },
 }
 
+export type WalletType = "freighter" | "lobstr" | "albedo" | "rabet";
 /**
  * Supported wallet providers.
  */
@@ -39,12 +43,20 @@ export type WalletType = "freighter" | "albedo" | "rabet"
  * The current state of the wallet connection.
  */
 export interface WalletState {
+  connected: boolean;
+  address: string | null;
+  network: StellarNetwork | null;
+  wallet: WalletType | null;
+  connecting: boolean;
+  error: string | null;
+  walletNetwork: StellarNetwork | null; // Actual network from wallet extension
   connected: boolean
   address: string | null
   network: StellarNetwork | null
   wallet: WalletType | null
+  walletName: string | null
   connecting: boolean
-  error: string | null
+  error: StellarError | null
 }
 
 /**
@@ -58,6 +70,11 @@ export type NativeAsset = "XLM"
 export interface IssuedAsset {
   code: string
   issuer: string
+}
+
+export interface LiquidityPoolAsset {
+  asset: "liquidity_pool_shares"
+  liquidityPoolId: string
 }
 
 /**
@@ -76,13 +93,24 @@ export type Asset = NativeAsset | IssuedAsset
 /**
  * Represents a balance entry for an account.
  */
-export interface Balance {
-  asset: Asset
-  balance: string
-  limit?: string
-  buying?: string
-  selling?: string
-}
+export type Balance =
+  | {
+      asset: "XLM"
+      balance: string
+    }
+  | {
+      asset: {
+        code: string
+        issuer: string
+      }
+      balance: string
+      limit: string
+    }
+  | {
+      asset: "liquidity_pool_shares"
+      balance: string
+      liquidityPoolId: string
+    }
 
 /**
  * Detailed account information from the Stellar network.
@@ -148,6 +176,19 @@ export interface ContractCallOptions {
   args?: unknown[]
 }
 
+export interface ClaimableBalanceClaimant {
+  destination: string
+  predicate: object
+}
+
+export interface ClaimableBalance {
+  id: string
+  asset: string
+  amount: string
+  claimants: ClaimableBalanceClaimant[]
+  sponsor?: string
+}
+
 /**
  * Context value provided by the StellarProvider.
  */
@@ -157,3 +198,34 @@ export interface StellarContextValue {
   wallet: WalletState
   setWallet: Dispatch<SetStateAction<WalletState>>
 }
+
+export interface NormalizedPayment {
+  id: string;
+  txHash: string;
+  type: string;
+  from: string;
+  to: string;
+  amount: string;
+  asset: Asset;
+  direction: "incoming" | "outgoing";
+  createdAt: string;
+}
+
+export interface UsePaymentsOptions {
+  address?: string | null;
+  limit?: number;
+  order?: "asc" | "desc";
+  cursor?: string;
+}
+
+export interface UsePaymentsReturn {
+  payments: NormalizedPayment[];
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+  fetchNext: () => Promise<void>;
+  fetchPrev: () => Promise<void>;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+

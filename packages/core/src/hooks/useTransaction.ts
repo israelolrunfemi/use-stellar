@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
-import type { TransactionResult, TransactionStatus } from "../types"
+import { toStellarError } from "../errors"
+import type { StellarError, TransactionResult, TransactionStatus } from "../types"
 
 export interface UseTransactionOptions {
   hash: string | null
@@ -11,7 +12,7 @@ export interface UseTransactionOptions {
 export interface UseTransactionReturn {
   transaction: TransactionResult | null
   loading: boolean
-  error: string | null
+  error: StellarError | null
   refetch: () => void
 }
 
@@ -34,8 +35,9 @@ export function useTransaction({
 
   const [transaction, setTransaction] = useState<TransactionResult | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
   const transactionRef = useRef<TransactionResult | null>(null)
+  const requestRef = useRef(0)
 
   transactionRef.current = transaction
 
@@ -47,12 +49,15 @@ export function useTransaction({
       return
     }
 
+    const fetchId = ++requestRef.current
     setLoading(true)
     setError(null)
 
     try {
       const server = getHorizonServer(network)
       const raw = await server.transactions().transaction(hash).call()
+
+      if (fetchId !== requestRef.current) return
 
       const status: TransactionStatus = raw.successful ? "success" : "failed"
 
@@ -65,28 +70,37 @@ export function useTransaction({
         envelope: raw.envelope_xdr,
       })
     } catch (err: unknown) {
+      if (fetchId !== requestRef.current) return
       // 404 means not found / still pending
       const is404 = (err as { response?: { status: number } })?.response?.status === 404
       if (is404) {
         setTransaction({ hash: hash!, status: watch ? "pending" : "not_found" })
       } else {
-        setError(err instanceof Error ? err.message : "Failed to fetch transaction")
+        setError(toStellarError(err))
       }
     } finally {
-      setLoading(false)
+      if (fetchId === requestRef.current) {
+        setLoading(false)
+      }
     }
   }, [hash, network, watch])
 
   useEffect(() => {
     fetchTransaction()
 
-    if (watch) {
-      const interval = setInterval(() => {
-        const status = transactionRef.current?.status
-        if (status === "success" || status === "failed") return
-        fetchTransaction()
-      }, 3000)
-      return () => clearInterval(interval)
+    const interval = watch
+      ? setInterval(() => {
+          const status = transactionRef.current?.status
+          if (status === "success" || status === "failed") return
+          fetchTransaction()
+        }, 3000)
+      : null
+
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+      requestRef.current = -1
     }
   }, [fetchTransaction, watch])
 

@@ -67,3 +67,6 @@ jobs:
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - run: pnpm test:package
+      - name: Check bundle size
+        run: pnpm --filter use-stellar size

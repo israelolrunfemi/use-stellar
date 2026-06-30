@@ -2,6 +2,12 @@ import { Horizon } from "@stellar/stellar-sdk"
 import type { Asset, Balance, NetworkConfig, StellarNetwork } from "../types"
 import { NETWORK_CONFIGS } from "../types"
 
+// ── Environment helpers ───────────────────────────────────────────────────
+/** Returns `true` only when running in a browser (not Node / SSR). */
+export function isBrowser(): boolean {
+  return typeof window !== "undefined"
+}
+
 // ── Network helpers ────────────────────────────────────────────────────────
 /**
  * Retrieves the configuration details for a given Stellar network.
@@ -75,6 +81,15 @@ export function parseHorizonBalance(raw: Horizon.HorizonApi.BalanceLine): Balanc
     return {
       asset: "XLM",
       balance: raw.balance,
+    }
+  }
+
+  if (raw.asset_type === "liquidity_pool_shares") {
+    const lpBalance = raw as unknown as { balance: string; liquidity_pool_id: string }
+    return {
+      asset: "liquidity_pool_shares",
+      balance: lpBalance.balance,
+      liquidityPoolId: lpBalance.liquidity_pool_id,
     }
   }
 

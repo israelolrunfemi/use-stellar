@@ -11,6 +11,7 @@
     "dev": "pnpm --filter @use-stellar/demo dev",
     "build": "pnpm --filter use-stellar build",
     "test": "pnpm --filter use-stellar test",
+    "test:package": "pnpm --filter use-stellar test:package",
     "format": "prettier --write \"packages/**/*.{ts,tsx,json}\"",
     "format:check": "prettier --check \"packages/**/*.{ts,tsx,json}\"",
     "lint": "eslint packages/*/src/**/*.{ts,tsx} --max-warnings 0",

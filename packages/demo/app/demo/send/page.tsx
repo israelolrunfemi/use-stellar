@@ -103,7 +103,7 @@ await send({
           {loading ? "Waiting for signature..." : "Send payment"}
         </button>
 
-        {error && <Text color="#f87171">{error}</Text>}
+        {error && <Text color="#f87171">{error.message}</Text>}
         {result && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <StatusBadge status={result.status} />

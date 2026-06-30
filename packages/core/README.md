@@ -45,6 +45,7 @@ function PayButton() {
   - [useSendPayment](#usesendpayment)
   - [useTransaction](#usetransaction)
   - [useNetwork](#usenetwork)
+  - [useFriendbot](#usefriendbot)
   - [useAsset](#useasset)
   - [useSorobanContract](#usesorobancontract)
 - [TypeScript](#typescript)
@@ -89,33 +90,15 @@ yarn add use-stellar @stellar/stellar-sdk
 
 ---
 
-## Quick start
+## Getting started quickstart
 
-The fastest way to see `use-stellar` working is to follow these three steps.
+Follow these steps to integrate `use-stellar` into your application.
 
-### Step 1 — Wrap your app in `StellarProvider`
+### 1. Wrap your app in `StellarProvider`
 
-Open your root component (usually `app/layout.tsx` in Next.js, or `main.tsx` in Vite) and wrap your application:
-
-```tsx
-// app/layout.tsx (Next.js App Router)
-import { StellarProvider } from "use-stellar";
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body>
-        <StellarProvider network="testnet">
-          {children}
-        </StellarProvider>
-      </body>
-    </html>
-  );
-}
-```
+At the root of your application (e.g., `main.tsx` in Vite/CRA, or `app/layout.tsx` in Next.js), wrap your component tree in `StellarProvider`. By default, the provider connects to **Testnet** (recommended for development).
 
 ```tsx
-// main.tsx (Vite / CRA)
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { StellarProvider } from "use-stellar";
@@ -130,15 +113,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 ```
 
-### Step 2 — Use a hook in any component
+### 2. Connect a wallet
+
+Use the `useWallet` hook to prompt wallet connection and display connection status.
 
 ```tsx
-// components/WalletButton.tsx
-"use client"; // Next.js only — remove this line for Vite/CRA
-
 import { useWallet } from "use-stellar";
 
-export function WalletButton() {
+export function WalletConnect() {
   const { connected, connecting, address, error, connect, disconnect } = useWallet();
 
   if (connecting) return <button disabled>Connecting...</button>;
@@ -146,7 +128,7 @@ export function WalletButton() {
   if (connected) {
     return (
       <div>
-        <p>Connected: {address}</p>
+        <p>Connected: <code>{address}</code></p>
         <button onClick={disconnect}>Disconnect</button>
       </div>
     );
@@ -154,20 +136,88 @@ export function WalletButton() {
 
   return (
     <div>
-      <button onClick={() => connect()}>Connect Freighter</button>
+      <button onClick={() => connect("freighter")}>Connect Freighter</button>
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 }
 ```
 
-### Step 3 — Run your app
+### 3. Read XLM Balance
 
-```bash
-npm run dev
+Use the `useBalance` hook to display the user's XLM balance. Pass `watch: true` to automatically poll and update the balance every 10 seconds.
+
+```tsx
+import { useBalance } from "use-stellar";
+
+export function AccountBalance() {
+  const { balance, loading, error } = useBalance({
+    watch: true, // Auto-refreshes every 10s
+  });
+
+  if (loading) return <p>Loading balance...</p>;
+  if (error) return <p style={{ color: "red" }}>Error: {error}</p>;
+
+  return <p>XLM Balance: <strong>{balance ?? "0"}</strong> XLM</p>;
+}
 ```
 
-Open your browser, install [Freighter](https://freighter.app) if you haven't already, and click the connect button. That's it.
+### 4. Send a testnet payment
+
+Use the `useSendPayment` hook to submit payments. Ensure the user's wallet is connected before triggering this action.
+
+> [!WARNING]
+> **Safety Note:** Always test your application on the Stellar Testnet. Never use real XLM or real assets during development. The examples below target the SDF Testnet.
+
+```tsx
+import { useSendPayment } from "use-stellar";
+
+export function SendPayment() {
+  const { send, loading, error, result } = useSendPayment();
+
+  const handlePayment = async () => {
+    try {
+      const outcome = await send({
+        to: "GDLUW7G2E66W4J... [Replace with a valid testnet destination address]",
+        asset: "XLM",
+        amount: "1.5",
+        memo: "Quickstart test payment",
+      });
+      console.log("Transaction submitted:", outcome.hash);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={handlePayment} disabled={loading}>
+        {loading ? "Sending..." : "Send 1.5 XLM"}
+      </button>
+      {result?.status === "success" && (
+        <p style={{ color: "green" }}>Success! Hash: <code>{result.hash}</code></p>
+      )}
+      {error && <p style={{ color: "red" }}>Payment failed: {error}</p>}
+    </div>
+  );
+}
+```
+
+---
+
+## Wallet setup & funding
+
+To test your application locally, you will need the Freighter browser wallet set up on the Stellar Testnet.
+
+1. **Install Freighter**: Go to [freighter.app](https://www.freighter.app) and install the extension for Chrome, Firefox, Edge, or Brave.
+2. **Switch Freighter to Testnet**:
+   - Open Freighter, click the gear icon (Settings) in the top-right corner.
+   - Select **Preferences** -> **Active Network**.
+   - Select **Test Network**.
+3. **Fund Your Account**:
+   - Copy your Stellar public address from Freighter (starts with `G`).
+   - Navigate to the [Stellar Laboratory Friendbot](https://laboratory.stellar.org/#friendbot).
+   - Paste your address and click **Get test network lumens**. This will activate your account on the testnet and fund it with 10,000 XLM.
 
 ---
 
@@ -721,6 +771,42 @@ export function SendAndTrack() {
 
 Returns the current network configuration. Useful for displaying the active network to users or conditionally rendering content based on which network is active.
 
+### useFriendbot
+
+A safe, testnet-only helper for funding a Stellar testnet account via Friendbot. If a wallet is connected, it uses the connected address by default. Mainnet calls return a clear error.
+
+#### Usage
+
+```tsx
+import { useFriendbot } from "use-stellar";
+
+function FundAccountButton() {
+  const { fund, loading, error, hash, funded } = useFriendbot();
+
+  return (
+    <div>
+      <button onClick={() => fund()} disabled={loading}>
+        {loading ? "Funding..." : "Fund testnet account"}
+      </button>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {funded && hash && <p>Funded: {hash}</p>}
+    </div>
+  );
+}
+```
+
+#### Return values
+
+| Property | Type | Description |
+|---|---|---|
+| `loading` | `boolean` | `true` while Friendbot funding is in progress |
+| `error` | `string \| null` | Clear error message for missing addresses or mainnet usage |
+| `hash` | `string \| null` | The Friendbot transaction hash returned by the API |
+| `funded` | `boolean` | `true` when funding completed successfully |
+| `fund` | `(address?: string \| null) => Promise<void>` | Call this to request funding for a testnet address |
+
+---
+
 #### Usage
 
 ```tsx
@@ -950,7 +1036,7 @@ const { networkConfig } = useNetwork();
 
 ---
 
-## Error handling
+## Error handling & troubleshooting
 
 All hooks expose an `error` string when something goes wrong. Errors are human-readable messages you can display directly to users.
 
@@ -968,12 +1054,12 @@ return <p>Balance: {data.balance}</p>;
 
 ### Common errors
 
-| Error | Cause | Fix |
-|---|---|---|
-| `Freighter wallet not found` | Freighter extension is not installed | Direct the user to [freighter.app](https://freighter.app) |
-| `Wallet not connected. Call connect() first.` | `useSendPayment().send()` was called without a wallet | Gate the action behind a wallet connect check |
-| `Failed to fetch balance` | The address doesn't exist on the network, or Horizon is unreachable | Check the address is funded on the correct network |
-| `Transaction failed` | The transaction was rejected by the network | Check the user has sufficient balance and correct asset trustlines |
+| Error / Issue | Probable Cause | Solution |
+| :--- | :--- | :--- |
+| `Freighter wallet not found. Install...` | The Freighter browser extension is missing or disabled in your browser. | Install the extension from [freighter.app](https://www.freighter.app) and ensure it is active. |
+| `Wrong network. Switch Freighter to...` | Freighter is set to Mainnet (or another network) while `StellarProvider` is configured to `testnet` (or vice versa). | Open Freighter settings, select **Preferences** -> **Active Network**, and select the network configured in `StellarProvider`. |
+| `Failed to fetch balance` | The Stellar address has not been funded yet and does not exist on the ledger. | Use the [Stellar Lab Friendbot](https://laboratory.stellar.org/#friendbot) to fund the address with testnet XLM before attempting to read its balance. |
+| `Transaction failed` (e.g., during payment) | Insufficient balance, invalid destination address, missing asset trustline, or network timeout. | 1. Ensure the sender has enough XLM to cover the payment amount and the base transaction fee (0.00001 XLM).<br>2. Confirm the destination address is valid and exists on the active network.<br>3. Check developer console logs for the specific transaction error XDR. |
 
 ---
 

@@ -5,5 +5,4 @@ dist/
 .env.local
 *.tsbuildinfo
 coverage/
-/CLUADE.MD
-/packages/demo/DEMO.md
+.CLUADE.MD
