@@ -188,3 +188,34 @@ export interface StellarContextValue {
   wallet: WalletState
   setWallet: Dispatch<SetStateAction<WalletState>>
 }
+
+export interface NormalizedPayment {
+  id: string;
+  txHash: string;
+  type: string;
+  from: string;
+  to: string;
+  amount: string;
+  asset: Asset;
+  direction: "incoming" | "outgoing";
+  createdAt: string;
+}
+
+export interface UsePaymentsOptions {
+  address?: string | null;
+  limit?: number;
+  order?: "asc" | "desc";
+  cursor?: string;
+}
+
+export interface UsePaymentsReturn {
+  payments: NormalizedPayment[];
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+  fetchNext: () => Promise<void>;
+  fetchPrev: () => Promise<void>;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+

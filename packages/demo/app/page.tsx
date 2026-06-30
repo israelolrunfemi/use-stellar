@@ -1,5 +1,18 @@
 import Link from "next/link"
 
+const hooks = [
+  { name: "useWallet",          desc: "Connect Freighter, get address",               href: "/demo/wallet"      },
+  { name: "useBalance",         desc: "Fetch XLM or any asset balance",               href: "/demo/balance"     },
+  { name: "useAccount",         desc: "Full account info — balances, signers",        href: "/demo/account"     },
+  { name: "useSendPayment",     desc: "Send XLM or USDC with one hook",               href: "/demo/send"        },
+  { name: "useTransaction",     desc: "Fetch and watch a transaction by hash",        href: "/demo/transaction" },
+  { name: "useNetwork",         desc: "Current network, testnet/mainnet helper",      href: "/demo/network"     },
+  { name: "useAsset",           desc: "Asset metadata — supply, issuer, home domain", href: "/demo/asset"       },
+  { name: "useSorobanContract", desc: "Call a read function on a Soroban contract",   href: "/demo/soroban"     },
+  { name: "usePayments",        desc: "Fetch and paginate payment history",           href: "/demo/payments"    },
+  { name: "useSorobanContract",   desc: "Call a read function on a Soroban contract",          href: "/demo/soroban"   },
+  { name: "useClaimableBalance", desc: "Fetch claimable balances — airdrops, vesting, escrow", href: "/demo/claimable" },
+];
 interface HookCard {
   name: string
   desc: string

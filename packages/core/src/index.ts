@@ -11,6 +11,8 @@ export { useTransaction }       from "./hooks/useTransaction";
 export { useNetwork }           from "./hooks/useNetwork";
 export { useAsset }             from "./hooks/useAsset";
 export { useSorobanContract }   from "./hooks/useSorobanContract";
+export { usePayments }          from "./hooks/usePayments";
+export { useClaimableBalance }  from "./hooks/useClaimableBalance";
 export { useWallet } from "./hooks/useWallet"
 export { useBalance } from "./hooks/useBalance"
 export { useAccount } from "./hooks/useAccount"
@@ -51,6 +53,9 @@ export type {
   SendPaymentResult,
   ContractCallOptions,
   StellarContextValue,
+  NormalizedPayment,
+  UsePaymentsOptions,
+  UsePaymentsReturn,
   ClaimableBalance,
   ClaimableBalanceClaimant,
 } from "./types"
