@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, parseHorizonBalance } from "../utils"
-import type { Asset, Balance } from "../types"
+import { toStellarError } from "../errors"
+import type { Asset, Balance, StellarError } from "../types"
 
 export interface UseBalanceOptions {
   address?: string | null // defaults to connected wallet address
@@ -13,7 +14,7 @@ export interface UseBalanceReturn {
   balance: string | null
   balances: Balance[]
   loading: boolean
-  error: string | null
+  error: StellarError | null
   refetch: () => void
 }
 
@@ -39,7 +40,7 @@ export function useBalance({
 
   const [balances, setBalances] = useState<Balance[]>([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
 
   const requestRef = useRef(0)
 
@@ -60,7 +61,7 @@ export function useBalance({
       setBalances(parsed)
     } catch (err) {
       if (fetchId !== requestRef.current) return
-      setError(err instanceof Error ? err.message : "Failed to fetch balance")
+      setError(toStellarError(err))
     } finally {
       if (fetchId === requestRef.current) {
         setLoading(false)

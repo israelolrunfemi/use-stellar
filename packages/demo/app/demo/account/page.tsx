@@ -44,7 +44,7 @@ export default function AccountDemo() {
         {!inspectedAddress && (
           <Text color="#facc15">Connect a wallet or paste any testnet G... address.</Text>
         )}
-        {error && <Text color="#f87171">{error}</Text>}
+        {error && <Text color="#f87171">{error.message}</Text>}
 
         {account && (
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>

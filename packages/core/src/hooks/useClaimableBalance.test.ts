@@ -187,11 +187,11 @@ describe("useClaimableBalance — error state", () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.error).toBe("Network timeout")
+    expect(result.current.error?.code).toBe("NETWORK_ERROR")
     expect(result.current.balances).toEqual([])
   })
 
-  it("sets a fallback error message for non-Error throws", async () => {
+  it("maps non-Error throws to an UNKNOWN StellarError preserving the message", async () => {
     mockCall.mockRejectedValue("unexpected string error")
 
     const { result } = renderHook(() => useClaimableBalance({ address: CLAIMABLE_ADDRESS }), {
@@ -203,7 +203,8 @@ describe("useClaimableBalance — error state", () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.error).toBe("Failed to fetch claimable balances")
+    expect(result.current.error?.code).toBe("UNKNOWN")
+    expect(result.current.error?.message).toBe("unexpected string error")
   })
 })
 
@@ -237,7 +238,7 @@ describe("useClaimableBalance — refetch", () => {
       wrapper,
     })
 
-    await waitFor(() => expect(result.current.error).toBe("Network timeout"))
+    await waitFor(() => expect(result.current.error?.code).toBe("NETWORK_ERROR"))
 
     await act(() => {
       result.current.refetch()

@@ -156,7 +156,7 @@ describe("useAccount", () => {
       })
 
       expect(result.current.account).toBe(null)
-      expect(result.current.error).toBe("Request failed with status code 404")
+      expect(result.current.error?.code).toBe("ACCOUNT_NOT_FOUND")
     })
 
     it("should handle network errors", async () => {
@@ -170,7 +170,7 @@ describe("useAccount", () => {
       })
 
       expect(result.current.account).toBe(null)
-      expect(result.current.error).toBe("Network Error")
+      expect(result.current.error?.code).toBe("NETWORK_ERROR")
     })
   })
 
@@ -245,19 +245,21 @@ describe("useAccount", () => {
       })
 
       expect(result.current.account?.sequence).toBe("1234567890123456")
-      expect(result.current.error).toBe("Network Error")
+      expect(result.current.error?.code).toBe("NETWORK_ERROR")
     })
   })
 
   describe("stale responses and unmounting", () => {
     it("should not set state if unmounted before fetch resolves", async () => {
-      let resolveFetch: (value: any) => void = () => {}
-      const promise = new Promise((resolve) => {
+      let resolveFetch: (value: unknown) => void = () => {}
+      const promise = new Promise(resolve => {
         resolveFetch = resolve
       })
       mockServer.loadAccount.mockReturnValue(promise)
 
-      const { result, unmount } = renderHook(() => useAccount({ address: TEST_ADDRESS }), { wrapper })
+      const { result, unmount } = renderHook(() => useAccount({ address: TEST_ADDRESS }), {
+        wrapper,
+      })
 
       expect(result.current.loading).toBe(true)
 
@@ -269,15 +271,17 @@ describe("useAccount", () => {
     })
 
     it("should not overwrite newer results with older stale responses", async () => {
-      let resolveFirst: (value: any) => void = () => {}
-      let resolveSecond: (value: any) => void = () => {}
+      let resolveFirst: (value: unknown) => void = () => {}
+      let resolveSecond: (value: unknown) => void = () => {}
 
-      const promise1 = new Promise((resolve) => { resolveFirst = resolve })
-      const promise2 = new Promise((resolve) => { resolveSecond = resolve })
+      const promise1 = new Promise(resolve => {
+        resolveFirst = resolve
+      })
+      const promise2 = new Promise(resolve => {
+        resolveSecond = resolve
+      })
 
-      mockServer.loadAccount
-        .mockReturnValueOnce(promise1)
-        .mockReturnValueOnce(promise2)
+      mockServer.loadAccount.mockReturnValueOnce(promise1).mockReturnValueOnce(promise2)
 
       const { result, rerender } = renderHook(({ address }) => useAccount({ address }), {
         initialProps: { address: TEST_ADDRESS },

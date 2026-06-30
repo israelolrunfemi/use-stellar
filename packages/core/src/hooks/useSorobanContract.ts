@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
-import type { ContractCallOptions } from "../types"
+import { toStellarError } from "../errors"
+import type { ContractCallOptions, StellarError } from "../types"
 
 export interface UseSorobanContractReturn {
   data: unknown | null
   loading: boolean
-  error: string | null
+  error: StellarError | null
   refetch: () => void
 }
 
@@ -29,7 +30,7 @@ export function useSorobanContract({
 
   const [data, setData] = useState<unknown | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
 
   const requestRef = useRef(0)
 
@@ -55,7 +56,7 @@ export function useSorobanContract({
       })
     } catch (err) {
       if (fetchId !== requestRef.current) return
-      setError(err instanceof Error ? err.message : "Contract call failed")
+      setError(toStellarError(err))
     } finally {
       if (fetchId === requestRef.current) {
         setLoading(false)
