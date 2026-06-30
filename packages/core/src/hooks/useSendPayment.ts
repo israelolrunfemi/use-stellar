@@ -10,12 +10,13 @@ import {
 
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, isNativeAsset, isBrowser } from "../utils"
-import type { SendPaymentOptions, SendPaymentResult, Asset } from "../types"
+import { createStellarError, toStellarError } from "../errors"
+import type { SendPaymentOptions, SendPaymentResult, Asset, StellarError } from "../types"
 
 export interface UseSendPaymentReturn {
   send: (options: SendPaymentOptions) => Promise<SendPaymentResult>
   loading: boolean
-  error: string | null
+  error: StellarError | null
   result: SendPaymentResult | null
   reset: () => void
 }
@@ -33,24 +34,36 @@ export function useSendPayment(): UseSendPaymentReturn {
   const { network, wallet } = useStellarContext()
 
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
   const [result, setResult] = useState<SendPaymentResult | null>(null)
 
   const send = useCallback(
     async (options: SendPaymentOptions): Promise<SendPaymentResult> => {
       if (!wallet.connected || !wallet.address) {
-        throw new Error("Wallet not connected. Call connect() first.")
+        throw createStellarError(
+          "WALLET_NOT_CONNECTED",
+          "Wallet not connected. Call connect() first."
+        )
       }
 
       if (!isBrowser()) {
-        throw new Error(
+        throw createStellarError(
+          "VALIDATION_ERROR",
           "Transaction signing is only available in the browser. " +
             'Move your component to a "use client" boundary in Next.js / Remix.'
         )
       }
 
-      setLoading(true)
-      setError(null)
+      // Check for network mismatch
+      if (wallet.walletNetwork && wallet.network !== wallet.walletNetwork) {
+        throw new Error(
+          `Network mismatch: Provider is on ${wallet.network} but wallet is on ${wallet.walletNetwork}. ` +
+          `Switch your wallet to ${wallet.network} or call refreshWalletNetwork() to update.`
+        );
+      }
+
+      setLoading(true);
+      setError(null);
 
       try {
         const server = getHorizonServer(network)
@@ -106,9 +119,9 @@ export function useSendPayment(): UseSendPaymentReturn {
         setResult(outcome)
         return outcome
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Transaction failed"
-        setError(message)
-        throw new Error(message)
+        const stellarError = toStellarError(err)
+        setError(stellarError)
+        throw stellarError
       } finally {
         setLoading(false)
       }

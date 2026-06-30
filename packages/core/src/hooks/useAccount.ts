@@ -1,16 +1,25 @@
+import { useState, useEffect, useCallback } from "react";
+import { useStellarContext }   from "../context/StellarProvider";
+import { getHorizonServer, parseHorizonBalance } from "../utils";
+import type { AccountInfo } from "../types";
 import { useState, useEffect, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, parseHorizonBalance } from "../utils"
-import type { AccountInfo } from "../types"
+import { toStellarError } from "../errors"
+import type { AccountInfo, StellarError } from "../types"
 
 export interface UseAccountOptions {
   address?: string | null // defaults to connected wallet address
 }
 
 export interface UseAccountReturn {
+  data:  AccountInfo | null;
+  loading:  boolean
+  error:    string | null;
+  refetch:  () => void;
   account: AccountInfo | null
   loading: boolean
-  error: string | null
+  error: StellarError | null
   refetch: () => void
 }
 
@@ -28,9 +37,15 @@ export function useAccount({ address }: UseAccountOptions = {}): UseAccountRetur
   const { network, wallet } = useStellarContext()
   const resolvedAddress = address ?? wallet.address
 
+  const [data, setData]          = useState<AccountInfo | null>(null);
+  const [loading, setLoading]    = useState(false);
+  const [error,   setError]      = useState<string | null>(null);
+
+  const fetchAccount = useCallback(async () => {
+    if (!resolvedAddress) return;
   const [account, setAccount] = useState<AccountInfo | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
 
   const requestRef = useRef(0)
 
@@ -67,15 +82,19 @@ export function useAccount({ address }: UseAccountOptions = {}): UseAccountRetur
       setAccount(info)
     } catch (err) {
       if (fetchId !== requestRef.current) return
-      setError(err instanceof Error ? err.message : "Failed to fetch account")
+      setError(toStellarError(err))
     } finally {
       if (fetchId === requestRef.current) {
         setLoading(false)
       }
     }
-  }
+  }, [resolvedAddress, network]);
 
   useEffect(() => {
+    fetchAccount();
+  }, [fetchAccount]);
+
+  return { data, loading, error, refetch: fetchAccount };
     fetchAccount()
     return () => {
       requestRef.current = -1

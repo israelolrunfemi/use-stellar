@@ -47,7 +47,7 @@ export default function AssetDemo() {
           {loading ? "Loading..." : "Fetch asset"}
         </button>
 
-        {error && <Text color="#f87171">{error}</Text>}
+        {error && <Text color="#f87171">{error.message}</Text>}
         {asset && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <Row label="Code" value={asset.code} />

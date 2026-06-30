@@ -21,10 +21,11 @@ export default function SorobanDemo() {
   return (
     <DemoCard
       hook="useSorobanContract"
-      description="Preview a Soroban contract call result while the hook is under active development."
+      description="Simulate a read-only Soroban contract method via the Soroban RPC. Results are decoded to native JS values where possible."
       code={`const { data, loading, error, refetch } = useSorobanContract({
-  contractId: "C...",
+  contractId: "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
   method: "balance",
+  args: ["GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"],
 })`}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -68,7 +69,7 @@ export default function SorobanDemo() {
           {loading ? "Calling..." : "Call contract"}
         </button>
 
-        {error && <Text color="#f87171">{error}</Text>}
+        {error && <Text color="#f87171">{error.message}</Text>}
         {data !== null && (
           <pre
             style={{

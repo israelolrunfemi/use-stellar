@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
+import { createStellarError, toStellarError } from "../errors"
+import type { StellarError } from "../types"
 
 export interface AssetInfo {
   code: string
@@ -23,7 +25,7 @@ export interface UseAssetOptions {
 export interface UseAssetReturn {
   asset: AssetInfo | null
   loading: boolean
-  error: string | null
+  error: StellarError | null
   refetch: () => void
 }
 
@@ -43,7 +45,7 @@ export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
 
   const [asset, setAsset] = useState<AssetInfo | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
 
   const requestRef = useRef(0)
 
@@ -59,7 +61,9 @@ export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
       if (fetchId !== requestRef.current) return
 
       const raw = res.records[0]
-      if (!raw) throw new Error(`Asset ${code}:${issuer} not found`)
+      if (!raw) {
+        throw createStellarError("ACCOUNT_NOT_FOUND", `Asset ${code}:${issuer} not found.`)
+      }
       const assetRecord = raw as typeof raw & { home_domain?: string }
 
       setAsset({
@@ -76,7 +80,7 @@ export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
       })
     } catch (err) {
       if (fetchId !== requestRef.current) return
-      setError(err instanceof Error ? err.message : "Failed to fetch asset")
+      setError(toStellarError(err))
     } finally {
       if (fetchId === requestRef.current) {
         setLoading(false)

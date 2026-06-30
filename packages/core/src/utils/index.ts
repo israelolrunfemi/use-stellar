@@ -120,5 +120,3 @@ export function formatAmount(amount: string, decimals = 7): string {
   if (isNaN(num)) return "0"
   return num.toFixed(decimals).replace(/\.?0+$/, "")
 }
-
-export * from "./errorParser"

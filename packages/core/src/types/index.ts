@@ -1,4 +1,7 @@
 import type { Dispatch, SetStateAction } from "react"
+import type { StellarError } from "../errors"
+
+export type { StellarError, StellarErrorCode } from "../errors"
 
 /**
  * Represents the Stellar network environment.
@@ -35,32 +38,23 @@ export const NETWORK_CONFIGS: Record<StellarNetwork, NetworkConfig> = {
  */
 export type WalletType = "freighter" | "albedo" | "rabet"
 
-export type StellarErrorCode =
-  | "ACCOUNT_NOT_FOUND"
-  | "INSUFFICIENT_BALANCE"
-  | "NO_TRUSTLINE"
-  | "TRANSACTION_REJECTED"
-  | "WALLET_NOT_INSTALLED"
-  | "WALLET_NOT_CONNECTED"
-  | "NETWORK_ERROR"
-  | "UNKNOWN"
-
-export interface StellarError {
-  code: StellarErrorCode
-  message: string
-  raw?: unknown
-}
-
 /**
  * The current state of the wallet connection.
  */
 export interface WalletState {
+  connected: boolean;
+  address: string | null;
+  network: StellarNetwork | null;
+  wallet: WalletType | null;
+  connecting: boolean;
+  error: string | null;
+  walletNetwork: StellarNetwork | null; // Actual network from wallet extension
   connected: boolean
   address: string | null
   network: StellarNetwork | null
   wallet: WalletType | null
   connecting: boolean
-  error: string | null
+  error: StellarError | null
 }
 
 /**
@@ -194,3 +188,34 @@ export interface StellarContextValue {
   wallet: WalletState
   setWallet: Dispatch<SetStateAction<WalletState>>
 }
+
+export interface NormalizedPayment {
+  id: string;
+  txHash: string;
+  type: string;
+  from: string;
+  to: string;
+  amount: string;
+  asset: Asset;
+  direction: "incoming" | "outgoing";
+  createdAt: string;
+}
+
+export interface UsePaymentsOptions {
+  address?: string | null;
+  limit?: number;
+  order?: "asc" | "desc";
+  cursor?: string;
+}
+
+export interface UsePaymentsReturn {
+  payments: NormalizedPayment[];
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+  fetchNext: () => Promise<void>;
+  fetchPrev: () => Promise<void>;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+

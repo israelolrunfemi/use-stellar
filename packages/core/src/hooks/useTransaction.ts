@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
-import type { TransactionResult, TransactionStatus } from "../types"
+import { toStellarError } from "../errors"
+import type { StellarError, TransactionResult, TransactionStatus } from "../types"
 
 export interface UseTransactionOptions {
   hash: string | null
@@ -11,7 +12,7 @@ export interface UseTransactionOptions {
 export interface UseTransactionReturn {
   transaction: TransactionResult | null
   loading: boolean
-  error: string | null
+  error: StellarError | null
   refetch: () => void
 }
 
@@ -34,7 +35,7 @@ export function useTransaction({
 
   const [transaction, setTransaction] = useState<TransactionResult | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
   const transactionRef = useRef<TransactionResult | null>(null)
   const requestRef = useRef(0)
 
@@ -75,7 +76,7 @@ export function useTransaction({
       if (is404) {
         setTransaction({ hash: hash!, status: watch ? "pending" : "not_found" })
       } else {
-        setError(err instanceof Error ? err.message : "Failed to fetch transaction")
+        setError(toStellarError(err))
       }
     } finally {
       if (fetchId === requestRef.current) {

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, parseHorizonBalance } from "../utils"
-import type { Asset, Balance } from "../types"
+import { toStellarError } from "../errors"
+import type { Asset, Balance, StellarError } from "../types"
 
 // Default polling interval (ms) used when `watch` is enabled without an explicit
 // `interval`.
@@ -20,6 +21,7 @@ export interface UseBalanceReturn {
   loading: boolean
   error: string | null
   lastUpdated: Date | null // timestamp of the last successful fetch
+  error: StellarError | null
   refetch: () => void
 }
 
@@ -49,6 +51,7 @@ export function useBalance({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
 
   // Monotonic id used to ignore stale responses (e.g. when the address/network
   // changes mid-flight, or the component unmounts before a fetch resolves).
@@ -72,7 +75,7 @@ export function useBalance({
       setLastUpdated(new Date())
     } catch (err) {
       if (fetchId !== requestRef.current) return
-      setError(err instanceof Error ? err.message : "Failed to fetch balance")
+      setError(toStellarError(err))
     } finally {
       if (fetchId === requestRef.current) {
         setLoading(false)

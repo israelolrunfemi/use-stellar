@@ -5,13 +5,14 @@ import { NETWORK_CONFIGS } from "../types"
 
 // ── Default wallet state ───────────────────────────────────────────────────
 const DEFAULT_WALLET: WalletState = {
-  connected: false,
-  address: null,
-  network: null,
-  wallet: null,
-  connecting: false,
-  error: null,
-}
+  connected:     false,
+  address:       null,
+  network:       null,
+  wallet:        null,
+  connecting:    false,
+  error:         null,
+  walletNetwork: null,
+};
 
 // ── Context ────────────────────────────────────────────────────────────────
 const StellarContext = createContext<StellarContextValue | null>(null)

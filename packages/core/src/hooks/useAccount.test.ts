@@ -156,7 +156,7 @@ describe("useAccount", () => {
       })
 
       expect(result.current.account).toBe(null)
-      expect(result.current.error).toBe("Request failed with status code 404")
+      expect(result.current.error?.code).toBe("ACCOUNT_NOT_FOUND")
     })
 
     it("should handle network errors", async () => {
@@ -170,7 +170,7 @@ describe("useAccount", () => {
       })
 
       expect(result.current.account).toBe(null)
-      expect(result.current.error).toBe("Network Error")
+      expect(result.current.error?.code).toBe("NETWORK_ERROR")
     })
   })
 
@@ -245,7 +245,7 @@ describe("useAccount", () => {
       })
 
       expect(result.current.account?.sequence).toBe("1234567890123456")
-      expect(result.current.error).toBe("Network Error")
+      expect(result.current.error?.code).toBe("NETWORK_ERROR")
     })
   })
 

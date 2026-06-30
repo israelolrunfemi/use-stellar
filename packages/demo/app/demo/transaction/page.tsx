@@ -37,7 +37,7 @@ export default function TransactionDemo() {
           {loading ? "Loading..." : "Fetch transaction"}
         </button>
 
-        {error && <Text color="#f87171">{error}</Text>}
+        {error && <Text color="#f87171">{error.message}</Text>}
         {!hash.trim() && <Text color="#facc15">Enter a transaction hash to inspect it.</Text>}
         {transaction && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
