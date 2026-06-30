@@ -45,6 +45,7 @@ function PayButton() {
   - [useSendPayment](#usesendpayment)
   - [useTransaction](#usetransaction)
   - [useNetwork](#usenetwork)
+  - [useFriendbot](#usefriendbot)
   - [useAsset](#useasset)
   - [useSorobanContract](#usesorobancontract)
 - [TypeScript](#typescript)
@@ -769,6 +770,42 @@ export function SendAndTrack() {
 ### useNetwork
 
 Returns the current network configuration. Useful for displaying the active network to users or conditionally rendering content based on which network is active.
+
+### useFriendbot
+
+A safe, testnet-only helper for funding a Stellar testnet account via Friendbot. If a wallet is connected, it uses the connected address by default. Mainnet calls return a clear error.
+
+#### Usage
+
+```tsx
+import { useFriendbot } from "use-stellar";
+
+function FundAccountButton() {
+  const { fund, loading, error, hash, funded } = useFriendbot();
+
+  return (
+    <div>
+      <button onClick={() => fund()} disabled={loading}>
+        {loading ? "Funding..." : "Fund testnet account"}
+      </button>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {funded && hash && <p>Funded: {hash}</p>}
+    </div>
+  );
+}
+```
+
+#### Return values
+
+| Property | Type | Description |
+|---|---|---|
+| `loading` | `boolean` | `true` while Friendbot funding is in progress |
+| `error` | `string \| null` | Clear error message for missing addresses or mainnet usage |
+| `hash` | `string \| null` | The Friendbot transaction hash returned by the API |
+| `funded` | `boolean` | `true` when funding completed successfully |
+| `fund` | `(address?: string \| null) => Promise<void>` | Call this to request funding for a testnet address |
+
+---
 
 #### Usage
 
