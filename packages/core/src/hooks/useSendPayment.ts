@@ -61,12 +61,12 @@ export function useSendPayment(): UseSendPaymentReturn {
       if (wallet.walletNetwork && wallet.network !== wallet.walletNetwork) {
         throw new Error(
           `Network mismatch: Provider is on ${wallet.network} but wallet is on ${wallet.walletNetwork}. ` +
-          `Switch your wallet to ${wallet.network} or call refreshWalletNetwork() to update.`
-        );
+            `Switch your wallet to ${wallet.network} or call refreshWalletNetwork() to update.`
+        )
       }
 
-      setLoading(true);
-      setError(null);
+      setLoading(true)
+      setError(null)
 
       try {
         const server = getHorizonServer(network)
@@ -94,51 +94,7 @@ export function useSendPayment(): UseSendPaymentReturn {
         const tx = builder.build()
         const xdr = tx.toXDR()
 
-        // ── Sign & submit ────────────────────────────────────────────────
-        let txHash: string
-
-        if (wallet.wallet === "albedo") {
-          // Dynamic import keeps @albedo-link/intent out of the SSR/test bundle
-          const albedoModule = await import("@albedo-link/intent")
-          const albedo = albedoModule.default ?? albedoModule
-          const albedoNetwork = network === "mainnet" ? "public" : "testnet"
-          const payParams: Parameters<typeof albedo.pay>[0] = {
-            amount: options.amount,
-            destination: options.to,
-            network: albedoNetwork,
-            submit: true,
-          }
-
-          if (!isNativeAsset(options.asset) && isIssuedAsset(options.asset)) {
-            payParams.asset_code = options.asset.code
-            payParams.asset_issuer = options.asset.issuer
-          }
-
-          if (options.memo) {
-            payParams.memo = options.memo
-            payParams.memo_type = "text"
-          }
-
-          const albedoResult = await albedo.pay(payParams)
-          txHash = albedoResult.tx_hash
-        } else {
-          // Default: Freighter — dynamic import keeps it out of the SSR bundle
-          const { signTransaction } = await import("@stellar/freighter-api")
-          const signedTransaction = await signTransaction(xdr, {
-            networkPassphrase: networkPass,
-            address: wallet.address,
-          })
-          if (signedTransaction.error) {
-            throw new Error(signedTransaction.error.message)
-          }
-          if (!signedTransaction.signedTxXdr) {
-            throw new Error("Freighter did not return a signed transaction.")
-          }
-
-          const signed = TransactionBuilder.fromXDR(signedTransaction.signedTxXdr, networkPass)
-          const res = await server.submitTransaction(signed)
-          txHash = res.hash
-        }
+        // Sign & submit via the active wallet's adapter
         const adapter = getWalletAdapter(wallet.wallet)
         const signedTxXdr = await adapter.signTransaction(xdr, {
           address: wallet.address,
@@ -150,7 +106,7 @@ export function useSendPayment(): UseSendPaymentReturn {
         const res = await server.submitTransaction(signed)
 
         const outcome: SendPaymentResult = {
-          hash: txHash,
+          hash: res.hash,
           status: "success",
         }
 

@@ -19,9 +19,8 @@ export interface UseBalanceReturn {
   balance: string | null
   balances: Balance[]
   loading: boolean
-  error: string | null
-  lastUpdated: Date | null // timestamp of the last successful fetch
   error: StellarError | null
+  lastUpdated: Date | null // timestamp of the last successful fetch
   refetch: () => void
 }
 
@@ -49,7 +48,6 @@ export function useBalance({
 
   const [balances, setBalances] = useState<Balance[]>([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [error, setError] = useState<StellarError | null>(null)
 

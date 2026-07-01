@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
 import { toStellarError } from "../errors"
@@ -25,18 +25,25 @@ export function useClaimableBalance({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<StellarError | null>(null)
 
+  // Monotonic id used to ignore stale responses (e.g. when the address/network
+  // changes mid-flight, or the component unmounts before a fetch resolves).
+  const requestRef = useRef(0)
+
   const fetchBalances = useCallback(async () => {
     if (!resolvedAddress) {
       setBalances([])
       return
     }
 
+    const fetchId = ++requestRef.current
     setLoading(true)
     setError(null)
 
     try {
       const server = getHorizonServer(network)
       const result = await server.claimableBalances().claimant(resolvedAddress).call()
+
+      if (fetchId !== requestRef.current) return
 
       const parsed: ClaimableBalance[] = result.records.map(record => ({
         id: record.id,
@@ -60,12 +67,17 @@ export function useClaimableBalance({
         setError(stellarError)
       }
     } finally {
-      setLoading(false)
+      if (fetchId === requestRef.current) {
+        setLoading(false)
+      }
     }
   }, [resolvedAddress, network])
 
   useEffect(() => {
     fetchBalances()
+    return () => {
+      requestRef.current = -1
+    }
   }, [fetchBalances])
 
   return { balances, loading, error, refetch: fetchBalances }

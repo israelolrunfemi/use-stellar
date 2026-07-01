@@ -11,15 +11,8 @@ const DEFAULT_WALLET: WalletState = {
   walletName: null,
   connecting: false,
   error: null,
-}
-  connected:     false,
-  address:       null,
-  network:       null,
-  wallet:        null,
-  connecting:    false,
-  error:         null,
   walletNetwork: null,
-};
+}
 
 const StellarContext = createContext<StellarContextValue | null>(null)
 

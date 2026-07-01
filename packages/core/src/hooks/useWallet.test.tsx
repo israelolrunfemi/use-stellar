@@ -4,6 +4,7 @@ import { getNetworkDetails, isConnected, requestAccess } from "@stellar/freighte
 import { StellarProvider } from "../context/StellarProvider"
 import { NETWORK_PASSPHRASES } from "../wallets"
 import { useWallet } from "./useWallet"
+import * as freighterApi from "@stellar/freighter-api"
 
 jest.mock("@stellar/freighter-api", () => ({
   getNetworkDetails: jest.fn(),
@@ -57,12 +58,8 @@ describe("useWallet", () => {
     expect(result.current.connected).toBe(false)
     expect(result.current.wallet).toBeNull()
     expect(result.current.error).toBe("Rabet is not supported yet.")
-import React from "react"
-import { renderHook, act } from "@testing-library/react"
-import { useWallet } from "./useWallet"
-import { StellarProvider } from "../context/StellarProvider"
-import type { ReactNode } from "react"
-import * as freighterApi from "@stellar/freighter-api"
+  })
+})
 
 // Mock the Freighter API
 jest.mock("@stellar/freighter-api")

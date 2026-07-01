@@ -43,16 +43,6 @@ export function isValidAssetCode(code: string): boolean {
 }
 
 /**
- * Validates whether a string is a valid Stellar public key address.
- *
- * @param address - The address to validate
- * @returns True if the address is a valid Stellar address, false otherwise
- */
-export function isValidStellarAddress(address: string): boolean {
-  return /^G[A-Z0-9]{55}$/.test(address)
-}
-
-/**
  * Parses a raw Horizon balance line into a standard Balance object.
  *
  * @param raw - The raw balance line from Horizon API.
@@ -88,6 +78,12 @@ export function parseHorizonBalance(raw: Horizon.HorizonApi.BalanceLine): Balanc
 }
 
 // ── Address helpers ────────────────────────────────────────────────────────
+/**
+ * Validates whether a string is a valid Stellar public key address.
+ *
+ * @param address - The address to validate
+ * @returns True if the address is a valid Stellar address, false otherwise
+ */
 export function isValidStellarAddress(address: string): boolean {
   return /^G[A-Z0-9]{55}$/.test(address)
 }

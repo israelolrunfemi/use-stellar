@@ -1,18 +1,8 @@
-import Link from "next/link"
+"use client"
 
-const hooks = [
-  { name: "useWallet",          desc: "Connect Freighter, get address",               href: "/demo/wallet"      },
-  { name: "useBalance",         desc: "Fetch XLM or any asset balance",               href: "/demo/balance"     },
-  { name: "useAccount",         desc: "Full account info — balances, signers",        href: "/demo/account"     },
-  { name: "useSendPayment",     desc: "Send XLM or USDC with one hook",               href: "/demo/send"        },
-  { name: "useTransaction",     desc: "Fetch and watch a transaction by hash",        href: "/demo/transaction" },
-  { name: "useNetwork",         desc: "Current network, testnet/mainnet helper",      href: "/demo/network"     },
-  { name: "useAsset",           desc: "Asset metadata — supply, issuer, home domain", href: "/demo/asset"       },
-  { name: "useSorobanContract", desc: "Call a read function on a Soroban contract",   href: "/demo/soroban"     },
-  { name: "usePayments",        desc: "Fetch and paginate payment history",           href: "/demo/payments"    },
-  { name: "useSorobanContract",   desc: "Call a read function on a Soroban contract",          href: "/demo/soroban"   },
-  { name: "useClaimableBalance", desc: "Fetch claimable balances — airdrops, vesting, escrow", href: "/demo/claimable" },
-];
+import Link from "next/link"
+import type { CSSProperties } from "react"
+
 interface HookCard {
   name: string
   desc: string
@@ -35,6 +25,11 @@ const hooks: HookCard[] = [
     name: "useSorobanContract",
     desc: "Call a read function on a Soroban contract",
     href: "/demo/soroban",
+  },
+  {
+    name: "usePayments",
+    desc: "Fetch and paginate payment history",
+    href: "/demo/payments",
   },
   {
     name: "useClaimableBalance",
@@ -103,8 +98,8 @@ function App() {
           gap: 12,
         }}
       >
-        {hooks.map(({ hook, path, desc, comingSoon }) => {
-          const cardStyle: React.CSSProperties = {
+        {hooks.map(({ name, desc, href }) => {
+          const cardStyle: CSSProperties = {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -115,11 +110,20 @@ function App() {
             borderRadius: 10,
             textDecoration: "none",
             color: "inherit",
-            opacity: comingSoon ? 0.5 : 1,
           }
 
-          const body = (
-            <>
+          return (
+            <Link
+              key={name}
+              href={href}
+              style={{ ...cardStyle, transition: "border-color 0.15s" }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = "#7dd3fc"
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = "#2a2a2a"
+              }}
+            >
               <span style={{ minWidth: 0 }}>
                 <p
                   style={{
@@ -129,37 +133,13 @@ function App() {
                     color: "#7dd3fc",
                   }}
                 >
-                  {hook}
+                  {name}
                 </p>
-                <p style={{ margin: 0, fontSize: 13, color: "#666" }}>
-                  {comingSoon ? "Coming soon" : desc}
-                </p>
+                <p style={{ margin: 0, fontSize: 13, color: "#666" }}>{desc}</p>
               </span>
-              {!comingSoon && (
-                <span aria-hidden="true" style={{ fontSize: 18, color: "#555" }}>
-                  ›
-                </span>
-              )}
-            </>
-          )
-
-          return comingSoon ? (
-            <div key={hook} style={cardStyle} aria-disabled="true">
-              {body}
-            </div>
-          ) : (
-            <Link
-              key={hook}
-              href={path}
-              style={{ ...cardStyle, transition: "border-color 0.15s" }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = "#7dd3fc"
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = "#2a2a2a"
-              }}
-            >
-              {body}
+              <span aria-hidden="true" style={{ fontSize: 18, color: "#555" }}>
+                ›
+              </span>
             </Link>
           )
         })}
@@ -175,7 +155,7 @@ function App() {
   )
 }
 
-function badgeStyle(bg: string, border: string): React.CSSProperties {
+function badgeStyle(bg: string, border: string): CSSProperties {
   return {
     display: "inline-block",
     padding: "8px 16px",

@@ -33,38 +33,12 @@ export const NETWORK_CONFIGS: Record<StellarNetwork, NetworkConfig> = {
   },
 }
 
-export type StellarErrorCode =
-  | "ACCOUNT_NOT_FOUND"
-  | "INSUFFICIENT_BALANCE"
-  | "NO_TRUSTLINE"
-  | "TRANSACTION_REJECTED"
-  | "WALLET_NOT_INSTALLED"
-  | "WALLET_NOT_CONNECTED"
-  | "NETWORK_ERROR"
-  | "UNKNOWN"
-
-export interface StellarError {
-  code: StellarErrorCode
-  message: string
-  raw?: unknown
-}
-
-export type WalletType = "freighter" | "lobstr" | "albedo" | "rabet";
-/**
- * Supported wallet providers.
- */
+export type WalletType = "freighter" | "lobstr" | "albedo" | "rabet"
 
 /**
  * The current state of the wallet connection.
  */
 export interface WalletState {
-  connected: boolean;
-  address: string | null;
-  network: StellarNetwork | null;
-  wallet: WalletType | null;
-  connecting: boolean;
-  error: string | null;
-  walletNetwork: StellarNetwork | null; // Actual network from wallet extension
   connected: boolean
   address: string | null
   network: StellarNetwork | null
@@ -72,6 +46,7 @@ export interface WalletState {
   walletName: string | null
   connecting: boolean
   error: StellarError | null
+  walletNetwork: StellarNetwork | null // Actual network from wallet extension
 }
 
 /**
@@ -172,13 +147,14 @@ export interface SendPaymentResult {
  */
 export interface NormalizedPayment {
   id: string
+  txHash: string
   type: string
   from: string
   to: string
   amount: string
   asset: Asset
+  direction: "incoming" | "outgoing"
   createdAt: string
-  transactionHash: string
 }
 
 /**
@@ -190,9 +166,6 @@ export interface ContractCallOptions {
   args?: unknown[]
 }
 
-/**
- * Context value provided by the StellarProvider.
- */
 export interface ClaimableBalanceClaimant {
   destination: string
   predicate: object
@@ -206,6 +179,9 @@ export interface ClaimableBalance {
   sponsor?: string
 }
 
+/**
+ * Context value provided by the StellarProvider.
+ */
 export interface StellarContextValue {
   network: StellarNetwork
   networkConfig: NetworkConfig
@@ -213,33 +189,20 @@ export interface StellarContextValue {
   setWallet: Dispatch<SetStateAction<WalletState>>
 }
 
-export interface NormalizedPayment {
-  id: string;
-  txHash: string;
-  type: string;
-  from: string;
-  to: string;
-  amount: string;
-  asset: Asset;
-  direction: "incoming" | "outgoing";
-  createdAt: string;
-}
-
 export interface UsePaymentsOptions {
-  address?: string | null;
-  limit?: number;
-  order?: "asc" | "desc";
-  cursor?: string;
+  address?: string | null
+  limit?: number
+  order?: "asc" | "desc"
+  cursor?: string
 }
 
 export interface UsePaymentsReturn {
-  payments: NormalizedPayment[];
-  loading: boolean;
-  error: string | null;
-  refetch: () => void;
-  fetchNext: () => Promise<void>;
-  fetchPrev: () => Promise<void>;
-  hasNext: boolean;
-  hasPrev: boolean;
+  payments: NormalizedPayment[]
+  loading: boolean
+  error: StellarError | null
+  refetch: () => void
+  fetchNext: () => Promise<void>
+  fetchPrev: () => Promise<void>
+  hasNext: boolean
+  hasPrev: boolean
 }
-

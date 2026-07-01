@@ -41,16 +41,15 @@ export interface UseAssetReturn {
  *
  * @example
  * const { asset, loading } = useAsset({ code: "USDC", issuer: "G..." })
- * 
+ *
  * @example
- * const { asset, loading, error, refetch } = useAsset({ 
- *   code: "USDC", 
+ * const { asset, loading, error, refetch } = useAsset({
+ *   code: "USDC",
  *   issuer: "G...",
  *   autoFetch: false
  * })
  */
 export function useAsset({ code, issuer, autoFetch = true }: UseAssetOptions): UseAssetReturn {
-
   const { network } = useStellarContext()
 
   const [asset, setAsset] = useState<AssetInfo | null>(null)
@@ -84,7 +83,6 @@ export function useAsset({ code, issuer, autoFetch = true }: UseAssetOptions): U
         },
       })
     } catch (err) {
-      if (fetchId !== requestRef.current) return
       setError(toStellarError(err))
     } finally {
       setLoading(false)
@@ -94,8 +92,8 @@ export function useAsset({ code, issuer, autoFetch = true }: UseAssetOptions): U
   useEffect(() => {
     if (autoFetch) {
       fetchAsset()
-    fetchAsset()
-  }, [fetchAsset])
+    }
+  }, [fetchAsset, autoFetch])
 
   return { asset, loading, error, refetch: fetchAsset }
 }

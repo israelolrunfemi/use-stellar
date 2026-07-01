@@ -93,7 +93,6 @@ export function useTransaction({
       if (interval) {
         clearInterval(interval)
       }
-      requestRef.current = -1
     }
   }, [fetchTransaction, watch])
 
