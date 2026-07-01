@@ -5,16 +5,16 @@ import type { CSSProperties, ReactNode } from "react"
 import { useSorobanContract, useWallet } from "use-stellar"
 import { DemoCard } from "../../../components/DemoCard"
 
-const KNOWN_CONTRACT = "CDLZFC3SYJ4D57P2SAAQ573B5YTLK3GD6KBV7NQ4GZL5QLFLKZBCGP7T";
-const KNOWN_METHOD = "initialize";
+const KNOWN_CONTRACT = "CDLZFC3SYJ4D57P2SAAQ573B5YTLK3GD6KBV7NQ4GZL5QLFLKZBCGP7T"
+const KNOWN_METHOD = "initialize"
 
 export default function SorobanDemo() {
-  const wallet = useWallet();
-  const [contractId, setContractId] = useState(KNOWN_CONTRACT);
-  const [method, setMethod] = useState(KNOWN_METHOD);
-  const [query, setQuery] = useState({ contractId: "", method: "" });
-  const { data, loading, error, refetch } = useSorobanContract(query);
-  const disabled = !wallet.connected || loading || !contractId.trim() || !method.trim();
+  const wallet = useWallet()
+  const [contractId, setContractId] = useState(KNOWN_CONTRACT)
+  const [method, setMethod] = useState(KNOWN_METHOD)
+  const [query, setQuery] = useState({ contractId: "", method: "" })
+  const { data, loading, error, refetch } = useSorobanContract(query)
+  const disabled = !wallet.connected || loading || !contractId.trim() || !method.trim()
   const wallet = useWallet()
   const [contractId, setContractId] = useState("")
   const [method, setMethod] = useState("")
@@ -39,9 +39,9 @@ export default function SorobanDemo() {
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <Text color="#facc15">
-          Write calls (requiring Freighter signing) are in active development -- see the hook-use-balance-watch issue. This demo covers read-only simulation calls only.
-          This hook is in active development. Write calls requiring signing are tracked in GitHub
-          issue #8.
+          Write calls (requiring Freighter signing) are in active development -- see the
+          hook-use-balance-watch issue. This demo covers read-only simulation calls only. This hook
+          is in active development. Write calls requiring signing are tracked in GitHub issue #8.
         </Text>
 
         {!wallet.connected && (

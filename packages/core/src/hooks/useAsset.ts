@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
 import { createStellarError, toStellarError } from "../errors"
@@ -41,34 +41,28 @@ export interface UseAssetReturn {
  *
  * @example
  * const { asset, loading } = useAsset({ code: "USDC", issuer: "G..." })
- * 
+ *
  * @example
- * const { asset, loading, error, refetch } = useAsset({ 
- *   code: "USDC", 
+ * const { asset, loading, error, refetch } = useAsset({
+ *   code: "USDC",
  *   issuer: "G...",
  *   autoFetch: false
  * })
  */
 export function useAsset({ code, issuer, autoFetch = true }: UseAssetOptions): UseAssetReturn {
-
   const { network } = useStellarContext()
 
   const [asset, setAsset] = useState<AssetInfo | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<StellarError | null>(null)
 
-  const requestRef = useRef(0)
-
   const fetchAsset = useCallback(async () => {
-    const fetchId = ++requestRef.current
     setLoading(true)
     setError(null)
 
     try {
       const server = getHorizonServer(network)
       const res = await server.assets().forCode(code).forIssuer(issuer).call()
-
-      if (fetchId !== requestRef.current) return
 
       const raw = res.records[0]
       if (!raw) {
@@ -89,23 +83,17 @@ export function useAsset({ code, issuer, autoFetch = true }: UseAssetOptions): U
         },
       })
     } catch (err) {
-      if (fetchId !== requestRef.current) return
       setError(toStellarError(err))
     } finally {
-      if (fetchId === requestRef.current) {
-        setLoading(false)
-      }
+      setLoading(false)
     }
   }, [code, issuer, network])
 
   useEffect(() => {
     if (autoFetch) {
       fetchAsset()
-    fetchAsset()
-    return () => {
-      requestRef.current = -1
     }
-  }, [fetchAsset])
+  }, [fetchAsset, autoFetch])
 
   return { asset, loading, error, refetch: fetchAsset }
 }

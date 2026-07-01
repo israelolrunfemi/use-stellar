@@ -1,5 +1,5 @@
 import { Horizon } from "@stellar/stellar-sdk"
-import type { Asset, Balance, NetworkConfig, StellarNetwork } from "../types"
+import type { Asset, Balance, NetworkConfig, StellarNetwork, IssuedAsset } from "../types"
 import { NETWORK_CONFIGS } from "../types"
 
 // ── Environment helpers ───────────────────────────────────────────────────
@@ -9,45 +9,27 @@ export function isBrowser(): boolean {
 }
 
 // ── Network helpers ────────────────────────────────────────────────────────
-/**
- * Retrieves the configuration details for a given Stellar network.
- *
- * @param network - The network to get configuration for (e.g., "testnet", "mainnet").
- * @returns The network configuration.
- */
 export function getNetworkConfig(network: StellarNetwork): NetworkConfig {
   return NETWORK_CONFIGS[network]
 }
 
-/**
- * Creates and returns a Horizon server instance for the specified network.
- *
- * @param network - The Stellar network.
- * @returns A Horizon server instance.
- */
 export function getHorizonServer(network: StellarNetwork): Horizon.Server {
   return new Horizon.Server(NETWORK_CONFIGS[network].horizonUrl)
 }
 
 // ── Asset helpers ──────────────────────────────────────────────────────────
-/**
- * Type guard to check if an asset is the native XLM asset.
- *
- * @param asset - The asset to check.
- * @returns True if the asset is XLM, false otherwise.
- */
 export function isNativeAsset(asset: Asset): asset is "XLM" {
   return asset === "XLM"
 }
 
-/**
- * Returns a string representation of an asset's code (e.g., "XLM" or "USDC").
- *
- * @param asset - The asset.
- * @returns The asset code.
- */
+export function isIssuedAsset(asset: Asset): asset is IssuedAsset {
+  return typeof asset === "object" && "code" in asset
+}
+
 export function formatAssetCode(asset: Asset): string {
-  return isNativeAsset(asset) ? "XLM" : asset.code
+  if (isNativeAsset(asset)) return "XLM"
+  if (isIssuedAsset(asset)) return asset.code
+  return asset // "liquidity_pool_shares"
 }
 
 /**
@@ -58,16 +40,6 @@ export function formatAssetCode(asset: Asset): string {
  */
 export function isValidAssetCode(code: string): boolean {
   return /^[a-zA-Z0-9]{1,12}$/.test(code)
-}
-
-/**
- * Validates whether a string is a valid Stellar public key address.
- *
- * @param address - The address to validate
- * @returns True if the address is a valid Stellar address, false otherwise
- */
-export function isValidStellarAddress(address: string): boolean {
-  return /^G[A-Z0-9]{55}$/.test(address)
 }
 
 /**
@@ -85,12 +57,13 @@ export function parseHorizonBalance(raw: Horizon.HorizonApi.BalanceLine): Balanc
   }
 
   if (raw.asset_type === "liquidity_pool_shares") {
-    const lpBalance = raw as unknown as { balance: string; liquidity_pool_id: string }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const lp = raw as any
     return {
       asset: "liquidity_pool_shares",
-      balance: lpBalance.balance,
-      liquidityPoolId: lpBalance.liquidity_pool_id,
-    }
+      balance: lp.balance,
+      liquidityPoolId: lp.liquidity_pool_id,
+    } as Balance
   }
 
   const issued = raw as Horizon.HorizonApi.BalanceLineAsset
@@ -106,35 +79,21 @@ export function parseHorizonBalance(raw: Horizon.HorizonApi.BalanceLine): Balanc
 
 // ── Address helpers ────────────────────────────────────────────────────────
 /**
- * Validates whether a given string is a valid Stellar public address.
+ * Validates whether a string is a valid Stellar public key address.
  *
- * @param address - The address string to validate.
- * @returns True if valid, false otherwise.
+ * @param address - The address to validate
+ * @returns True if the address is a valid Stellar address, false otherwise
  */
 export function isValidStellarAddress(address: string): boolean {
   return /^G[A-Z0-9]{55}$/.test(address)
 }
 
-/**
- * Shortens a Stellar address for display purposes (e.g., "GABCDE...123456").
- *
- * @param address - The full Stellar address.
- * @param chars - The number of characters to show at the start and end (default: 6).
- * @returns The shortened address.
- */
 export function shortenAddress(address: string, chars = 6): string {
   if (!address) return ""
   return `${address.slice(0, chars)}...${address.slice(-chars)}`
 }
 
 // ── Amount helpers ─────────────────────────────────────────────────────────
-/**
- * Formats an amount string to a specified number of decimal places, stripping trailing zeros.
- *
- * @param amount - The amount string to format.
- * @param decimals - Maximum number of decimal places (default: 7).
- * @returns The formatted amount string.
- */
 export function formatAmount(amount: string, decimals = 7): string {
   const num = parseFloat(amount)
   if (isNaN(num)) return "0"

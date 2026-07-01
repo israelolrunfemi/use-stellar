@@ -5,51 +5,50 @@
  * (no window / DOM) does not crash — the key requirement for SSR
  * in Next.js, Remix, and similar frameworks.
  */
-/* eslint-disable @typescript-eslint/no-require-imports */
 
 describe("SSR safety — import in Node environment", () => {
-  it("can import StellarProvider without crashing", () => {
-    expect(() => require("../context/StellarProvider")).not.toThrow()
+  it("can import StellarProvider without crashing", async () => {
+    await expect(import("../context/StellarProvider")).resolves.toBeDefined()
   })
 
-  it("can import useWallet without crashing", () => {
-    expect(() => require("../hooks/useWallet")).not.toThrow()
+  it("can import useWallet without crashing", async () => {
+    await expect(import("../hooks/useWallet")).resolves.toBeDefined()
   })
 
-  it("can import useBalance without crashing", () => {
-    expect(() => require("../hooks/useBalance")).not.toThrow()
+  it("can import useBalance without crashing", async () => {
+    await expect(import("../hooks/useBalance")).resolves.toBeDefined()
   })
 
-  it("can import useAccount without crashing", () => {
-    expect(() => require("../hooks/useAccount")).not.toThrow()
+  it("can import useAccount without crashing", async () => {
+    await expect(import("../hooks/useAccount")).resolves.toBeDefined()
   })
 
-  it("can import useSendPayment without crashing", () => {
-    expect(() => require("../hooks/useSendPayment")).not.toThrow()
+  it("can import useSendPayment without crashing", async () => {
+    await expect(import("../hooks/useSendPayment")).resolves.toBeDefined()
   })
 
-  it("can import useTransaction without crashing", () => {
-    expect(() => require("../hooks/useTransaction")).not.toThrow()
+  it("can import useTransaction without crashing", async () => {
+    await expect(import("../hooks/useTransaction")).resolves.toBeDefined()
   })
 
-  it("can import useNetwork without crashing", () => {
-    expect(() => require("../hooks/useNetwork")).not.toThrow()
+  it("can import useNetwork without crashing", async () => {
+    await expect(import("../hooks/useNetwork")).resolves.toBeDefined()
   })
 
-  it("can import useAsset without crashing", () => {
-    expect(() => require("../hooks/useAsset")).not.toThrow()
+  it("can import useAsset without crashing", async () => {
+    await expect(import("../hooks/useAsset")).resolves.toBeDefined()
   })
 
-  it("can import useSorobanContract without crashing", () => {
-    expect(() => require("../hooks/useSorobanContract")).not.toThrow()
+  it("can import useSorobanContract without crashing", async () => {
+    await expect(import("../hooks/useSorobanContract")).resolves.toBeDefined()
   })
 
-  it("can import the barrel index without crashing", () => {
-    expect(() => require("../index")).not.toThrow()
+  it("can import the barrel index without crashing", async () => {
+    await expect(import("../index")).resolves.toBeDefined()
   })
 
-  it("isBrowser() returns false in Node", () => {
-    const { isBrowser } = require("../utils")
+  it("isBrowser() returns false in Node", async () => {
+    const { isBrowser } = await import("../utils")
     expect(isBrowser()).toBe(false)
   })
 })

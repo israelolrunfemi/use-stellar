@@ -19,9 +19,8 @@ export interface UseBalanceReturn {
   balance: string | null
   balances: Balance[]
   loading: boolean
-  error: string | null
-  lastUpdated: Date | null // timestamp of the last successful fetch
   error: StellarError | null
+  lastUpdated: Date | null // timestamp of the last successful fetch
   refetch: () => void
 }
 
@@ -49,7 +48,6 @@ export function useBalance({
 
   const [balances, setBalances] = useState<Balance[]>([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [error, setError] = useState<StellarError | null>(null)
 
@@ -67,10 +65,10 @@ export function useBalance({
     try {
       const server = getHorizonServer(network)
       const account = await server.loadAccount(resolvedAddress)
-      const parsed = account.balances.map(parseHorizonBalance)
 
       if (fetchId !== requestRef.current) return
 
+      const parsed = account.balances.map(parseHorizonBalance)
       setBalances(parsed)
       setLastUpdated(new Date())
     } catch (err) {
@@ -98,7 +96,6 @@ export function useBalance({
     }
   }, [fetchBalances, watch, interval])
 
-  // Find the specific asset balance
   const match = balances.find(b => {
     if (asset === "XLM") return b.asset === "XLM"
     if (typeof asset === "object" && typeof b.asset === "object") {

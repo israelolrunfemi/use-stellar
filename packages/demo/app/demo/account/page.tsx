@@ -5,20 +5,13 @@ import type { CSSProperties } from "react"
 import { formatAssetCode, shortenAddress, useAccount, useWallet } from "use-stellar"
 import { DemoCard } from "../../../components/DemoCard"
 
-type AccountBalance = NonNullable<ReturnType<typeof useAccount>["data"]>["balances"][number];
-
-export default function AccountDemo() {
-  const { address } = useWallet();
-  const [input, setInput] = useState("");
-  const inspectedAddress = input.trim() || address;
-  const { data, loading, error, refetch } = useAccount({ address: inspectedAddress });
-type AccountBalance = NonNullable<ReturnType<typeof useAccount>["account"]>["balances"][number]
+type AccountBalance = NonNullable<ReturnType<typeof useAccount>["data"]>["balances"][number]
 
 export default function AccountDemo() {
   const { address } = useWallet()
   const [input, setInput] = useState("")
   const inspectedAddress = input.trim() || address
-  const { account, loading, error, refetch } = useAccount({ address: inspectedAddress })
+  const { data, loading, error, refetch } = useAccount({ address: inspectedAddress })
 
   useEffect(() => {
     if (address && !input) setInput(address)
@@ -34,12 +27,14 @@ export default function AccountDemo() {
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <label style={labelStyle}>Account address</label>
+
         <input
           value={input}
-          onChange={event => setInput(event.target.value)}
+          onChange={e => setInput(e.target.value)}
           placeholder="Paste a G... address"
           style={inputStyle}
         />
+
         <button
           onClick={refetch}
           disabled={!inspectedAddress || loading}
@@ -51,6 +46,7 @@ export default function AccountDemo() {
         {!inspectedAddress && (
           <Text color="#facc15">Connect a wallet or paste any testnet G... address.</Text>
         )}
+
         {error && <Text color="#f87171">{error.message}</Text>}
 
         {data && (
@@ -71,9 +67,7 @@ export default function AccountDemo() {
             <section style={sectionStyle}>
               <Heading>Balances</Heading>
               {data.balances.length > 0 ? (
-                data.balances.map(balance => <BalanceRow key={balanceKey(balance)} balance={balance} />)
-              {account.balances.length > 0 ? (
-                account.balances.map(balance => (
+                data.balances.map(balance => (
                   <BalanceRow key={balanceKey(balance)} balance={balance} />
                 ))
               ) : (
@@ -94,11 +88,23 @@ export default function AccountDemo() {
                       fontSize: 13,
                     }}
                   >
-                    <span style={{ color: "#e0e0e0", fontFamily: "monospace" }}>
+                    <span
+                      style={{
+                        color: "#e0e0e0",
+                        fontFamily: "monospace",
+                      }}
+                    >
                       {shortenAddress(signer.key)}
                     </span>
+
                     <span style={{ color: "#666" }}>{signer.type}</span>
-                    <span style={{ color: "#4ade80", fontFamily: "monospace" }}>
+
+                    <span
+                      style={{
+                        color: "#4ade80",
+                        fontFamily: "monospace",
+                      }}
+                    >
                       {signer.weight}
                     </span>
                   </div>
@@ -113,7 +119,6 @@ export default function AccountDemo() {
     </DemoCard>
   )
 }
-
 function BalanceRow({ balance }: { balance: AccountBalance }) {
   const assetLabel = formatAssetCode(balance.asset)
   const issuer = typeof balance.asset === "object" ? shortenAddress(balance.asset.issuer) : "native"
@@ -165,7 +170,7 @@ function balanceKey(balance: AccountBalance) {
   return `${balance.asset.code}:${balance.asset.issuer}`
 }
 
-const labelStyle: CSSProperties = { color: "#666", fontSize: 13 }
+const labelStyle: CSSProperties = { color: "#312b2b", fontSize: 13 }
 
 const sectionStyle: CSSProperties = {
   display: "flex",

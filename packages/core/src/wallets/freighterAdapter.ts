@@ -39,7 +39,7 @@ export const freighterAdapter: WalletAdapter = {
   metadata: {
     type: FREIGHTER_WALLET_TYPE,
     name: "Freighter",
-    supported: true,
+    supported: false,
   },
 
   async isAvailable() {

@@ -140,7 +140,6 @@ export default function BalanceDemo() {
           </p>
         )}
 
-        {xlm.error && <p style={{ color: "#f87171", fontSize: 12 }}>{xlm.error}</p>}
         {xlm.error && <p style={{ color: "#f87171", fontSize: 12 }}>{xlm.error.message}</p>}
       </div>
     </DemoCard>

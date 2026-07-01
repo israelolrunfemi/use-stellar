@@ -3,17 +3,6 @@
 export { StellarProvider } from "./context/StellarProvider"
 
 // ── Hooks ──────────────────────────────────────────────────────────────────
-export { useWallet }            from "./hooks/useWallet";
-export { useBalance }           from "./hooks/useBalance";
-export { useAccount }           from "./hooks/useAccount";
-export { useFriendbot }         from "./hooks/useFriendbot";
-export { useSendPayment }       from "./hooks/useSendPayment";
-export { useTransaction }       from "./hooks/useTransaction";
-export { useNetwork }           from "./hooks/useNetwork";
-export { useAsset }             from "./hooks/useAsset";
-export { useSorobanContract }   from "./hooks/useSorobanContract";
-export { usePayments }          from "./hooks/usePayments";
-export { useClaimableBalance }  from "./hooks/useClaimableBalance";
 export { useWallet } from "./hooks/useWallet"
 export { useBalance } from "./hooks/useBalance"
 export { useAccount } from "./hooks/useAccount"
@@ -23,7 +12,9 @@ export type { UseTransactionOptions, UseTransactionReturn } from "./hooks/useTra
 export { useNetwork } from "./hooks/useNetwork"
 export { useAsset } from "./hooks/useAsset"
 export { useSorobanContract } from "./hooks/useSorobanContract"
+export { usePayments } from "./hooks/usePayments"
 export { useClaimableBalance } from "./hooks/useClaimableBalance"
+
 export {
   FREIGHTER_WALLET_TYPE,
   NETWORK_PASSPHRASES,
@@ -45,8 +36,15 @@ export {
 } from "./errors"
 export type { StellarErrorCode, StellarErrorOptions } from "./errors"
 
-// ── Validation utilities ────────────────────────────────────────────────────
-export { isValidAssetCode, isValidStellarAddress } from "./utils"
+// ── Utilities ────────────────────────────────────────────────────────────
+export {
+  isBrowser,
+  isValidAssetCode,
+  isValidStellarAddress,
+  shortenAddress,
+  formatAmount,
+  formatAssetCode,
+} from "./utils"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 export type {
@@ -63,9 +61,9 @@ export type {
   TransactionStatus,
   SendPaymentOptions,
   SendPaymentResult,
+  NormalizedPayment,
   ContractCallOptions,
   StellarContextValue,
-  NormalizedPayment,
   UsePaymentsOptions,
   UsePaymentsReturn,
   ClaimableBalance,
@@ -79,11 +77,3 @@ export type {
   WalletConnection,
   WalletNetworkDetails,
 } from "./wallets"
-
-export {
-  isBrowser,
-  isValidStellarAddress,
-  shortenAddress,
-  formatAmount,
-  formatAssetCode,
-} from "./utils"

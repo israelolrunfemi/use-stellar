@@ -1,25 +1,17 @@
-"use client";
-import { useState } from "react";
-import { usePayments, useWallet, shortenAddress, formatAssetCode } from "use-stellar";
-import { DemoCard } from "../../../components/DemoCard";
+"use client"
+import { useState } from "react"
+import { usePayments, useWallet, shortenAddress, formatAssetCode } from "use-stellar"
+import { DemoCard } from "../../../components/DemoCard"
 
 export default function PaymentsDemo() {
-  const { address } = useWallet();
-  const [custom, setCustom] = useState("");
-  const resolved = custom || address;
+  const { address } = useWallet()
+  const [custom, setCustom] = useState("")
+  const resolved = custom || address
 
-  const {
-    payments,
-    loading,
-    error,
-    fetchNext,
-    fetchPrev,
-    hasNext,
-    hasPrev,
-  } = usePayments({
+  const { payments, loading, error, fetchNext, fetchPrev, hasNext, hasPrev } = usePayments({
     address: resolved,
     limit: 5,
-  });
+  })
 
   return (
     <DemoCard
@@ -34,7 +26,7 @@ export default function PaymentsDemo() {
   hasNext,
   hasPrev
 } = usePayments({
-  address: "${resolved || 'G...'}",
+  address: "${resolved || "G..."}",
   limit: 5,
 })`}
     >
@@ -75,7 +67,15 @@ export default function PaymentsDemo() {
         )}
 
         {error && (
-          <div style={{ color: "#f87171", fontSize: 12, padding: "10px", background: "#221111", borderRadius: 6 }}>
+          <div
+            style={{
+              color: "#f87171",
+              fontSize: 12,
+              padding: "10px",
+              background: "#221111",
+              borderRadius: 6,
+            }}
+          >
             Error: {error}
           </div>
         )}
@@ -83,9 +83,9 @@ export default function PaymentsDemo() {
         {!loading && payments.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {payments.map(payment => {
-              const isIncoming = payment.direction === "incoming";
-              const assetCode = formatAssetCode(payment.asset);
-              
+              const isIncoming = payment.direction === "incoming"
+              const assetCode = formatAssetCode(payment.asset)
+
               return (
                 <div
                   key={payment.id}
@@ -120,7 +120,9 @@ export default function PaymentsDemo() {
                       </span>
                     </div>
                     <div style={{ fontSize: 11, color: "#666", marginTop: 4 }}>
-                      {isIncoming ? `From: ${shortenAddress(payment.from, 4)}` : `To: ${shortenAddress(payment.to, 4)}`}
+                      {isIncoming
+                        ? `From: ${shortenAddress(payment.from, 4)}`
+                        : `To: ${shortenAddress(payment.to, 4)}`}
                     </div>
                   </div>
                   <div style={{ textAlign: "right" }}>
@@ -138,15 +140,25 @@ export default function PaymentsDemo() {
                       {shortenAddress(payment.txHash, 3)}
                     </a>
                     <div style={{ fontSize: 10, color: "#444", marginTop: 4 }}>
-                      {new Date(payment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(payment.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </div>
                   </div>
                 </div>
-              );
+              )
             })}
 
             {/* Pagination Controls */}
-            <div style={{ display: "flex", justifySelf: "center", justifyContent: "space-between", marginTop: 12 }}>
+            <div
+              style={{
+                display: "flex",
+                justifySelf: "center",
+                justifyContent: "space-between",
+                marginTop: 12,
+              }}
+            >
               <button
                 onClick={fetchPrev}
                 disabled={!hasPrev}
@@ -182,5 +194,5 @@ export default function PaymentsDemo() {
         )}
       </div>
     </DemoCard>
-  );
+  )
 }

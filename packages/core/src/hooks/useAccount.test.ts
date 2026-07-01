@@ -178,18 +178,15 @@ describe("useAccount", () => {
     it("should transition from loading to success correctly", async () => {
       const { result } = renderHook(() => useAccount({ address: TEST_ADDRESS }), { wrapper })
 
-      // Initial loading state
       expect(result.current.loading).toBe(true)
       expect(result.current.account).toBe(null)
       expect(result.current.error).toBe(null)
 
-      // Wait for completion
       await waitFor(() => {
         expect(mockServer.loadAccount).toHaveBeenCalled()
         expect(result.current.loading).toBe(false)
       })
 
-      // Success state
       expect(result.current.loading).toBe(false)
       expect(result.current.account).toBeTruthy()
       expect(result.current.error).toBe(null)
@@ -200,18 +197,15 @@ describe("useAccount", () => {
 
       const { result } = renderHook(() => useAccount({ address: TEST_ADDRESS }), { wrapper })
 
-      // Initial loading state
       expect(result.current.loading).toBe(true)
       expect(result.current.account).toBe(null)
       expect(result.current.error).toBe(null)
 
-      // Wait for completion
       await waitFor(() => {
         expect(mockServer.loadAccount).toHaveBeenCalled()
         expect(result.current.loading).toBe(false)
       })
 
-      // Error state
       expect(result.current.loading).toBe(false)
       expect(result.current.account).toBe(null)
       expect(result.current.error).toBeTruthy()
@@ -227,14 +221,11 @@ describe("useAccount", () => {
         expect(result.current.loading).toBe(false)
       })
 
-      // Verify initial success
       expect(result.current.account).toBeTruthy()
       expect(result.current.error).toBe(null)
 
-      // Mock an error for refetch
       mockServer.loadAccount.mockRejectedValue(new Error("Network Error"))
 
-      // Call refetch
       act(() => {
         result.current.refetch()
       })

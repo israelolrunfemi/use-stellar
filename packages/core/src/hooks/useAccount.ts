@@ -1,8 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
-import { useStellarContext }   from "../context/StellarProvider";
-import { getHorizonServer, parseHorizonBalance } from "../utils";
-import type { AccountInfo } from "../types";
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, parseHorizonBalance } from "../utils"
 import { toStellarError } from "../errors"
@@ -13,10 +9,6 @@ export interface UseAccountOptions {
 }
 
 export interface UseAccountReturn {
-  data:  AccountInfo | null;
-  loading:  boolean
-  error:    string | null;
-  refetch:  () => void;
   account: AccountInfo | null
   loading: boolean
   error: StellarError | null
@@ -37,19 +29,13 @@ export function useAccount({ address }: UseAccountOptions = {}): UseAccountRetur
   const { network, wallet } = useStellarContext()
   const resolvedAddress = address ?? wallet.address
 
-  const [data, setData]          = useState<AccountInfo | null>(null);
-  const [loading, setLoading]    = useState(false);
-  const [error,   setError]      = useState<string | null>(null);
-
-  const fetchAccount = useCallback(async () => {
-    if (!resolvedAddress) return;
   const [account, setAccount] = useState<AccountInfo | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<StellarError | null>(null)
 
   const requestRef = useRef(0)
 
-  async function fetchAccount() {
+  const fetchAccount = useCallback(async () => {
     if (!resolvedAddress) return
 
     const fetchId = ++requestRef.current
@@ -88,18 +74,14 @@ export function useAccount({ address }: UseAccountOptions = {}): UseAccountRetur
         setLoading(false)
       }
     }
-  }, [resolvedAddress, network]);
+  }, [resolvedAddress, network])
 
   useEffect(() => {
-    fetchAccount();
-  }, [fetchAccount]);
-
-  return { data, loading, error, refetch: fetchAccount };
     fetchAccount()
     return () => {
       requestRef.current = -1
     }
-  }, [resolvedAddress, network])
+  }, [fetchAccount])
 
   return { account, loading, error, refetch: fetchAccount }
 }

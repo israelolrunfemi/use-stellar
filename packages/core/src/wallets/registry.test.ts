@@ -7,7 +7,7 @@ describe("wallet adapter registry", () => {
     expect(adapter.metadata).toEqual({
       type: "freighter",
       name: "Freighter",
-      supported: true,
+      supported: false,
     })
   })
 

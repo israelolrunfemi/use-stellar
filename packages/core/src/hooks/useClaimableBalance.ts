@@ -25,6 +25,8 @@ export function useClaimableBalance({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<StellarError | null>(null)
 
+  // Monotonic id used to ignore stale responses (e.g. when the address/network
+  // changes mid-flight, or the component unmounts before a fetch resolves).
   const requestRef = useRef(0)
 
   const fetchBalances = useCallback(async () => {

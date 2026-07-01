@@ -7,11 +7,9 @@ import {
   Asset as StellarAsset,
   Memo,
 } from "@stellar/stellar-sdk"
-
 import { useStellarContext } from "../context/StellarProvider"
-import { getHorizonServer, isNativeAsset, isBrowser } from "../utils"
+import { getHorizonServer, isNativeAsset, isIssuedAsset, isBrowser } from "../utils"
 import { getWalletAdapter } from "../wallets"
-import type { SendPaymentOptions, SendPaymentResult, Asset } from "../types"
 import { createStellarError, toStellarError } from "../errors"
 import type { SendPaymentOptions, SendPaymentResult, Asset, StellarError } from "../types"
 
@@ -63,12 +61,12 @@ export function useSendPayment(): UseSendPaymentReturn {
       if (wallet.walletNetwork && wallet.network !== wallet.walletNetwork) {
         throw new Error(
           `Network mismatch: Provider is on ${wallet.network} but wallet is on ${wallet.walletNetwork}. ` +
-          `Switch your wallet to ${wallet.network} or call refreshWalletNetwork() to update.`
-        );
+            `Switch your wallet to ${wallet.network} or call refreshWalletNetwork() to update.`
+        )
       }
 
-      setLoading(true);
-      setError(null);
+      setLoading(true)
+      setError(null)
 
       try {
         const server = getHorizonServer(network)
@@ -95,6 +93,8 @@ export function useSendPayment(): UseSendPaymentReturn {
 
         const tx = builder.build()
         const xdr = tx.toXDR()
+
+        // Sign & submit via the active wallet's adapter
         const adapter = getWalletAdapter(wallet.wallet)
         const signedTxXdr = await adapter.signTransaction(xdr, {
           address: wallet.address,
@@ -133,5 +133,6 @@ export function useSendPayment(): UseSendPaymentReturn {
 
 function toStellarAsset(asset: Asset): StellarAsset {
   if (isNativeAsset(asset)) return StellarAsset.native()
-  return new StellarAsset(asset.code, asset.issuer)
+  if (isIssuedAsset(asset)) return new StellarAsset(asset.code, asset.issuer)
+  return StellarAsset.native() // fallback for liquidity_pool_shares
 }

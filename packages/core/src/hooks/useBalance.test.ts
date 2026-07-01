@@ -246,7 +246,7 @@ describe("useBalance", () => {
 
   describe("stale responses and unmounting", () => {
     it("should not set state if unmounted before fetch resolves", async () => {
-      let resolveFetch: (value: unknown) => void = () => {}
+      let resolveFetch: (value: typeof mockAccountData) => void = () => {}
       const promise = new Promise(resolve => {
         resolveFetch = resolve
       })
@@ -266,8 +266,8 @@ describe("useBalance", () => {
     })
 
     it("should not overwrite newer results with older stale responses", async () => {
-      let resolveFirst: (value: unknown) => void = () => {}
-      let resolveSecond: (value: unknown) => void = () => {}
+      let resolveFirst: (value: typeof mockAccountData) => void = () => {}
+      let resolveSecond: (value: typeof mockAccountData) => void = () => {}
 
       const promise1 = new Promise(resolve => {
         resolveFirst = resolve

@@ -37,7 +37,6 @@ export function useTransaction({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<StellarError | null>(null)
   const transactionRef = useRef<TransactionResult | null>(null)
-  const requestRef = useRef(0)
 
   transactionRef.current = transaction
 
@@ -49,15 +48,12 @@ export function useTransaction({
       return
     }
 
-    const fetchId = ++requestRef.current
     setLoading(true)
     setError(null)
 
     try {
       const server = getHorizonServer(network)
       const raw = await server.transactions().transaction(hash).call()
-
-      if (fetchId !== requestRef.current) return
 
       const status: TransactionStatus = raw.successful ? "success" : "failed"
 
@@ -70,7 +66,6 @@ export function useTransaction({
         envelope: raw.envelope_xdr,
       })
     } catch (err: unknown) {
-      if (fetchId !== requestRef.current) return
       // 404 means not found / still pending
       const is404 = (err as { response?: { status: number } })?.response?.status === 404
       if (is404) {
@@ -79,9 +74,7 @@ export function useTransaction({
         setError(toStellarError(err))
       }
     } finally {
-      if (fetchId === requestRef.current) {
-        setLoading(false)
-      }
+      setLoading(false)
     }
   }, [hash, network, watch])
 
@@ -100,7 +93,6 @@ export function useTransaction({
       if (interval) {
         clearInterval(interval)
       }
-      requestRef.current = -1
     }
   }, [fetchTransaction, watch])
 

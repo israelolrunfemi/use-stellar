@@ -1,5 +1,5 @@
 import * as React from "react"
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { createContext, useContext, useState } from "react"
 import type { StellarContextValue, StellarNetwork, WalletState } from "../types"
 import { NETWORK_CONFIGS } from "../types"
 
@@ -11,21 +11,14 @@ const DEFAULT_WALLET: WalletState = {
   walletName: null,
   connecting: false,
   error: null,
-}
-  connected:     false,
-  address:       null,
-  network:       null,
-  wallet:        null,
-  connecting:    false,
-  error:         null,
   walletNetwork: null,
-};
+}
 
 const StellarContext = createContext<StellarContextValue | null>(null)
 
 export interface StellarProviderProps {
   network?: StellarNetwork
-  children: ReactNode
+  children: React.ReactNode
 }
 
 export function StellarProvider({ network = "testnet", children }: StellarProviderProps) {
