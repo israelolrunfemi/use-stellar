@@ -1,8 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
-import type { UsePaymentsOptions, UsePaymentsReturn, NormalizedPayment, Asset } from "../types"
+import type {
+  UsePaymentsOptions,
+  UsePaymentsReturn,
+  NormalizedPayment,
+  Asset,
+  StellarError,
+} from "../types"
 import type { Horizon } from "@stellar/stellar-sdk"
+import { toStellarError } from "../errors"
 
 type PaymentRecord =
   | Horizon.ServerApi.PaymentOperationRecord
@@ -23,7 +30,7 @@ export function usePayments({
 
   const [payments, setPayments] = useState<NormalizedPayment[]>([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
 
   // Store page navigation functions from the Horizon response
   const nextRef = useRef<(() => Promise<Horizon.ServerApi.CollectionPage<PaymentRecord>>) | null>(
@@ -65,7 +72,7 @@ export function usePayments({
       setHasNext(res.records.length >= limit)
       setHasPrev(!!cursor)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch payment history")
+      setError(toStellarError(err))
     } finally {
       setLoading(false)
     }
@@ -86,7 +93,7 @@ export function usePayments({
       setHasNext(res.records.length >= limit)
       setHasPrev(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch next page")
+      setError(toStellarError(err))
     } finally {
       setLoading(false)
     }
@@ -107,7 +114,7 @@ export function usePayments({
       setHasNext(true)
       setHasPrev(res.records.length >= limit)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch previous page")
+      setError(toStellarError(err))
     } finally {
       setLoading(false)
     }
@@ -158,9 +165,9 @@ function normalizePayment(record: PaymentRecord, address: string): NormalizedPay
     asset = "XLM"
     direction = to === address ? "incoming" : "outgoing"
   } else if (type === "account_merge") {
-    from = record.account || record.source_account
+    from = record.source_account
     to = record.into
-    amount = record.amount || "0"
+    amount = "0"
     asset = "XLM"
     direction = to === address ? "incoming" : "outgoing"
   } else if (type === "path_payment_strict_receive" || type === "path_payment_strict_send") {
