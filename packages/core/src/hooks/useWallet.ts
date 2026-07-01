@@ -119,9 +119,11 @@ export function useWallet(): UseWalletReturn {
 // ── Get Freighter network (used for post-connect drift checks) ─────────────
 async function getFreighterNetwork(): Promise<StellarNetwork> {
   // Dynamic import keeps @stellar/freighter-api out of the SSR bundle.
-  const { getNetworkDetails } = await import("@stellar/freighter-api")
+  const freighter = await import("@stellar/freighter-api")
+  const getNetworkDetails = freighter.getNetworkDetails
 
   const networkDetails = await getNetworkDetails()
+
   if (networkDetails.error) {
     throw new Error(networkDetails.error)
   }
@@ -129,9 +131,10 @@ async function getFreighterNetwork(): Promise<StellarNetwork> {
   if (networkDetails.networkPassphrase === "Public Global Stellar Network ; September 2015") {
     return "mainnet"
   }
+
   if (networkDetails.networkPassphrase === "Test SDF Network ; September 2015") {
     return "testnet"
   }
 
-  throw new Error(`Unknown network passphrase: ${networkDetails.networkPassphrase}`)
+  throw new Error("Unknown Stellar network")
 }
