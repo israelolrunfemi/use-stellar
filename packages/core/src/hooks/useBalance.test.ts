@@ -195,7 +195,7 @@ describe("useBalance", () => {
 
       expect(result.current.balance).toBe(null)
       expect(result.current.balances).toEqual([])
-      expect(result.current.error).toBe("Request failed with status code 404")
+      expect(result.current.error?.code).toBe("ACCOUNT_NOT_FOUND")
     })
 
     it("should handle unexpected SDK errors", async () => {
@@ -210,7 +210,7 @@ describe("useBalance", () => {
 
       expect(result.current.balance).toBe(null)
       expect(result.current.balances).toEqual([])
-      expect(result.current.error).toBe("Network Error")
+      expect(result.current.error?.code).toBe("NETWORK_ERROR")
     })
   })
 
@@ -240,7 +240,7 @@ describe("useBalance", () => {
         expect(result.current.loading).toBe(false)
       })
 
-      expect(result.current.error).toBe("Network Error")
+      expect(result.current.error?.code).toBe("NETWORK_ERROR")
     })
   })
 

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
+import { createStellarError, toStellarError } from "../errors"
+import type { StellarError } from "../types"
 
 export interface AssetInfo {
   code: string
@@ -18,12 +20,13 @@ export interface AssetInfo {
 export interface UseAssetOptions {
   code: string
   issuer: string
+  autoFetch?: boolean
 }
 
 export interface UseAssetReturn {
   asset: AssetInfo | null
   loading: boolean
-  error: string | null
+  error: StellarError | null
   refetch: () => void
 }
 
@@ -33,17 +36,26 @@ export interface UseAssetReturn {
  * @param options - Configuration options
  * @param options.code - The asset code (e.g., "USDC")
  * @param options.issuer - The asset issuer's Stellar address
+ * @param options.autoFetch - Whether to automatically fetch on mount and when parameters change (default: true)
  * @returns `{ asset, loading, error, refetch }`
  *
  * @example
  * const { asset, loading } = useAsset({ code: "USDC", issuer: "G..." })
+ * 
+ * @example
+ * const { asset, loading, error, refetch } = useAsset({ 
+ *   code: "USDC", 
+ *   issuer: "G...",
+ *   autoFetch: false
+ * })
  */
-export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
+export function useAsset({ code, issuer, autoFetch = true }: UseAssetOptions): UseAssetReturn {
+
   const { network } = useStellarContext()
 
   const [asset, setAsset] = useState<AssetInfo | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
 
   const fetchAsset = useCallback(async () => {
     setLoading(true)
@@ -54,7 +66,9 @@ export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
       const res = await server.assets().forCode(code).forIssuer(issuer).call()
 
       const raw = res.records[0]
-      if (!raw) throw new Error(`Asset ${code}:${issuer} not found`)
+      if (!raw) {
+        throw createStellarError("ACCOUNT_NOT_FOUND", `Asset ${code}:${issuer} not found.`)
+      }
       const assetRecord = raw as typeof raw & { home_domain?: string }
 
       setAsset({
@@ -70,13 +84,16 @@ export function useAsset({ code, issuer }: UseAssetOptions): UseAssetReturn {
         },
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch asset")
+      if (fetchId !== requestRef.current) return
+      setError(toStellarError(err))
     } finally {
       setLoading(false)
     }
   }, [code, issuer, network])
 
   useEffect(() => {
+    if (autoFetch) {
+      fetchAsset()
     fetchAsset()
   }, [fetchAsset])
 

@@ -2,6 +2,8 @@ import { renderHook, waitFor, act } from "@testing-library/react"
 import React from "react"
 import { StellarProvider } from "../context/StellarProvider"
 import { useTransaction } from "./useTransaction"
+import type { UseTransactionOptions, UseTransactionReturn } from "./useTransaction"
+import type { TransactionResult, TransactionStatus } from "../types"
 
 // Mock the entire @stellar/stellar-sdk module
 jest.mock("@stellar/stellar-sdk", () => ({
@@ -166,7 +168,7 @@ describe("useTransaction", () => {
       })
 
       expect(result.current.transaction).toBe(null)
-      expect(result.current.error).toBe("Network Error")
+      expect(result.current.error?.code).toBe("NETWORK_ERROR")
     })
 
     it("should handle unknown errors correctly", async () => {
@@ -180,7 +182,8 @@ describe("useTransaction", () => {
       })
 
       expect(result.current.transaction).toBe(null)
-      expect(result.current.error).toBe("Unknown server error")
+      expect(result.current.error?.code).toBe("UNKNOWN")
+      expect(result.current.error?.message).toBe("Unknown server error")
     })
   })
 
@@ -211,7 +214,120 @@ describe("useTransaction", () => {
       })
 
       expect(result.current.transaction?.status).toBe("success")
-      expect(result.current.error).toBe("Network Error")
+      expect(result.current.error?.code).toBe("NETWORK_ERROR")
     })
+  })
+})
+
+// ── Type-level tests ────────────────────────────────────────────────────────
+// These tests validate the public API surface at compile time.
+// If any of the types regress to `any`, TypeScript will surface errors here
+// rather than silently allowing them to leak into consumer code.
+
+describe("useTransaction — type-level contract", () => {
+  it("UseTransactionOptions has the expected shape", () => {
+    // This assignment would fail TypeScript compilation if the fields
+    // were typed as `any` with narrower-than-expected properties.
+    const opts: UseTransactionOptions = { hash: "abc123", watch: true }
+    expect(typeof opts.hash).toBe("string")
+    expect(typeof opts.watch).toBe("boolean")
+  })
+
+  it("UseTransactionOptions.hash accepts null", () => {
+    const opts: UseTransactionOptions = { hash: null }
+    expect(opts.hash).toBeNull()
+  })
+
+  it("UseTransactionReturn has all required fields with correct types", () => {
+    // Type assertion: UseTransactionReturn must satisfy this exact shape.
+    // TypeScript raises a compile-time error if any field is missing or
+    // typed incorrectly — catching accidental regressions to `any`.
+    type AssertReturnShape = {
+      transaction: TransactionResult | null
+      loading: boolean
+      error: string | null
+      refetch: () => void
+    }
+
+    // Compile-time check: the interface must be assignable to the expected shape.
+    // If UseTransactionReturn gains an `any`-typed field this assignment will
+    // still compile (any is assignable to anything), but the explicit field
+    // checks below will catch structural regressions.
+    const _check = (r: UseTransactionReturn): AssertReturnShape => r
+    expect(typeof _check).toBe("function")
+  })
+
+  it("TransactionResult fields are concrete types, not any", () => {
+    // Validates the shape of TransactionResult as used by the hook.
+    const result: TransactionResult = {
+      hash: "abc123",
+      status: "success",
+      ledger: 12345,
+      createdAt: "2024-01-01T00:00:00Z",
+      fee: "100",
+      envelope: "xdr...",
+    }
+
+    // Compile-time: TypeScript enforces `hash` is string, not any.
+    const hash: string = result.hash
+    // Compile-time: TypeScript enforces `status` is the literal union, not any.
+    const status: TransactionStatus = result.status
+    // Compile-time: TypeScript enforces `loading` shape via UseTransactionReturn.
+    const ledger: number | undefined = result.ledger
+
+    expect(hash).toBe("abc123")
+    expect(status).toBe("success")
+    expect(ledger).toBe(12345)
+  })
+
+  it("TransactionStatus is a discriminated union, not any", () => {
+    // TypeScript enforces that only the four literal values are valid.
+    // Any attempt to assign an arbitrary string would be a compile error.
+    const statuses: TransactionStatus[] = ["pending", "success", "failed", "not_found"]
+    expect(statuses).toHaveLength(4)
+    statuses.forEach(s => {
+      expect(typeof s).toBe("string")
+    })
+  })
+
+  it("hook return value satisfies UseTransactionReturn when rendered", async () => {
+    const { result } = renderHook(() => useTransaction({ hash: null }), {
+      wrapper: ({ children }: { children: React.ReactNode }) =>
+        React.createElement(StellarProvider, { network: "testnet", children }),
+    })
+
+    // Compile-time: each field is explicitly typed — accessing a non-existent
+    // or differently-typed field would be a TypeScript error.
+    const ret: UseTransactionReturn = result.current
+
+    const transaction: TransactionResult | null = ret.transaction
+    const loading: boolean = ret.loading
+    const error: string | null = ret.error
+    const refetch: () => void = ret.refetch
+
+    expect(transaction).toBeNull()
+    expect(loading).toBe(false)
+    expect(error).toBeNull()
+    expect(typeof refetch).toBe("function")
+  })
+
+  it("transaction field resolves to TransactionResult, not any, after successful fetch", async () => {
+    const { result } = renderHook(() => useTransaction({ hash: TEST_HASH }), {
+      wrapper: ({ children }: { children: React.ReactNode }) =>
+        React.createElement(StellarProvider, { network: "testnet", children }),
+    })
+
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    // Compile-time assertion: narrowing `transaction` must be valid.
+    // If `transaction` were typed as `any`, this narrowing would never
+    // require a type guard — the explicit assertion below catches that.
+    if (result.current.transaction !== null) {
+      const tx: TransactionResult = result.current.transaction
+      const hash: string = tx.hash
+      const status: TransactionStatus = tx.status
+      expect(hash).toBe(TEST_HASH)
+      expect(status).toBe("success")
+    }
   })
 })

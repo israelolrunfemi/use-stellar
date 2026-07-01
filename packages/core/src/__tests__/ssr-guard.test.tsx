@@ -30,6 +30,7 @@ describe("SSR guard — useWallet.connect() when isBrowser() returns false", () 
     })
 
     expect(result.current.connected).toBe(false)
-    expect(result.current.error).toMatch(/only available in the browser/i)
+    expect(result.current.error?.code).toBe("VALIDATION_ERROR")
+    expect(result.current.error?.message).toMatch(/only available in the browser/i)
   })
 })

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
-import type { TransactionResult, TransactionStatus } from "../types"
+import { toStellarError } from "../errors"
+import type { StellarError, TransactionResult, TransactionStatus } from "../types"
 
 export interface UseTransactionOptions {
   hash: string | null
@@ -11,7 +12,7 @@ export interface UseTransactionOptions {
 export interface UseTransactionReturn {
   transaction: TransactionResult | null
   loading: boolean
-  error: string | null
+  error: StellarError | null
   refetch: () => void
 }
 
@@ -34,7 +35,7 @@ export function useTransaction({
 
   const [transaction, setTransaction] = useState<TransactionResult | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<StellarError | null>(null)
   const transactionRef = useRef<TransactionResult | null>(null)
 
   transactionRef.current = transaction
@@ -70,7 +71,7 @@ export function useTransaction({
       if (is404) {
         setTransaction({ hash: hash!, status: watch ? "pending" : "not_found" })
       } else {
-        setError(err instanceof Error ? err.message : "Failed to fetch transaction")
+        setError(toStellarError(err))
       }
     } finally {
       setLoading(false)
@@ -80,13 +81,19 @@ export function useTransaction({
   useEffect(() => {
     fetchTransaction()
 
-    if (watch) {
-      const interval = setInterval(() => {
-        const status = transactionRef.current?.status
-        if (status === "success" || status === "failed") return
-        fetchTransaction()
-      }, 3000)
-      return () => clearInterval(interval)
+    const interval = watch
+      ? setInterval(() => {
+          const status = transactionRef.current?.status
+          if (status === "success" || status === "failed") return
+          fetchTransaction()
+        }, 3000)
+      : null
+
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+      requestRef.current = -1
     }
   }, [fetchTransaction, watch])
 

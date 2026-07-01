@@ -1,17 +1,30 @@
-import { useCallback } from "react"
+import { useCallback } from "react";
+import {
+  getNetworkDetails,
+  isConnected,
+  requestAccess,
+} from "@stellar/freighter-api";
+import {
+  isConnected as lobstrIsConnected,
+  getPublicKey as lobstrGetPublicKey,
+} from "@lobstrco/signer-extension-api";
 import { useStellarContext } from "../context/StellarProvider"
 import { isBrowser } from "../utils"
-import type { WalletState, WalletType } from "../types"
+import type { WalletState, WalletType, StellarNetwork } from "../types"
+import { createStellarError, toStellarError } from "../errors"
+import { getWalletAdapter } from "../wallets"
 
 export interface UseWalletReturn extends WalletState {
   connect: (wallet?: WalletType) => Promise<void>
   disconnect: () => void
+  refreshWalletNetwork: () => Promise<void>
+  isNetworkMismatch: boolean
 }
 
 /**
  * Manages wallet connection state and provides functions to connect and disconnect.
  *
- * @returns `{ connected, address, network, wallet, connecting, error, connect, disconnect }`
+ * @returns `{ connected, address, network, wallet, walletName, connecting, error, connect, disconnect }`
  *
  * @example
  * const { address, connect, disconnect } = useWallet()
@@ -25,9 +38,11 @@ export function useWallet(): UseWalletReturn {
       if (!isBrowser()) {
         setWallet(prev => ({
           ...prev,
-          error:
+          error: createStellarError(
+            "VALIDATION_ERROR",
             "Wallet connection is only available in the browser. " +
-            'Move your component to a "use client" boundary in Next.js / Remix.',
+              'Move your component to a "use client" boundary in Next.js / Remix.'
+          ),
         }))
         return
       }
@@ -35,14 +50,24 @@ export function useWallet(): UseWalletReturn {
       setWallet(prev => ({ ...prev, connecting: true, error: null }))
 
       try {
+        const adapter = getWalletAdapter(walletType)
+        const connection = await adapter.connect(network)
         let address: string
+        let walletNetwork: StellarNetwork
 
         if (walletType === "freighter") {
+          address = await connectFreighter(network);
+        } else if (walletType === "lobstr") {
+          address = await connectLobstr();
           address = await connectFreighter(network)
         } else if (walletType === "albedo") {
           address = await connectAlbedo()
+          const result = await connectFreighter(network)
+          address = result.address
+          walletNetwork = result.walletNetwork
         } else {
-          throw new Error(
+          throw createStellarError(
+            "VALIDATION_ERROR",
             `Wallet "${walletType}" not yet supported. ` +
               `Contributions welcome — see GitHub issues.`
           )
@@ -50,17 +75,19 @@ export function useWallet(): UseWalletReturn {
 
         setWallet({
           connected: true,
-          address,
-          network,
-          wallet: walletType,
+          address: connection.address,
+          network: connection.network,
+          wallet: connection.wallet,
+          walletName: adapter.metadata.name,
           connecting: false,
           error: null,
+          walletNetwork,
         })
       } catch (err) {
         setWallet(prev => ({
           ...prev,
           connecting: false,
-          error: err instanceof Error ? err.message : "Failed to connect wallet",
+          error: toStellarError(err),
         }))
       }
     },
@@ -68,17 +95,54 @@ export function useWallet(): UseWalletReturn {
   )
 
   const disconnect = useCallback(() => {
+    if (wallet.wallet) {
+      void getWalletAdapter(wallet.wallet).disconnect?.()
+    }
+
     setWallet({
       connected: false,
       address: null,
       network: null,
       wallet: null,
+      walletName: null,
       connecting: false,
       error: null,
+      walletNetwork: null,
     })
-  }, [setWallet])
+  }, [setWallet, wallet.wallet])
 
-  return { ...wallet, connect, disconnect }
+  const refreshWalletNetwork = useCallback(async () => {
+    if (!wallet.connected || wallet.wallet !== "freighter") {
+      return
+    }
+
+    try {
+      const walletNetwork = await getFreighterNetwork()
+      setWallet(prev => ({
+        ...prev,
+        walletNetwork,
+        error: null,
+      }))
+    } catch (err) {
+      setWallet(prev => ({
+        ...prev,
+        error: err instanceof Error ? err.message : "Failed to refresh wallet network",
+      }))
+    }
+  }, [wallet.connected, wallet.wallet, setWallet])
+
+  const isNetworkMismatch = useMemo(() => {
+    if (!wallet.connected || !wallet.walletNetwork) return false
+    return wallet.network !== wallet.walletNetwork
+  }, [wallet.connected, wallet.network, wallet.walletNetwork])
+
+  return {
+    ...wallet,
+    connect,
+    disconnect,
+    refreshWalletNetwork,
+    isNetworkMismatch,
+  }
 }
 
 // ── Albedo connector ───────────────────────────────────────────────────────
@@ -103,32 +167,108 @@ async function connectFreighter(network: string): Promise<string> {
   const connection = await isConnected()
   if (connection.error || !connection.isConnected) {
     throw new Error(
+async function connectFreighter(
+  network: string
+): Promise<{ address: string; walletNetwork: StellarNetwork }> {
+  // Dynamic import keeps @stellar/freighter-api out of the SSR bundle.
+  const freighterApi = await import("@stellar/freighter-api")
+  const { isConnected, requestAccess, getNetworkDetails } =
+    typeof freighterApi.isConnected === "function"
+      ? freighterApi
+      : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (freighterApi as any).default
+
+  const connection = await isConnected()
+  if (connection.error || !connection.isConnected) {
+    throw createStellarError(
+      "WALLET_NOT_INSTALLED",
       "Freighter wallet not found. Install the Freighter browser extension and try again."
     )
   }
 
   const access = await requestAccess()
   if (access.error) {
+    // Let toStellarError classify (e.g. "User declined access" → rejected).
     throw new Error(access.error.message)
   }
 
   if (!access.address) {
-    throw new Error("Freighter did not return a wallet address.")
+    throw createStellarError(
+      "WALLET_REQUEST_REJECTED",
+      "Freighter did not return a wallet address."
+    )
   }
 
-  const networkDetails = await getNetworkDetails()
-  if (networkDetails.error) {
-    throw new Error(networkDetails.error.message)
-  }
+  const walletNetwork = await getFreighterNetworkInternal(getNetworkDetails)
 
   const expectedPassphrase =
     network === "mainnet"
       ? "Public Global Stellar Network ; September 2015"
       : "Test SDF Network ; September 2015"
 
-  if (networkDetails.networkPassphrase !== expectedPassphrase) {
+  const actualPassphrase =
+    walletNetwork === "mainnet"
+      ? "Public Global Stellar Network ; September 2015"
+      : "Test SDF Network ; September 2015"
+
+  if (actualPassphrase !== expectedPassphrase) {
     throw new Error(`Wrong network. Switch Freighter to ${network} and try again.`)
+  if (networkDetails.networkPassphrase !== expectedPassphrase) {
+    throw createStellarError(
+      "WRONG_NETWORK",
+      `Wrong network. Switch Freighter to ${network} and try again.`
+    )
   }
 
-  return access.address
+  return { address: access.address, walletNetwork }
 }
+
+// ── Get Freighter network ──────────────────────────────────────────────────
+async function getFreighterNetwork(): Promise<StellarNetwork> {
+  const freighterApi = await import("@stellar/freighter-api")
+  const { getNetworkDetails } =
+    typeof freighterApi.getNetworkDetails === "function"
+      ? freighterApi
+      : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (freighterApi as any).default
+
+  return getFreighterNetworkInternal(getNetworkDetails)
+}
+
+async function getFreighterNetworkInternal(
+  getNetworkDetails: () => Promise<{ networkPassphrase: string; error?: string }>
+): Promise<StellarNetwork> {
+  const networkDetails = await getNetworkDetails()
+  if (networkDetails.error) {
+    throw new Error(networkDetails.error)
+  }
+
+  // Determine network from passphrase
+  if (networkDetails.networkPassphrase === "Public Global Stellar Network ; September 2015") {
+    return "mainnet"
+  }
+  if (networkDetails.networkPassphrase === "Test SDF Network ; September 2015") {
+    return "testnet"
+  }
+
+  throw new Error(`Unknown network passphrase: ${networkDetails.networkPassphrase}`)
+}
+
+// ── Lobstr connector ───────────────────────────────────────────────────────
+async function connectLobstr(): Promise<string> {
+  const connected = await lobstrIsConnected();
+  if (!connected) {
+    throw new Error(
+      "LOBSTR signer extension not found. " +
+      "Install the LOBSTR Signer Extension and try again."
+    );
+  }
+
+  const publicKey = await lobstrGetPublicKey();
+  if (!publicKey) {
+    throw new Error("LOBSTR did not return a wallet address.");
+  }
+
+  return publicKey;
+}
+    }

@@ -45,7 +45,7 @@ export default function ClaimableBalanceDemo() {
           </p>
         )}
 
-        {error && <p style={{ margin: 0, color: "#f87171", fontSize: 13 }}>{error}</p>}
+        {error && <p style={{ margin: 0, color: "#f87171", fontSize: 13 }}>{error.message}</p>}
 
         {!loading && !error && resolvedAddress && balances.length === 0 && (
           <p style={{ margin: 0, color: "#666", fontSize: 13 }}>

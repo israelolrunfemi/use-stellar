@@ -1,4 +1,7 @@
 import type { Dispatch, SetStateAction } from "react"
+import type { StellarError } from "../errors"
+
+export type { StellarError, StellarErrorCode } from "../errors"
 
 /**
  * Represents the Stellar network environment.
@@ -46,18 +49,29 @@ export interface StellarError {
   raw?: unknown
 }
 
-export type WalletType = "freighter" | "albedo" | "rabet"
+export type WalletType = "freighter" | "lobstr" | "albedo" | "rabet";
+/**
+ * Supported wallet providers.
+ */
 
 /**
  * The current state of the wallet connection.
  */
 export interface WalletState {
+  connected: boolean;
+  address: string | null;
+  network: StellarNetwork | null;
+  wallet: WalletType | null;
+  connecting: boolean;
+  error: string | null;
+  walletNetwork: StellarNetwork | null; // Actual network from wallet extension
   connected: boolean
   address: string | null
   network: StellarNetwork | null
   wallet: WalletType | null
+  walletName: string | null
   connecting: boolean
-  error: string | null
+  error: StellarError | null
 }
 
 /**
@@ -71,6 +85,14 @@ export type NativeAsset = "XLM"
 export interface IssuedAsset {
   code: string
   issuer: string
+}
+
+/**
+ * Extended asset information with validation metadata.
+ */
+export interface AssetMetadata extends IssuedAsset {
+  verified: boolean
+  timestamp: number
 }
 
 /**
@@ -190,3 +212,34 @@ export interface StellarContextValue {
   wallet: WalletState
   setWallet: Dispatch<SetStateAction<WalletState>>
 }
+
+export interface NormalizedPayment {
+  id: string;
+  txHash: string;
+  type: string;
+  from: string;
+  to: string;
+  amount: string;
+  asset: Asset;
+  direction: "incoming" | "outgoing";
+  createdAt: string;
+}
+
+export interface UsePaymentsOptions {
+  address?: string | null;
+  limit?: number;
+  order?: "asc" | "desc";
+  cursor?: string;
+}
+
+export interface UsePaymentsReturn {
+  payments: NormalizedPayment[];
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+  fetchNext: () => Promise<void>;
+  fetchPrev: () => Promise<void>;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
