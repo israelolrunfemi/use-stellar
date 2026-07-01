@@ -25,8 +25,10 @@ export function usePayments({
   const [error, setError] = useState<StellarError | null>(null)
 
   // Store page navigation functions from the Horizon response
-  const nextRef = useRef<(() => Promise<Horizon.ServerApi.CollectionPage<unknown>>) | null>(null)
-  const prevRef = useRef<(() => Promise<Horizon.ServerApi.CollectionPage<unknown>>) | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const nextRef = useRef<(() => Promise<Horizon.ServerApi.CollectionPage<any>>) | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prevRef = useRef<(() => Promise<Horizon.ServerApi.CollectionPage<any>>) | null>(null)
 
   const [hasNext, setHasNext] = useState(false)
   const [hasPrev, setHasPrev] = useState(false)
