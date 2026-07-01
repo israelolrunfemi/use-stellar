@@ -16,7 +16,7 @@ export const albedoAdapter: WalletAdapter = {
   metadata: {
     type: "albedo",
     name: "Albedo",
-    supported: true,
+    supported: false,
   },
 
   async isAvailable() {
