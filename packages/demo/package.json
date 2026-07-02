@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build",
+    "build": "pnpm --dir ../core build && next build",
     "start": "next start"
   },
   "dependencies": {

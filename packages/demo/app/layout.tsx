@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { Providers } from "../components/Providers";
 
 export const metadata: Metadata = {
-  title: "use-stellar",
+  title: "use-stellar demo",
   description: "React hooks for the Stellar network",
 };
 
@@ -14,9 +15,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         background: "#0f0f0f",
         color: "#f0f0f0",
       }}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
 }
-

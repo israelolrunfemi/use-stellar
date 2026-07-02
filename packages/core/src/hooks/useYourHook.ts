@@ -1,26 +1,28 @@
 import { useState, useEffect } from "react";
-import { useStellarContext }   from "../context/StellarProvider";
-import type { StellarError }   from "../types";
-import { parseStellarError }   from "../utils/errorParser";
+import { useStellarContext } from "../context/StellarProvider";
+import type { StellarError } from "../types";
+import { parseStellarError } from "../utils/errorParser";
+
+type SomeType = Record<string, unknown>;
 
 export interface UseYourHookReturn {
-  data:    SomeType | null;
+  data: SomeType | null;
   loading: boolean;
-  error:   StellarError | null;
+  error: StellarError | null;
   refetch: () => void;
 }
 
 export function useYourHook(): UseYourHookReturn {
   const { network } = useStellarContext();
-  const [data,    setData]    = useState<SomeType | null>(null);
+  const [data, setData] = useState<SomeType | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState<StellarError | null>(null);
+  const [error, setError] = useState<StellarError | null>(null);
 
   async function fetch() {
     setLoading(true);
     setError(null);
     try {
-      // your logic here
+      setData(null);
     } catch (err) {
       setError(parseStellarError(err));
     } finally {
@@ -28,7 +30,9 @@ export function useYourHook(): UseYourHookReturn {
     }
   }
 
-  useEffect(() => { fetch(); }, [network]);
+  useEffect(() => {
+    fetch();
+  }, [network]);
 
   return { data, loading, error, refetch: fetch };
 }

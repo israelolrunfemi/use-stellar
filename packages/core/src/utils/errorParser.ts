@@ -30,15 +30,15 @@ export function parseStellarError(error: unknown): StellarError {
       message = "The transaction failed on the network.";
     }
   }
-  
+
   // 3. Map Freighter / Wallet Rejections
   const lowerMessage = rawMessage.toLowerCase();
   if (lowerMessage.includes("user declined") || lowerMessage.includes("rejected")) {
     code = "TRANSACTION_REJECTED";
     message = "The transaction was rejected in the wallet.";
   } else if (lowerMessage.includes("not installed") || lowerMessage.includes("not found")) {
-     code = "WALLET_NOT_INSTALLED";
-     message = "Freighter wallet is not installed or not detected.";
+    code = "WALLET_NOT_INSTALLED";
+    message = "Freighter wallet is not installed or not detected.";
   }
 
   // 4. Map 404s
@@ -52,5 +52,6 @@ export function parseStellarError(error: unknown): StellarError {
     code,
     message,
     raw: error,
+    cause: error,
   };
 }

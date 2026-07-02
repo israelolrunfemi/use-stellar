@@ -14,17 +14,8 @@ const hooks = [
   ["useNetwork", "Read the active Stellar network config.", "const { isTestnet } = useNetwork()", "/docs/hooks/use-network"],
   ["useAsset", "Inspect asset supply and issuer metadata.", "useAsset({ code, issuer })", "/docs/hooks/use-asset"],
   ["useSorobanContract", "Prepare Soroban contract reads.", "useSorobanContract({ contractId, method })", "/docs/hooks/use-soroban-contract"],
+  ["useClaimableBalance", "Track claimable balances and escrow claims.", "const { balances } = useClaimableBalance()", "/demo/claimable"],
 ] as const;
-  { name: "useWallet",          desc: "Connect Freighter, get address",               href: "/demo/wallet"      },
-  { name: "useBalance",         desc: "Fetch XLM or any asset balance",               href: "/demo/balance"     },
-  { name: "useAccount",         desc: "Full account info — balances, signers",        href: "/demo/account"     },
-  { name: "useSendPayment",     desc: "Send XLM or USDC with one hook",               href: "/demo/send"        },
-  { name: "useTransaction",     desc: "Fetch and watch a transaction by hash",        href: "/demo/transaction" },
-  { name: "useNetwork",         desc: "Current network, testnet/mainnet helper",      href: "/demo/network"     },
-  { name: "useAsset",           desc: "Asset metadata — supply, issuer, home domain", href: "/demo/asset"       },
-  { name: "useSorobanContract",   desc: "Call a read function on a Soroban contract",          href: "/demo/soroban"   },
-  { name: "useClaimableBalance", desc: "Fetch claimable balances — airdrops, vesting, escrow", href: "/demo/claimable" },
-];
 
 const rawSdk = `import { Horizon, Asset } from "@stellar/stellar-sdk"
 
@@ -126,4 +117,3 @@ const sectionTitle: CSSProperties = { margin: "0 0 18px", fontSize: 26, color: "
 const panelTitle: CSSProperties = { margin: "0 0 10px", color: "#666666", fontSize: 14, fontFamily: "monospace", fontWeight: 400 };
 const textLink: CSSProperties = { color: "#7dd3fc", textDecoration: "none", fontWeight: 700 };
 const footerLink: CSSProperties = { color: "#f0f0f0", textDecoration: "none" };
-
