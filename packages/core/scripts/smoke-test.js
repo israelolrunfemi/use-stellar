@@ -18,7 +18,7 @@ console.log('Version:', packageJson.version);
 // 1. Pack package
 try {
   console.log(`\n1. Packaging library (pnpm pack)...`);
-  execSync('npx pnpm@10.30.2 pack', { cwd: rootDir, stdio: 'inherit' });
+  execSync('pnpm pack', { cwd: rootDir, stdio: 'inherit' });
 } catch (err) {
   console.error('Failed to pack package:', err.message);
   process.exit(1);
@@ -93,7 +93,7 @@ console.log('CommonJS require test passed successfully!');
 
   // 7. Write TypeScript validation test file
   const tsTest = `
-import { isValidStellarAddress, useWallet, NormalizedPayment } from 'use-stellar';
+import { isValidStellarAddress, useWallet, useClaimableBalance, ClaimableBalance } from 'use-stellar';
 
 const isValid: boolean = isValidStellarAddress('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN');
 console.log('TypeScript import and types resolution OK. Address valid:', isValid);
