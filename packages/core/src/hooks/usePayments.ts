@@ -1,6 +1,6 @@
 // packages/core/src/hooks/usePayments.ts
 
-import { useCallback, useReducer } from "react"
+import { useCallback, useReducer, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
 import { useQuery, paymentsKey } from "../cache"
@@ -50,6 +50,12 @@ type PaginationAction =
       prev: (() => Promise<Horizon.ServerApi.CollectionPage<PaymentRecord>>) | null
       hasNext: boolean
       hasPrev: boolean
+      /**
+       * Page navigation only: when the new page came back empty, keep the
+       * page already on screen and update just the navigation state, so a
+       * user who steps past the end is not shown a blank list.
+       */
+      keepCurrentWhenEmpty?: boolean
     }
   | { type: "FETCH_ERROR"; queryKey: string; error: StellarError }
 
@@ -74,7 +80,10 @@ function paginationReducer(state: PaginationState, action: PaginationAction): Pa
       return {
         ...state,
         loading: false,
-        payments: action.payments,
+        payments:
+          action.keepCurrentWhenEmpty && action.payments.length === 0
+            ? state.payments
+            : action.payments,
         next: action.next,
         prev: action.prev,
         hasNext: action.hasNext,
@@ -110,6 +119,12 @@ export function usePayments({
     ? paymentsKey(networkConfig.horizonUrl, network, resolvedAddress, limit, order, cursor)
     : (["payments", "disabled"] as const)
   const currentQueryKey = JSON.stringify(queryKeyArr)
+
+  // Monotonic request id. A page navigation captures it at the start and
+  // discards its own response if a newer navigation or refetch has since
+  // claimed the display — the reducer's queryKey check cannot catch this,
+  // because a refetch does not change the key.
+  const requestRef = useRef(0)
 
   const [pageState, dispatch] = useReducer(paginationReducer, {
     queryKey: currentQueryKey,
@@ -180,6 +195,7 @@ export function usePayments({
   const fetchNext = useCallback(async () => {
     if (pageState.queryKey !== currentQueryKey || !pageState.next) return
     
+    const fetchId = ++requestRef.current
     dispatch({ type: "FETCH_START", queryKey: currentQueryKey })
     try {
       const res = await pageState.next()
@@ -190,6 +206,8 @@ export function usePayments({
       const records = hasNext ? res.records.slice(0, limit) : res.records
       const normalized = records.map(rec => normalizePayment(rec, requestAddress))
 
+      if (fetchId !== requestRef.current) return
+
       dispatch({
         type: "FETCH_SUCCESS",
         queryKey: currentQueryKey,
@@ -198,8 +216,10 @@ export function usePayments({
         prev: () => res.prev(),
         hasNext,
         hasPrev: true,
+        keepCurrentWhenEmpty: true,
       })
     } catch (err) {
+      if (fetchId !== requestRef.current) return
       const stellarError = toStellarError(err)
       // `toStellarError` returns null for an abort, which is a deliberate
       // cancellation rather than a failure — leave the page state untouched.
@@ -215,6 +235,7 @@ export function usePayments({
   const fetchPrev = useCallback(async () => {
     if (pageState.queryKey !== currentQueryKey || !pageState.prev) return
     
+    const fetchId = ++requestRef.current
     dispatch({ type: "FETCH_START", queryKey: currentQueryKey })
     try {
       const res = await pageState.prev()
@@ -225,6 +246,8 @@ export function usePayments({
       const records = hasPrev ? res.records.slice(0, limit) : res.records
       const normalized = records.map(rec => normalizePayment(rec, requestAddress))
 
+      if (fetchId !== requestRef.current) return
+
       dispatch({
         type: "FETCH_SUCCESS",
         queryKey: currentQueryKey,
@@ -233,8 +256,10 @@ export function usePayments({
         prev: () => res.prev(),
         hasNext: true,
         hasPrev,
+        keepCurrentWhenEmpty: true,
       })
     } catch (err) {
+      if (fetchId !== requestRef.current) return
       const stellarError = toStellarError(err)
       // `toStellarError` returns null for an abort, which is a deliberate
       // cancellation rather than a failure — leave the page state untouched.
@@ -246,6 +271,13 @@ export function usePayments({
       })
     }
   }, [pageState.queryKey, pageState.prev, currentQueryKey, resolvedAddress, limit])
+
+  /** Drops any page navigation and supersedes in-flight page fetches. */
+  const refetchLatest = useCallback(() => {
+    requestRef.current += 1
+    dispatch({ type: "RESET", queryKey: currentQueryKey })
+    refetch()
+  }, [currentQueryKey, refetch])
 
   const error = pageState.error ?? (rawError ? toStellarError(rawError) : null)
   const loading = pageState.loading || cacheLoading
@@ -260,7 +292,7 @@ export function usePayments({
     loading,
     error,
     isStale,
-    refetch,
+    refetch: refetchLatest,
     fetchNext,
     fetchPrev,
     hasNext: pageState.hasNext ?? data?.hasNext ?? false,

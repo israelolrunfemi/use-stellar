@@ -31,7 +31,14 @@ async function flush() {
 beforeEach(() => {
   jest.useFakeTimers()
   loadAccount.mockReset()
-  loadAccount.mockResolvedValue({ balances: [{ asset: "XLM", balance: "100" }] })
+  loadAccount.mockResolvedValue({
+    id: ADDR,
+    sequenceNumber: () => "1",
+    subentry_count: 0,
+    thresholds: { low_threshold: 0, med_threshold: 0, high_threshold: 0 },
+    signers: [],
+    balances: [{ asset: "XLM", balance: "100" }],
+  })
   mockGetServer.mockReturnValue({ loadAccount })
 })
 

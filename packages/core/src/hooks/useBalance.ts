@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, parseHorizonBalance } from "../utils"
 import { toStellarError } from "../errors"
 import { useQuery, accountKey } from "../cache"
-import type { Asset, Balance, StellarError } from "../types"
+import type { AccountInfo, Asset, Balance, StellarError } from "../types"
 
 export interface UseBalanceOptions {
   address?: string | null // defaults to connected wallet address
@@ -82,18 +82,39 @@ export function useBalance({
     : (["balance", "disabled"] as const)
 
   const {
-    data: balances,
+    data: account,
     loading,
     error: rawError,
     updatedAt,
     refetch,
     rateLimitedUntilRef,
-  } = useQuery<Balance[]>({
+  } = useQuery<AccountInfo>({
     queryKey,
+    // Caches the whole account, not just its balances. useAccount keys on the
+    // same `accountKey`, so the two hooks share one Horizon request — but only
+    // if they also agree on what is stored under it. Caching two different
+    // shapes under one key means whichever hook fetches first decides what the
+    // other reads.
     queryFn: async () => {
       const server = getHorizonServer(networkConfig)
-      const account = await server.loadAccount(resolvedAddress!)
-      return account.balances.map(parseHorizonBalance)
+      const raw = await server.loadAccount(resolvedAddress!)
+
+      return {
+        address: raw.id,
+        sequence: raw.sequenceNumber(),
+        balances: raw.balances.map(parseHorizonBalance),
+        subentryCount: raw.subentry_count,
+        thresholds: {
+          lowThreshold: raw.thresholds.low_threshold,
+          medThreshold: raw.thresholds.med_threshold,
+          highThreshold: raw.thresholds.high_threshold,
+        },
+        signers: raw.signers.map((sig: { key: string; weight: number; type: string }) => ({
+          key: sig.key,
+          weight: sig.weight,
+          type: sig.type,
+        })),
+      } satisfies AccountInfo
     },
     store: queryStore,
     staleTime,
@@ -123,9 +144,11 @@ export function useBalance({
   }, [watch, interval, resolvedAddress, network, networkConfig.horizonUrl, rateLimitedUntilRef])
 
   const error = rawError ? toStellarError(rawError) : null
-  const lastUpdated = updatedAt ? new Date(updatedAt) : null
+  // Memoized on the timestamp: a fresh Date each render would look like a
+  // change to any consumer comparing it or listing it as an effect dep.
+  const lastUpdated = useMemo(() => (updatedAt ? new Date(updatedAt) : null), [updatedAt])
 
-  const resolvedBalances = balances ?? []
+  const resolvedBalances = account?.balances ?? []
 
   const match = resolvedBalances.find(b => {
     if (asset === "XLM") return b.asset === "XLM"
