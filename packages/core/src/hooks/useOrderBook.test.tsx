@@ -2,7 +2,7 @@
 
 import React from "react"
 import { renderHook, act, waitFor } from "@testing-library/react"
-import { useOrderbook } from "./useOrderbook"
+import { useOrderbook } from "./useOrderBook"
 import { StellarProvider } from "../context/StellarProvider"
 
 jest.mock("../utils", () => ({

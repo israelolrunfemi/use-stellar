@@ -1,4 +1,5 @@
 // packages/core/src/hooks/usePaymentHistory.ts
+import { isIssuedAsset } from "../utils"
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { usePayments } from "./usePayments"
@@ -25,7 +26,7 @@ export function usePaymentHistory({
   const basePayments = usePayments({ address, limit, order, cursor })
 
   // Memoize on primitives to prevent inline object props (like asset={{ code, issuer }}) from breaking identity
-  const assetFilter = asset === "all" ? "all" : `${asset.code}-${asset.issuer}`
+  const assetFilter = isIssuedAsset(asset) ? `${asset.code}-${asset.issuer}` : String(asset)
 
   // 1. Reset state when query parameters change
   const queryParamsKey = `${address}-${limit}-${order}-${direction}-${assetFilter}`
@@ -46,8 +47,8 @@ export function usePaymentHistory({
 
       let match = true
       if (direction !== "all" && p.direction !== direction) match = false
-      if (asset !== "all" && p.asset !== "XLM") {
-        if (typeof p.asset === "object") {
+      if (isIssuedAsset(asset) && p.asset !== "XLM") {
+        if (isIssuedAsset(p.asset)) {
           if (p.asset.code !== asset.code || p.asset.issuer !== asset.issuer) match = false
         } else {
           match = false // Record is XLM but we are filtering for a specific issued asset

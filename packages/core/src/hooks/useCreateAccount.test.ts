@@ -4,7 +4,8 @@ import React from "react"
 import { renderHook, act, waitFor } from "@testing-library/react"
 import { useCreateAccount } from "./useCreateAccount"
 import { useStellarContext } from "../context/StellarProvider"
-import { getHorizonServer, getWalletAdapter, isBrowser } from "../utils"
+import { getHorizonServer, isBrowser } from "../utils"
+import { getWalletAdapter } from "../wallets"
 import { TransactionBuilder, Operation } from "@stellar/stellar-sdk"
 
 jest.mock("../context/StellarProvider")

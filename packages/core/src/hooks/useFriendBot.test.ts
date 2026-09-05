@@ -2,7 +2,7 @@
 
 import React from "react"
 import { renderHook, act } from "@testing-library/react"
-import { useFriendbot } from "./useFriendbot"
+import { useFriendbot } from "./useFriendBot"
 import { useStellarContext } from "../context/StellarProvider"
 
 const TESTNET_ACCOUNT = "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASUIYIC7FEM"

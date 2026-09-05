@@ -4,7 +4,8 @@ import { renderHook, act } from "@testing-library/react"
 import { useSorobanWrite } from "./useSorobanWrite"
 import { rpc, xdr, TransactionBuilder, Networks } from "@stellar/stellar-sdk"
 import { useStellarContext } from "../context/StellarProvider"
-import { getHorizonServer, getWalletAdapter, isBrowser } from "../utils"
+import { getHorizonServer, isBrowser } from "../utils"
+import { getWalletAdapter } from "../wallets"
 
 jest.mock("../context/StellarProvider")
 jest.mock("../utils")

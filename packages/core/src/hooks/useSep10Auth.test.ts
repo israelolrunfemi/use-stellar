@@ -4,7 +4,8 @@ import { renderHook, act } from "@testing-library/react"
 import { useSep10Auth } from "./useSep10Auth"
 import { useAnchor } from "./useAnchor"
 import { useStellarContext } from "../context/StellarProvider"
-import { getWalletAdapter, isBrowser } from "../utils"
+import { isBrowser } from "../utils"
+import { getWalletAdapter } from "../wallets"
 import { WebAuth, Networks } from "@stellar/stellar-sdk"
 
 jest.mock("./useAnchor")

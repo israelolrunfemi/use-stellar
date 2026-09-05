@@ -127,7 +127,10 @@ export function useOffers({ address, limit = 10, order = "desc", cursor }: UseOf
         hasNext: res.records.length >= limit, hasPrev: true,
       })
     } catch (err) {
-      dispatch({ type: "FETCH_ERROR", queryKey: currentQueryKey, error: toStellarError(err) })
+      const stellarError = toStellarError(err)
+      // An abort is a deliberate cancellation, not a failure.
+      if (!stellarError) return
+      dispatch({ type: "FETCH_ERROR", queryKey: currentQueryKey, error: stellarError })
     }
   }, [pageState.queryKey, pageState.next, currentQueryKey, limit])
 
@@ -144,7 +147,10 @@ export function useOffers({ address, limit = 10, order = "desc", cursor }: UseOf
         hasNext: true, hasPrev: res.records.length >= limit,
       })
     } catch (err) {
-      dispatch({ type: "FETCH_ERROR", queryKey: currentQueryKey, error: toStellarError(err) })
+      const stellarError = toStellarError(err)
+      // An abort is a deliberate cancellation, not a failure.
+      if (!stellarError) return
+      dispatch({ type: "FETCH_ERROR", queryKey: currentQueryKey, error: stellarError })
     }
   }, [pageState.queryKey, pageState.prev, currentQueryKey, limit])
 

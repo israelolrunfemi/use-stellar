@@ -64,6 +64,8 @@ export const STELLAR_ERROR_CODES = {
   UNKNOWN: "UNKNOWN",
   SEP10_VALIDATION_FAILED: "SEP10_VALIDATION_FAILED",
   ALREADY_FUNDED: "ALREADY_FUNDED",
+  /** The account lacks the XLM base reserve for another subentry (an offer, trustline, or signer). */
+  LOW_RESERVE: "LOW_RESERVE",
 } as const
 
 /** The union of every supported {@link STELLAR_ERROR_CODES} value. */

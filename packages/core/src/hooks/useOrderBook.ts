@@ -2,9 +2,9 @@
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
-import { getHorizonServer } from "../utils"
+import { getHorizonServer, isNativeAsset, isIssuedAsset } from "../utils"
 import { Asset as StellarAsset } from "@stellar/stellar-sdk"
-import { toStellarError } from "../errors"
+import { createStellarError, toStellarError } from "../errors"
 import type { UseOrderbookReturn, UseOrderbookOptions, OrderbookEntry, Asset, StellarError } from "../types"
 
 // Converts BigInt rational (n/d) to a precise decimal string
@@ -24,7 +24,21 @@ function formatRational(n: bigint, d: bigint, decimals = 7): string {
 }
 
 function toStellarAsset(asset: Asset): StellarAsset {
-  return asset === "XLM" ? StellarAsset.native() : new StellarAsset(asset.code, asset.issuer)
+  if (isNativeAsset(asset)) return StellarAsset.native()
+  // Pool shares are a balance-only pseudo-asset — they are not a tradable side
+  // of an order book, so reject them rather than fabricating an Asset.
+  if (!isIssuedAsset(asset)) {
+    throw createStellarError(
+      "VALIDATION_ERROR",
+      `Unsupported asset for an order book: ${JSON.stringify(asset)}. Pass "XLM" or { code, issuer }.`
+    )
+  }
+  return new StellarAsset(asset.code, asset.issuer)
+}
+
+/** A stable primitive key for an asset, so inline object props keep identity. */
+function assetKey(asset: Asset): string {
+  return isIssuedAsset(asset) ? `${asset.code}:${asset.issuer}` : asset
 }
 
 export function useOrderbook({
@@ -46,8 +60,8 @@ export function useOrderbook({
   const fetchCount = useRef(0)
 
   // Memoize assets using primitives to prevent infinite loops from inline objects
-  const sellingKey = selling === "XLM" ? "native" : `${selling.code}:${selling.issuer}`
-  const buyingKey = buying === "XLM" ? "native" : `${buying.code}:${buying.issuer}`
+  const sellingKey = assetKey(selling)
+  const buyingKey = assetKey(buying)
 
   const fetchOrderbook = useCallback(async () => {
     if (!enabled) return

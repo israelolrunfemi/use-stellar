@@ -200,10 +200,14 @@ export function usePayments({
         hasPrev: true,
       })
     } catch (err) {
+      const stellarError = toStellarError(err)
+      // `toStellarError` returns null for an abort, which is a deliberate
+      // cancellation rather than a failure — leave the page state untouched.
+      if (!stellarError) return
       dispatch({
         type: "FETCH_ERROR",
         queryKey: currentQueryKey,
-        error: toStellarError(err),
+        error: stellarError,
       })
     }
   }, [pageState.queryKey, pageState.next, currentQueryKey, resolvedAddress, limit])
@@ -231,10 +235,14 @@ export function usePayments({
         hasPrev,
       })
     } catch (err) {
+      const stellarError = toStellarError(err)
+      // `toStellarError` returns null for an abort, which is a deliberate
+      // cancellation rather than a failure — leave the page state untouched.
+      if (!stellarError) return
       dispatch({
         type: "FETCH_ERROR",
         queryKey: currentQueryKey,
-        error: toStellarError(err),
+        error: stellarError,
       })
     }
   }, [pageState.queryKey, pageState.prev, currentQueryKey, resolvedAddress, limit])

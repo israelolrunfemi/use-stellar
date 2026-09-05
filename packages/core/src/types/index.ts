@@ -444,7 +444,7 @@ export type MemoInput =
 /**
  * Options for sending a payment transaction.
  */
-export interface SendPaymentOptions {
+export interface SendPaymentOptions extends FeeOptions {
   to: string
   asset: Asset
   amount: string
@@ -462,7 +462,7 @@ export interface SendPaymentResult {
 /**
  * Options for adding a trustline to an asset.
  */
-export interface AddTrustlineOptions {
+export interface AddTrustlineOptions extends FeeOptions {
   asset: IssuedAsset
   limit?: string
 }
@@ -499,7 +499,26 @@ export interface NormalizedPayment {
 export interface ContractCallOptions {
   contractId: string
   method: string
+  /**
+   * Call arguments. `xdr.ScVal` values are the primary path and pass through
+   * untouched; a bare `number` or `string` is ambiguous in Soroban's type
+   * system and is rejected with an error naming the XDR type to use.
+   */
   args?: unknown[]
+  /**
+   * The contract's parsed spec. When supplied, arguments are converted against
+   * the parameter types the contract itself declares, and the return value is
+   * decoded against its declared return type.
+   *
+   * @example
+   * const spec = new contract.Spec(specEntries)
+   */
+  spec?: ContractSpecLike
+  /**
+   * Account to simulate as. Defaults to the connected wallet address, then to
+   * a documented placeholder when no wallet is connected.
+   */
+  sourceAccount?: string
 }
 
 export interface ClaimableBalanceClaimant {
@@ -622,6 +641,16 @@ export interface UsePaymentHistoryOptions {
   cursor?: string
   direction?: "incoming" | "outgoing" | "all"
   asset?: Asset | "all"
+  /**
+   * Upper bound on how many Horizon pages are pulled while accumulating enough
+   * matches to fill one filtered page. Defaults to 5.
+   *
+   * Filtering happens after Horizon returns a page, so a narrow filter over a
+   * busy account can require several fetches to fill one page of results. This
+   * caps that work; when the bound is reached `accumulationBoundHit` is `true`
+   * and the page may be short of `limit`.
+   */
+  maxAccumulationPages?: number
 }
 
 export interface UsePaymentHistoryReturn {
@@ -633,6 +662,12 @@ export interface UsePaymentHistoryReturn {
   fetchPrev: () => Promise<void>
   hasNext: boolean
   hasPrev: boolean
+  /**
+   * `true` when `maxAccumulationPages` was reached before a full page of
+   * matches was collected, so `payments` may be shorter than `limit` even
+   * though more matches exist further back.
+   */
+  accumulationBoundHit: boolean
 }
 
 export interface FederationRecord {

@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from "react"
 import { useStellarContext } from "../context/StellarProvider"
-import { getHorizonServer, isBrowser, getWalletAdapter } from "../utils"
+import { getHorizonServer, isBrowser } from "../utils"
+import { getWalletAdapter } from "../wallets"
 import { TransactionBuilder, Operation, StrKey } from "@stellar/stellar-sdk"
 import { toStellarError } from "../errors"
 import type { UseCreateAccountReturn, CreateAccountOptions, TransactionResult } from "../types"
