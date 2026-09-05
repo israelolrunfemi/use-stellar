@@ -102,13 +102,12 @@ export const DEFAULT_ERROR_MESSAGES: Record<StellarErrorCode, string> = {
   MEMO_REQUIRED: "The destination account requires a memo. Add one before sending.",
   NETWORK_ERROR: "Unable to reach the Stellar network. Check your connection and try again.",
   UNKNOWN: "An unknown error occurred.",
-o  SEP10_VALIDATION_FAILED: "The SEP-10 authentication challenge failed validation. It may be malformed or tampered with.",
+  SEP10_VALIDATION_FAILED: "The SEP-10 authentication challenge failed validation. It may be malformed or tampered with.",
   LOW_RESERVE: "Your account does not have enough XLM reserve to create another offer. Send more XLM to your account to meet the minimum reserve requirement.",
 }
 
 /** Type guard: is `value` one of the known {@link StellarErrorCode}s? */
 export function isStellarErrorCode(value: unknown): value is StellarErrorCode {
   return typeof value === "string" && value in DEFAULT_ERROR_MESSAGES
-}
 }
 

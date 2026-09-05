@@ -86,6 +86,8 @@ export interface UseSep10AuthReturn {
   error: StellarError | null
   authenticate: () => Promise<string>
   logout: () => void
+}
+
 export interface NormalizedOffer {
   id: string
   seller: string
@@ -136,6 +138,7 @@ export interface UseManageOfferReturn {
   createOffer: (options: CreateOfferOptions) => Promise<TransactionResult>
   updateOffer: (offerId: string, options: UpdateOfferOptions) => Promise<TransactionResult>
   cancelOffer: (offerId: string, feeOptions?: FeeOptions) => Promise<TransactionResult>
+}
 
 export interface CreateAccountOptions extends FeeOptions {
   destination: string
@@ -278,12 +281,6 @@ export interface AssetMetadata extends IssuedAsset {
 
 /**
  * Can be either a native asset, an issued asset, or liquidity pool shares.
- */
-export type Asset = NativeAsset | IssuedAsset | "liquidity_pool_shares"
-
-/**
- * Represents a Stellar AMM Liquidity Pool.
- */
  */
 export type Asset = NativeAsset | IssuedAsset | "liquidity_pool_shares"
 
@@ -633,7 +630,6 @@ export interface UseAccountExistsReturn {
   error: StellarError | null
   refetch: () => void
 }
-}
 
 /**
  * Represents an open order on the SDEX.
@@ -682,8 +678,6 @@ export interface UseManageOfferReturn {
   error: StellarError | null
   result: TransactionResult | null
   reset: () => void
-}
-  refetch: () => void
 }
 
 // ── Trades ─────────────────────────────────────────────────────────────────
