@@ -27,7 +27,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 )
 
 // Testnet address — never use mainnet addresses in tests.
-const ADDRESS = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
+const ADDRESS = "GDX76CSVSJMYE7PMG2JI7CMERG4CK3UNKX4G6SXZJCY2NLJEWXA2XRSS"
 
 // Helper: build a page response with working next/prev mocks.
 function pageOf(records: unknown[]) {
@@ -46,7 +46,7 @@ function makePayment(id: string) {
     type: "payment",
     transaction_hash: `tx_${id}`,
     created_at: "2024-01-01T00:00:00Z",
-    from: "GBVZZ3DKZOPZB7DKGXMPNKKNKZYWVJJZAJABVQMMK63ZNQTXJXJXKJVM",
+    from: "GCO65JSAJYT47G3CA7BY24IWQGAAQM35KX4ZZUVN3UETSDFEKXEXKV6M",
     to: ADDRESS,
     amount: "1.0",
     asset_type: "native",
@@ -95,7 +95,7 @@ describe("usePayments", () => {
         type: "payment",
         transaction_hash: "tx_1",
         created_at: "2026-06-25T18:00:00Z",
-        from: "GBVZZ3DKZOPZB7DKGXMPNKKNKZYWVJJZAJABVQMMK63ZNQTXJXJXKJVM",
+        from: "GCO65JSAJYT47G3CA7BY24IWQGAAQM35KX4ZZUVN3UETSDFEKXEXKV6M",
         to: ADDRESS,
         amount: "10.5",
         asset_type: "native",
@@ -113,7 +113,7 @@ describe("usePayments", () => {
       id: "100",
       txHash: "tx_1",
       type: "payment",
-      from: "GBVZZ3DKZOPZB7DKGXMPNKKNKZYWVJJZAJABVQMMK63ZNQTXJXJXKJVM",
+      from: "GCO65JSAJYT47G3CA7BY24IWQGAAQM35KX4ZZUVN3UETSDFEKXEXKV6M",
       to: ADDRESS,
       amount: "10.5",
       asset: "XLM",
@@ -130,11 +130,11 @@ describe("usePayments", () => {
         transaction_hash: "tx_2",
         created_at: "2026-06-25T18:01:00Z",
         from: ADDRESS,
-        to: "GBVZZ3DKZOPZB7DKGXMPNKKNKZYWVJJZAJABVQMMK63ZNQTXJXJXKJVM",
+        to: "GCO65JSAJYT47G3CA7BY24IWQGAAQM35KX4ZZUVN3UETSDFEKXEXKV6M",
         amount: "500.0",
         asset_type: "credit_alphanum4",
         asset_code: "USDC",
-        asset_issuer: "GBVZZ3DKZOPZB7DKGXMPNKKNKZYWVJJZAJABVQMMK63ZNQTXJXJXKJVM",
+        asset_issuer: "GCO65JSAJYT47G3CA7BY24IWQGAAQM35KX4ZZUVN3UETSDFEKXEXKV6M",
       },
     ]
 
@@ -150,9 +150,9 @@ describe("usePayments", () => {
       txHash: "tx_2",
       type: "payment",
       from: ADDRESS,
-      to: "GBVZZ3DKZOPZB7DKGXMPNKKNKZYWVJJZAJABVQMMK63ZNQTXJXJXKJVM",
+      to: "GCO65JSAJYT47G3CA7BY24IWQGAAQM35KX4ZZUVN3UETSDFEKXEXKV6M",
       amount: "500.0",
-      asset: { code: "USDC", issuer: "GBVZZ3DKZOPZB7DKGXMPNKKNKZYWVJJZAJABVQMMK63ZNQTXJXJXKJVM" },
+      asset: { code: "USDC", issuer: "GCO65JSAJYT47G3CA7BY24IWQGAAQM35KX4ZZUVN3UETSDFEKXEXKV6M" },
       direction: "outgoing",
       createdAt: "2026-06-25T18:01:00Z",
     })
@@ -165,7 +165,7 @@ describe("usePayments", () => {
         type: "create_account",
         transaction_hash: "tx_3",
         created_at: "2026-06-25T18:02:00Z",
-        funder: "GBVZZ3DKZOPZB7DKGXMPNKKNKZYWVJJZAJABVQMMK63ZNQTXJXJXKJVM",
+        funder: "GCO65JSAJYT47G3CA7BY24IWQGAAQM35KX4ZZUVN3UETSDFEKXEXKV6M",
         account: ADDRESS,
         starting_balance: "1.5",
       },
@@ -175,7 +175,7 @@ describe("usePayments", () => {
         transaction_hash: "tx_4",
         created_at: "2026-06-25T18:03:00Z",
         account: ADDRESS,
-        into: "GBVZZ3DKZOPZB7DKGXMPNKKNKZYWVJJZAJABVQMMK63ZNQTXJXJXKJVM",
+        into: "GCO65JSAJYT47G3CA7BY24IWQGAAQM35KX4ZZUVN3UETSDFEKXEXKV6M",
         amount: "2.5",
       },
     ]

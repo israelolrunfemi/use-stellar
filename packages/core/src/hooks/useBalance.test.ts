@@ -287,7 +287,7 @@ describe("useBalance", () => {
       await waitFor(() => expect(result.current.loading).toBe(false))
       expect(result.current.balance).toBe("100.0000000")
 
-      const NEW_ADDRESS = "GBAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
+      const NEW_ADDRESS = "GBNMLNS5FG23OQ3ZQG5PGS4TKINK3HPHOEOIX7JB3Q46ZP6DYUDIG6VF"
       rerender({ address: NEW_ADDRESS })
 
       // Cleared synchronously — before the new fetch has resolved.

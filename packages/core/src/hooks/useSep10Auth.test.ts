@@ -26,7 +26,7 @@ jest.mock("@stellar/stellar-sdk", () => {
 describe("useSep10Auth", () => {
   const mockWallet = {
     connected: true,
-    address: "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASUIYIC7FEM",
+    address: "GCQXGSYENBXMSLQ6ZEUTKI472VRITITZXTWEQBOOLMBWD347CPC3XLZ5",
     wallet: "test-wallet",
     walletNetwork: "testnet"
   }

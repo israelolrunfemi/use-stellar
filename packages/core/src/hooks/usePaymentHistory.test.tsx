@@ -5,7 +5,7 @@ import { renderHook, act, waitFor } from "@testing-library/react"
 import { usePaymentHistory } from "./usePaymentHistory"
 import { StellarProvider } from "../context/StellarProvider"
 
-const TESTNET_ACCOUNT = "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASUIYIC7FEM"
+const TESTNET_ACCOUNT = "GCQXGSYENBXMSLQ6ZEUTKI472VRITITZXTWEQBOOLMBWD347CPC3XLZ5"
 
 // Mock the underlying usePayments hook
 jest.mock("./usePayments", () => {

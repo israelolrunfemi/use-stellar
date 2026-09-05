@@ -55,7 +55,7 @@ jest.mock("../wallets", () => ({
 // causing WALLET_NOT_CONNECTED before any submission path is reached.
 const mockWalletState: WalletState = {
   connected: true,
-  address: "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN",
+  address: "GDX76CSVSJMYE7PMG2JI7CMERG4CK3UNKX4G6SXZJCY2NLJEWXA2XRSS",
   network: "testnet",
   wallet: "freighter",
   connecting: false,
@@ -100,12 +100,12 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 function makeSourceAccount() {
   return {
     sequenceNumber: () => "123",
-    accountId: () => "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN",
+    accountId: () => "GDX76CSVSJMYE7PMG2JI7CMERG4CK3UNKX4G6SXZJCY2NLJEWXA2XRSS",
     incrementSequenceNumber: jest.fn(),
   }
 }
 
-const DESTINATION = "GBBD47IF6LWK7P7MABN5KIK65Y6XVTX3CHGYVM4PBZSTSTBHX7WEEHQK"
+const DESTINATION = "GDHHCCQQFR6THLXLZQWVU545C4IN42CZ2A3IPYHYMI4LKELGMWAPP7ZR"
 
 describe("useSendPayment - 504 Gateway Timeout handling", () => {
   beforeEach(() => {

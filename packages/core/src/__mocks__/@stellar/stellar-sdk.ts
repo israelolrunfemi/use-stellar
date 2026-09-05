@@ -12,9 +12,9 @@
  * a transaction that the real network would reject and no test would catch it.
  *
  * The moduleNameMapper in jest.config.js routes every import of
- * "@stellar/stellar-sdk" in the core package to this file.  jest.requireActual
- * called from inside a moduleNameMapper target bypasses the mapper, so it
- * reaches the real SDK on disk.
+ * "@stellar/stellar-sdk" in the core package to this file. `requireActual` does
+ * NOT bypass that mapper, so the real SDK is reached by relative file path
+ * below.
  *
  * Exports:
  *   TESTNET_ADDRESS_A / TESTNET_ADDRESS_B  — real valid testnet addresses
@@ -31,7 +31,15 @@
 
 // ── Real SDK (pure, no I/O) ───────────────────────────────────────────────────
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const actual = jest.requireActual("@stellar/stellar-sdk") as any
+// Required by relative path, not by package name. `requireActual` bypasses the
+// manual mock but NOT `moduleNameMapper`, and the mapper points
+// "@stellar/stellar-sdk" straight back at this file — so the package-name form
+// resolves to this module and every re-export below is undefined. The package
+// also publishes no "./lib/*" subpath in its `exports` map, so a file path is
+// the only form that reaches the real SDK. It lands on the CommonJS build
+// rather than the browser bundle jsdom would otherwise select.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const actual = jest.requireActual("../../../node_modules/@stellar/stellar-sdk/lib/index.js") as any
 
 // Re-export the pure encoding types verbatim.  Tests that use these will
 // assert against Stellar's real XDR encoding, not a homemade fake.
@@ -58,7 +66,7 @@ export const FeeBumpTransaction = actual.FeeBumpTransaction
  * Safe to hardcode — testnet only, no real-world value.
  */
 export const TESTNET_ADDRESS_A =
-  "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
+  "GDX76CSVSJMYE7PMG2JI7CMERG4CK3UNKX4G6SXZJCY2NLJEWXA2XRSS"
 
 export const TESTNET_ADDRESS_B =
   "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
@@ -67,7 +75,7 @@ export const TESTNET_ADDRESS_B =
  * A throwaway testnet keypair — hardcoded for test stability.
  * This is NOT a mainnet key and holds no real-world value.
  *
- * Public key : GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN
+ * Public key : GDX76CSVSJMYE7PMG2JI7CMERG4CK3UNKX4G6SXZJCY2NLJEWXA2XRSS
  * Secret key : SCZANGBA5QLSR7HZLQ57UH3VXCBLWXRGKEVXHXBE4BKHE45EX44YFQ6
  *
  * The old mock returned a fake "SAAZI4TCR3TY..." secret — the public key with

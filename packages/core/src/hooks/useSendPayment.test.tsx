@@ -67,7 +67,7 @@ describe("useSendPayment - Payment Flow", () => {
     // Set up wallet state for a connected wallet
     mockWalletState = {
       connected: true,
-      address: "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN",
+      address: "GDX76CSVSJMYE7PMG2JI7CMERG4CK3UNKX4G6SXZJCY2NLJEWXA2XRSS",
       network: "testnet",
       wallet: "freighter",
       connecting: false,
@@ -82,7 +82,7 @@ describe("useSendPayment - Payment Flow", () => {
     const { getHorizonServer } = jest.requireMock("../utils") as { getHorizonServer: jest.Mock }
     getHorizonServer.mockReturnValue({
       loadAccount: mockLoadAccount.mockResolvedValue({
-        accountId: () => "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN",
+        accountId: () => "GDX76CSVSJMYE7PMG2JI7CMERG4CK3UNKX4G6SXZJCY2NLJEWXA2XRSS",
         sequenceNumber: () => "123",
         incrementSequenceNumber: jest.fn(),
       }),
@@ -127,7 +127,7 @@ describe("useSendPayment - Payment Flow", () => {
     const { getHorizonServer } = jest.requireMock("../utils") as { getHorizonServer: jest.Mock }
     getHorizonServer.mockReturnValue({
       loadAccount: jest.fn().mockResolvedValue({
-        accountId: () => "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN",
+        accountId: () => "GDX76CSVSJMYE7PMG2JI7CMERG4CK3UNKX4G6SXZJCY2NLJEWXA2XRSS",
         sequenceNumber: () => "123",
         incrementSequenceNumber: jest.fn(),
       }),
