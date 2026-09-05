@@ -20,6 +20,7 @@ export interface NetworkConfig {
   network: StellarNetwork
   horizonUrl: string
   sorobanUrl: string
+  networkPassphrase: string
 }
 
 export interface SorobanInvokeOptions {
@@ -58,6 +59,7 @@ export interface UseSorobanWriteReturn<T = unknown> {
 export interface CustomNetworkConfig {
   horizonUrl: string
   sorobanUrl: string
+  networkPassphrase?: string
 }
 
 export interface UseSep10AuthOptions {
@@ -252,8 +254,14 @@ export interface WalletState {
   network: StellarNetwork | null // Network from provider config
   wallet: WalletType | null
   error: StellarError | null
-  walletNetwork: StellarNetwork | null // Actual network from wallet extension
+  walletNetwork: WalletNetworkId | null // Actual network from wallet extension
   walletName: string | null
+  /**
+   * Raw passphrase reported by the wallet, present when `walletNetwork` is
+   * set. Optional so existing code that builds a `WalletState` by hand keeps
+   * compiling.
+   */
+  walletNetworkPassphrase?: string | null
 }
 
 /**

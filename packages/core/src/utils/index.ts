@@ -57,6 +57,17 @@ export function isIssuedAsset(asset: Asset): asset is IssuedAsset {
   )
 }
 
+/**
+ * Narrows to the pool-share pseudo-asset.
+ *
+ * Pool shares appear in balances but cannot be sent, traded, or used as either
+ * side of an offer, so the paths that build operations need to reject them
+ * explicitly rather than fall through to the issued-asset branch.
+ */
+export function isLiquidityPoolShares(asset: Asset): asset is "liquidity_pool_shares" {
+  return asset === "liquidity_pool_shares"
+}
+
 export function formatAssetCode(asset: Asset): string {
   if (isNativeAsset(asset)) return "XLM"
   if (isIssuedAsset(asset)) return asset.code
