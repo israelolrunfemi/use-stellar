@@ -6,7 +6,7 @@ import { useAnchor } from "./useAnchor"
 import { isBrowser } from "../utils"
 import { getWalletAdapter } from "../wallets"
 import { WebAuth } from "@stellar/stellar-sdk"
-import { toStellarError } from "../errors"
+import { createStellarError, toStellarError } from "../errors"
 import type { UseSep10AuthOptions, UseSep10AuthReturn } from "../types"
 import type { StellarError } from "../errors"
 
@@ -69,35 +69,25 @@ export function useSep10Auth({
     setError(null)
     try {
       if (!wallet.connected || !wallet.address || !wallet.wallet) {
-        const err = new Error("Wallet not connected")
-        err.name = "WALLET_NOT_CONNECTED"
-        throw err
+        throw createStellarError("WALLET_NOT_CONNECTED", "Wallet not connected")
       }
       if (wallet.walletNetwork && wallet.walletNetwork !== network) {
-        const err = new Error("Network mismatch")
-        err.name = "WRONG_NETWORK"
-        throw err
+        throw createStellarError("WRONG_NETWORK", "Network mismatch")
       }
       if (anchorError) throw anchorError
       if (!anchor) {
         throw new Error("Anchor configuration not loaded yet")
       }
       if (!anchor.webAuthEndpoint) {
-        const err = new Error("Anchor does not specify a WEB_AUTH_ENDPOINT")
-        err.name = "VALIDATION_ERROR"
-        throw err
+        throw createStellarError("VALIDATION_ERROR", "Anchor does not specify a WEB_AUTH_ENDPOINT")
       }
       if (!anchor.signingKey) {
-        const err = new Error("Anchor does not specify a SIGNING_KEY")
-        err.name = "VALIDATION_ERROR"
-        throw err
+        throw createStellarError("VALIDATION_ERROR", "Anchor does not specify a SIGNING_KEY")
       }
 
       const clientAddress = resolvedAccount
       if (!clientAddress) {
-        const err = new Error("No account resolved for authentication")
-        err.name = "VALIDATION_ERROR"
-        throw err
+        throw createStellarError("VALIDATION_ERROR", "No account resolved for authentication")
       }
 
       // Step 1: Fetch Challenge
@@ -118,9 +108,7 @@ export function useSep10Auth({
       const challengeXdr = challengeData.transaction
 
       if (!challengeXdr) {
-         const err = new Error("Invalid challenge response: missing transaction")
-         err.name = "SEP10_VALIDATION_FAILED"
-         throw err
+         throw createStellarError("SEP10_VALIDATION_FAILED", "Invalid challenge response: missing transaction")
       }
 
       // Step 2: Validate Challenge (DO THIS BEFORE SIGNING)
@@ -135,23 +123,17 @@ export function useSep10Auth({
         )
         clientAccountID = validationResult.clientAccountID
       } catch (e: any) {
-        const err = new Error(`Challenge validation failed: ${e.message}`)
-        err.name = "SEP10_VALIDATION_FAILED"
-        throw err
+        throw createStellarError("SEP10_VALIDATION_FAILED", `Challenge validation failed: ${e.message}`)
       }
 
       if (clientAccountID !== clientAddress) {
-        const err = new Error("Challenge validation failed: client account ID mismatch")
-        err.name = "SEP10_VALIDATION_FAILED"
-        throw err
+        throw createStellarError("SEP10_VALIDATION_FAILED", "Challenge validation failed: client account ID mismatch")
       }
 
       // Step 3: Sign Challenge
       const adapter = getWalletAdapter(wallet.wallet)
       if (!adapter) {
-        const err = new Error(`Wallet adapter not found: ${wallet.wallet}`)
-        err.name = "WALLET_NOT_FOUND"
-        throw err
+        throw createStellarError("WALLET_UNSUPPORTED", `Wallet adapter not found: ${wallet.wallet}`)
       }
 
       let signedXdr: string
@@ -162,9 +144,7 @@ export function useSep10Auth({
           networkPassphrase: networkConfig.networkPassphrase,
         })
       } catch (e: any) {
-        const err = new Error("The user rejected the request in their wallet.")
-        err.name = "WALLET_REQUEST_REJECTED"
-        throw err
+        throw createStellarError("WALLET_REQUEST_REJECTED", "The user rejected the request in their wallet.")
       }
 
       // Step 4: Submit Signed Challenge

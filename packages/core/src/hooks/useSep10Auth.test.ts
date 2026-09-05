@@ -11,6 +11,8 @@ import { WebAuth, Networks } from "@stellar/stellar-sdk"
 jest.mock("./useAnchor")
 jest.mock("../context/StellarProvider")
 jest.mock("../utils")
+// getWalletAdapter lives in ../wallets; automock it so tests can drive it.
+jest.mock("../wallets")
 
 // Mock WebAuth to control strict validation behavior
 jest.mock("@stellar/stellar-sdk", () => {
@@ -122,7 +124,7 @@ describe("useSep10Auth", () => {
     })
 
     expect(mockSignTransaction).not.toHaveBeenCalled() // MUST NOT sign invalid challenge
-    expect(result.current.error?.name).toBe("SEP10_VALIDATION_FAILED")
+    expect(result.current.error?.code).toBe("SEP10_VALIDATION_FAILED")
   })
   
   it("refuses a challenge naming a different account than the connected wallet", async () => {
@@ -142,7 +144,7 @@ describe("useSep10Auth", () => {
     })
 
     expect(mockSignTransaction).not.toHaveBeenCalled()
-    expect(result.current.error?.name).toBe("SEP10_VALIDATION_FAILED")
+    expect(result.current.error?.code).toBe("SEP10_VALIDATION_FAILED")
   })
 
   it("clears token on wallet disconnect", async () => {
@@ -185,6 +187,6 @@ describe("useSep10Auth", () => {
       await expect(result.current.authenticate()).rejects.toThrow()
     })
 
-    expect(result.current.error?.name).toBe("WALLET_REQUEST_REJECTED")
+    expect(result.current.error?.code).toBe("WALLET_REQUEST_REJECTED")
   })
 })

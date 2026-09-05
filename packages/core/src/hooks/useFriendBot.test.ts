@@ -45,7 +45,7 @@ describe("useFriendbot", () => {
     })
 
     expect(mockFetch).not.toHaveBeenCalled()
-    expect(result.current.error?.name).toBe("VALIDATION_ERROR")
+    expect(result.current.error?.code).toBe("VALIDATION_ERROR")
   })
 
   it("throws WALLET_NOT_CONNECTED when no address is provided and wallet is disconnected", async () => {
@@ -58,7 +58,7 @@ describe("useFriendbot", () => {
       await expect(result.current.fund()).rejects.toThrow()
     })
 
-    expect(result.current.error?.name).toBe("WALLET_NOT_CONNECTED")
+    expect(result.current.error?.code).toBe("WALLET_NOT_CONNECTED")
   })
 
   it("rejects an invalid address before spending a request", async () => {
@@ -69,7 +69,7 @@ describe("useFriendbot", () => {
     })
 
     expect(mockFetch).not.toHaveBeenCalled()
-    expect(result.current.error?.name).toBe("VALIDATION_ERROR")
+    expect(result.current.error?.code).toBe("VALIDATION_ERROR")
   })
 
   it("surfaces a distinct ALREADY_FUNDED error when friendbot returns 400", async () => {
@@ -80,7 +80,7 @@ describe("useFriendbot", () => {
       await expect(result.current.fund()).rejects.toThrow()
     })
 
-    expect(result.current.error?.name).toBe("ALREADY_FUNDED")
+    expect(result.current.error?.code).toBe("ALREADY_FUNDED")
     expect(result.current.funded).toBe(false)
   })
 })

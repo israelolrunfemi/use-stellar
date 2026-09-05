@@ -59,6 +59,14 @@ export const Address = actual.Address
 export const MuxedAccount = actual.MuxedAccount
 export const LiquidityPoolAsset = actual.LiquidityPoolAsset
 export const FeeBumpTransaction = actual.FeeBumpTransaction
+export const Transaction = actual.Transaction
+export const Claimant = actual.Claimant
+export const TimeoutInfinite = actual.TimeoutInfinite
+// Pure builders, no I/O — tests that assemble Soroban transaction data need the
+// real ones, not a stand-in whose encoding could drift from the protocol.
+export const SorobanDataBuilder = actual.SorobanDataBuilder
+export const authorizeEntry = actual.authorizeEntry
+export const authorizeInvocation = actual.authorizeInvocation
 
 // ── Known testnet addresses (never mainnet) ────────────────────────────────────
 /**

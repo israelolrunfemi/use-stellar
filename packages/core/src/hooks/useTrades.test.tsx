@@ -5,6 +5,9 @@ import { useTrades } from "./useTrades"
 
 // ── Mock ../utils ──────────────────────────────────────────────────────────
 jest.mock("../utils", () => ({
+  // Spread the real module: the hook also uses the pure asset guards from here,
+  // and replacing the whole module wholesale removes them.
+  ...jest.requireActual("../utils"),
   getHorizonServer: jest.fn(),
   isBrowser: jest.fn(() => true),
 }))

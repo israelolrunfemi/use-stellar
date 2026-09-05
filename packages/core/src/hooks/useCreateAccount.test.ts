@@ -10,6 +10,8 @@ import { TransactionBuilder, Operation } from "@stellar/stellar-sdk"
 
 jest.mock("../context/StellarProvider")
 jest.mock("../utils")
+// getWalletAdapter lives in ../wallets; automock it so tests can drive it.
+jest.mock("../wallets")
 
 // Mock @stellar/stellar-sdk to inspect the operation passed to the builder
 jest.mock("@stellar/stellar-sdk", () => {
@@ -76,7 +78,7 @@ describe("useCreateAccount", () => {
     await act(async () => {
       await expect(result.current.createAccount({ destination: TESTNET_DESTINATION, startingBalance: "2" })).rejects.toThrow()
     })
-    expect(result.current.error?.name).toBe("WALLET_NOT_CONNECTED")
+    expect(result.current.error?.code).toBe("WALLET_NOT_CONNECTED")
   })
 
   it("rejects an invalid destination address", async () => {
@@ -85,7 +87,7 @@ describe("useCreateAccount", () => {
     await act(async () => {
       await expect(result.current.createAccount({ destination: "invalid_string", startingBalance: "2" })).rejects.toThrow()
     })
-    expect(result.current.error?.name).toBe("VALIDATION_ERROR")
+    expect(result.current.error?.code).toBe("VALIDATION_ERROR")
   })
 
   it("rejects a contract address (C...) as a destination", async () => {
@@ -94,7 +96,7 @@ describe("useCreateAccount", () => {
     await act(async () => {
       await expect(result.current.createAccount({ destination: CONTRACT_ADDRESS, startingBalance: "2" })).rejects.toThrow()
     })
-    expect(result.current.error?.name).toBe("VALIDATION_ERROR")
+    expect(result.current.error?.code).toBe("VALIDATION_ERROR")
   })
 
   it("rejects creating an account that already exists on the ledger", async () => {
@@ -104,7 +106,7 @@ describe("useCreateAccount", () => {
     await act(async () => {
       await expect(result.current.createAccount({ destination: TESTNET_DESTINATION, startingBalance: "2" })).rejects.toThrow()
     })
-    expect(result.current.error?.name).toBe("VALIDATION_ERROR")
+    expect(result.current.error?.code).toBe("VALIDATION_ERROR")
     expect(result.current.error?.message).toMatch(/already exists/)
   })
 
@@ -122,7 +124,7 @@ describe("useCreateAccount", () => {
       await expect(result.current.createAccount({ destination: TESTNET_DESTINATION, startingBalance: "3" })).rejects.toThrow()
     })
     
-    expect(result.current.error?.name).toBe("VALIDATION_ERROR")
+    expect(result.current.error?.code).toBe("VALIDATION_ERROR")
     expect(result.current.error?.message).toMatch(/4 XLM/) // Ensure the dynamic calculation is named
   })
 
@@ -140,7 +142,7 @@ describe("useCreateAccount", () => {
       await expect(result.current.createAccount({ destination: TESTNET_DESTINATION, startingBalance: "2" })).rejects.toThrow()
     })
     
-    expect(result.current.error?.name).toBe("UNKNOWN")
+    expect(result.current.error?.code).toBe("UNKNOWN")
 
     act(() => {
       result.current.reset()

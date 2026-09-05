@@ -9,6 +9,8 @@ import { getWalletAdapter } from "../wallets"
 
 jest.mock("../context/StellarProvider")
 jest.mock("../utils")
+// getWalletAdapter lives in ../wallets; automock it so tests can drive it.
+jest.mock("../wallets")
 
 const mockSimulateTransaction = jest.fn()
 const mockSendTransaction = jest.fn()
