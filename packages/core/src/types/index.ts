@@ -241,8 +241,12 @@ export const NETWORK_CONFIGS: Record<Exclude<StellarNetwork, "custom">, NetworkC
 
 /**
  * Supported wallet providers.
+ *
+ * The built-in types keep autocomplete, while `(string & {})` lets an
+ * application or a wallet vendor register its own adapter with
+ * `registerWalletAdapter()` and pass that type to `connect()`.
  */
-export type WalletType = "freighter" | "lobstr" | "albedo" | "rabet"
+export type WalletType = "freighter" | "lobstr" | "albedo" | "rabet" | (string & {})
 
 /**
  * The current state of the wallet connection.

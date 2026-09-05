@@ -65,7 +65,7 @@ export function useCreateAccount(): UseCreateAccountReturn {
       if (!ledgers.records || ledgers.records.length === 0) {
         throw new Error("Could not fetch the latest ledger to determine the base reserve.")
       }
-      const baseReserveStroops = parseInt(ledgers.records[0].base_reserve_in_stroops, 10)
+      const baseReserveStroops = Number(ledgers.records[0].base_reserve_in_stroops)
       
       // Minimum balance for a new account is 2 * base reserve
       const minBalanceXLM = (baseReserveStroops * 2) / 10_000_000
@@ -102,7 +102,11 @@ export function useCreateAccount(): UseCreateAccountReturn {
         throw err
       }
 
-      const signedXdr = await adapter.signTransaction(tx.toXDR(), networkConfig.networkPassphrase, networkConfig.network)
+      const signedXdr = await adapter.signTransaction(tx.toXDR(), {
+        address: wallet.address,
+        network: networkConfig.network,
+        networkPassphrase: networkConfig.networkPassphrase,
+      })
       const signedTx = TransactionBuilder.fromXDR(signedXdr, networkConfig.networkPassphrase)
 
       const res = await server.submitTransaction(signedTx)
@@ -111,7 +115,6 @@ export function useCreateAccount(): UseCreateAccountReturn {
         hash: res.hash,
         status: res.successful ? "success" : "failed",
         ledger: res.ledger,
-        createdAt: res.created_at,
       }
       
       setResult(txResult)

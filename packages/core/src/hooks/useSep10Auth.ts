@@ -156,11 +156,11 @@ export function useSep10Auth({
 
       let signedXdr: string
       try {
-        signedXdr = await adapter.signTransaction(
-          challengeXdr,
-          networkConfig.networkPassphrase,
-          networkConfig.network
-        )
+        signedXdr = await adapter.signTransaction(challengeXdr, {
+          address: wallet.address,
+          network: networkConfig.network,
+          networkPassphrase: networkConfig.networkPassphrase,
+        })
       } catch (e: any) {
         const err = new Error("The user rejected the request in their wallet.")
         err.name = "WALLET_REQUEST_REJECTED"

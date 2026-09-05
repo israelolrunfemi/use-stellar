@@ -2,7 +2,7 @@
 
 import { renderHook, act } from "@testing-library/react"
 import { useSorobanWrite } from "./useSorobanWrite"
-import { rpc, xdr, TransactionBuilder, Networks } from "@stellar/stellar-sdk"
+import { rpc, xdr, TransactionBuilder, Networks, SorobanDataBuilder } from "@stellar/stellar-sdk"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer, isBrowser } from "../utils"
 import { getWalletAdapter } from "../wallets"
@@ -83,16 +83,10 @@ describe("useSorobanWrite", () => {
 
   it("completes full simulate -> assemble -> sign -> send -> poll flow", async () => {
     mockSimulateTransaction.mockResolvedValue({
-      transactionData: new xdr.SorobanTransactionData({
-        resources: new xdr.SorobanResources({
-          footprint: new xdr.LedgerFootprint({ readOnly: [], readWrite: [] }),
-          instructions: 0,
-          readBytes: 0,
-          writeBytes: 0
-        }),
-        resourceFee: "100",
-        ext: new xdr.ExtensionPoint(0)
-      }),
+      // Built through the SDK's own builder rather than hand-assembled XDR:
+      // `xdr.ExtensionPoint`'s declared constructor and its runtime shape
+      // disagree, and a fixture should not depend on which one wins.
+      transactionData: new SorobanDataBuilder().build(),
       minResourceFee: "100",
       events: [],
       results: [{
@@ -110,7 +104,7 @@ describe("useSorobanWrite", () => {
     })
 
     mockGetTransaction.mockResolvedValueOnce({
-      status: rpc.Api.GetTransactionStatus.PENDING
+      status: rpc.Api.GetTransactionStatus.NOT_FOUND
     }).mockResolvedValueOnce({
       status: rpc.Api.GetTransactionStatus.SUCCESS,
       returnValue: xdr.ScVal.scvI32(42)
@@ -161,7 +155,7 @@ describe("useSorobanWrite", () => {
     })
 
     mockGetTransaction.mockResolvedValue({
-      status: rpc.Api.GetTransactionStatus.PENDING
+      status: rpc.Api.GetTransactionStatus.NOT_FOUND
     })
 
     const { result } = renderHook(() => useSorobanWrite())

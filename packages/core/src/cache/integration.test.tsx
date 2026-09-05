@@ -153,11 +153,13 @@ describe("Cache integration — request deduplication", () => {
   it("refetches when staleTime expires", async () => {
     // Create provider with very short staleTime
     function shortStaleTimeWrapper({ children }: { children: React.ReactNode }) {
-      return React.createElement(
-        StellarProvider,
-        { network: "testnet", queryConfig: { staleTime: 100 } },
-        children
-      )
+      // `children` goes in the props object: StellarProviderProps declares it
+      // required, which createElement's third-argument form does not satisfy.
+      return React.createElement(StellarProvider, {
+        network: "testnet",
+        queryConfig: { staleTime: 100 },
+        children,
+      })
     }
 
     const { result: result1 } = renderHook(() => useBalance({ address: TEST_ADDRESS }), {

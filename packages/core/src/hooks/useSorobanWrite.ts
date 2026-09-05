@@ -86,18 +86,20 @@ export function useSorobanWrite<T = unknown>(): UseSorobanWriteReturn<T> {
         }
         
         // 4. Sign
-        const signedXdr = await adapter.signTransaction(
-          assembledTx.toXDR(),
-          networkConfig.networkPassphrase,
-          networkConfig.network
-        )
+        const signedXdr = await adapter.signTransaction(assembledTx.toXDR(), {
+          address: wallet.address,
+          network: networkConfig.network,
+          networkPassphrase: networkConfig.networkPassphrase,
+        })
         const signedTx = TransactionBuilder.fromXDR(signedXdr, networkConfig.networkPassphrase)
 
         // 5. Send & Poll
         const sendResult = await server.sendTransaction(signedTx)
         
-        if (sendResult.errorResultXdr) {
-            const err = new Error(`Transaction submission failed: ${sendResult.errorResultXdr}`)
+        if (sendResult.errorResult) {
+            const err = new Error(
+              `Transaction submission failed: ${sendResult.errorResult.result().switch().name}`
+            )
             err.name = "TX_FAILED"
             throw err
         }
@@ -116,7 +118,9 @@ export function useSorobanWrite<T = unknown>(): UseSorobanWriteReturn<T> {
 
           txStatus = await server.getTransaction(txHash)
           
-          if (txStatus.status !== rpc.Api.GetTransactionStatus.NOT_FOUND && txStatus.status !== rpc.Api.GetTransactionStatus.PENDING) {
+          // NOT_FOUND is how the RPC reports "not yet in a ledger"; there is no
+          // PENDING member on this enum. Anything else is a settled outcome.
+          if (txStatus.status !== rpc.Api.GetTransactionStatus.NOT_FOUND) {
             break
           }
           

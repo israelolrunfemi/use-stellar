@@ -249,11 +249,17 @@ export function usePayments({
 
   const error = pageState.error ?? (rawError ? toStellarError(rawError) : null)
   const loading = pageState.loading || cacheLoading
+  const payments = pageState.payments ?? data?.payments ?? []
+
+  // Stale-while-revalidate: `payments` still holds the previous good page while
+  // `error` is set, so a consumer can tell "old data" from "no data".
+  const isStale = error !== null && payments.length > 0
 
   return {
-    payments: pageState.payments ?? data?.payments ?? [],
+    payments,
     loading,
     error,
+    isStale,
     refetch,
     fetchNext,
     fetchPrev,

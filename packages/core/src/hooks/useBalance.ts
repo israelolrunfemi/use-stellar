@@ -109,8 +109,6 @@ export function useBalance({
   // If a 429 rate-limit window is still active, we skip the poll cycle
   // instead of hammering Horizon while blocked.
   useEffect(() => {
-    cancelledRef.current = false
-    fetchBalances()
     if (!watch || !resolvedAddress) return
 
     const ms = interval > 0 ? interval : DEFAULT_WATCH_INTERVAL

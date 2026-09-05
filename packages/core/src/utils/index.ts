@@ -44,7 +44,7 @@ export function isNativeAsset(asset: Asset): asset is "XLM" {
   return asset === "XLM"
 }
 
-export function isIssuedAsset(asset: Asset): asset is IssuedAsset {
+export function isIssuedAsset(asset: Asset | unknown): asset is IssuedAsset {
   return (
     typeof asset === "object" &&
     asset !== null &&
