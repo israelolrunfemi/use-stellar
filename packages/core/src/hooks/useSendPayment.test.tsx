@@ -5,10 +5,15 @@ import { StellarProvider } from "../context/StellarProvider"
 import type { ReactNode } from "react"
 import type { WalletState } from "../types"
 
-// Activates the manual mock at src/__mocks__/@stellar/stellar-sdk.ts which
-// re-exports real TransactionBuilder/Asset/Operation/Memo/Networks from
-// jest.requireActual. No factory needed — the manual mock handles everything.
-jest.mock("@stellar/stellar-sdk")
+// Route the SDK to the manual mock at src/__mocks__/@stellar/stellar-sdk.ts.
+// It re-exports the real TransactionBuilder/Asset/Operation/Memo/Networks so
+// XDR encoding is exercisable, and mocks only the Horizon Server boundary.
+// A bare jest.mock("@stellar/stellar-sdk") would automock every symbol, so we
+// resolve the manual mock file explicitly instead.
+jest.mock("@stellar/stellar-sdk", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return jest.requireActual("../../src/__mocks__/@stellar/stellar-sdk.ts")
+})
 
 jest.mock("@stellar/freighter-api")
 jest.mock("../wallets", () => ({ getWalletAdapter: jest.fn() }))
@@ -67,7 +72,7 @@ describe("useSendPayment - Payment Flow", () => {
     // Set up wallet state for a connected wallet
     mockWalletState = {
       connected: true,
-      address: "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN",
+      address: "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI",
       network: "testnet",
       wallet: "freighter",
       connecting: false,
@@ -82,7 +87,7 @@ describe("useSendPayment - Payment Flow", () => {
     const { getHorizonServer } = jest.requireMock("../utils") as { getHorizonServer: jest.Mock }
     getHorizonServer.mockReturnValue({
       loadAccount: mockLoadAccount.mockResolvedValue({
-        accountId: () => "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN",
+        accountId: () => "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI",
         sequenceNumber: () => "123",
         incrementSequenceNumber: jest.fn(),
       }),
@@ -96,12 +101,7 @@ describe("useSendPayment - Payment Flow", () => {
     // Mock wallet adapter
     const { getWalletAdapter } = jest.requireMock("../wallets") as { getWalletAdapter: jest.Mock }
     getWalletAdapter.mockReturnValue({
-      signTransaction: jest.fn().mockResolvedValue(
-        // A minimal valid-looking signed XDR string; TransactionBuilder.fromXDR
-        // will parse it via the real SDK.  We return the unsigned XDR unchanged
-        // here because the test's signTransaction mock just passes it through.
-        "signed_xdr"
-      ),
+      signTransaction: jest.fn((xdr: string) => Promise.resolve(xdr)),
     })
   })
 
@@ -110,7 +110,11 @@ describe("useSendPayment - Payment Flow", () => {
       wrapper: createWrapper("testnet"),
     })
 
-    const paymentOpts = { to: "GDEST", amount: "10", asset: "XLM" as const }
+    const paymentOpts = {
+      to: "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+      amount: "10",
+      asset: "XLM" as const,
+    }
     await act(async () => {
       await result.current.send(paymentOpts)
     })
@@ -127,7 +131,7 @@ describe("useSendPayment - Payment Flow", () => {
     const { getHorizonServer } = jest.requireMock("../utils") as { getHorizonServer: jest.Mock }
     getHorizonServer.mockReturnValue({
       loadAccount: jest.fn().mockResolvedValue({
-        accountId: () => "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN",
+        accountId: () => "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI",
         sequenceNumber: () => "123",
         incrementSequenceNumber: jest.fn(),
       }),
@@ -139,7 +143,11 @@ describe("useSendPayment - Payment Flow", () => {
       wrapper: createWrapper("testnet"),
     })
 
-    const paymentOpts = { to: "GDEST", amount: "10", asset: "XLM" as const }
+    const paymentOpts = {
+      to: "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+      amount: "10",
+      asset: "XLM" as const,
+    }
 
     await act(async () => {
       await expect(result.current.send(paymentOpts)).rejects.toThrow("Submission failed")

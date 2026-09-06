@@ -1,9 +1,6 @@
-// packages/core/src/hooks/useTransactionHistory.ts
-
-import { useCallback, useReducer } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
-import { useQuery, transactionHistoryKey } from "../cache"
 import type {
   UseTransactionHistoryOptions,
   UseTransactionHistoryReturn,
@@ -16,91 +13,8 @@ import { toStellarError } from "../errors"
 type TransactionRecord = Horizon.ServerApi.TransactionRecord
 type TransactionPage = Horizon.ServerApi.CollectionPage<TransactionRecord>
 
-function normalizeTransaction(record: TransactionRecord): NormalizedTransaction {
-  return {
-    hash: record.hash,
-    ledger: Number(record.ledger),
-    createdAt: record.created_at,
-    sourceAccount: record.source_account,
-    fee: String(record.fee_charged),
-    operationCount: record.operation_count,
-    successful: record.successful,
-    memo: record.memo,
-    memoType: record.memo_type,
-  }
-}
-
-interface PageData {
-  transactions: NormalizedTransaction[]
-  hasNext: boolean
-  hasPrev: boolean
-}
-
-interface PaginationState {
-  queryKey: string
-  transactions: NormalizedTransaction[] | null
-  next: (() => Promise<TransactionPage>) | null
-  prev: (() => Promise<TransactionPage>) | null
-  hasNext: boolean | null
-  hasPrev: boolean | null
-  loading: boolean
-  error: StellarError | null
-}
-
-type PaginationAction =
-  | { type: "RESET"; queryKey: string }
-  | { type: "FETCH_START"; queryKey: string }
-  | {
-      type: "FETCH_SUCCESS"
-      queryKey: string
-      transactions: NormalizedTransaction[]
-      next: (() => Promise<TransactionPage>) | null
-      prev: (() => Promise<TransactionPage>) | null
-      hasNext: boolean
-      hasPrev: boolean
-    }
-  | { type: "FETCH_ERROR"; queryKey: string; error: StellarError }
-
-function paginationReducer(state: PaginationState, action: PaginationAction): PaginationState {
-  switch (action.type) {
-    case "RESET":
-      return {
-        queryKey: action.queryKey,
-        transactions: null,
-        next: null,
-        prev: null,
-        hasNext: null,
-        hasPrev: null,
-        loading: false,
-        error: null,
-      }
-    case "FETCH_START":
-      if (state.queryKey !== action.queryKey) return state
-      return { ...state, loading: true, error: null }
-    case "FETCH_SUCCESS":
-      if (state.queryKey !== action.queryKey) return state
-      return {
-        ...state,
-        loading: false,
-        transactions: action.transactions,
-        next: action.next,
-        prev: action.prev,
-        hasNext: action.hasNext,
-        hasPrev: action.hasPrev,
-      }
-    case "FETCH_ERROR":
-      if (state.queryKey !== action.queryKey) return state
-      return { ...state, loading: false, error: action.error, transactions: [] }
-    default:
-      return state
-  }
-}
-
 /**
  * Fetches an account's transaction history with pagination.
- *
- * The first page is cached in the shared QueryStore. Pagination calls bypass
- * the cache (each page is a unique cursor-based fetch).
  *
  * ### Pagination heuristic
  * Internally this hook requests `limit + 1` records from Horizon on every
@@ -114,10 +28,10 @@ function paginationReducer(state: PaginationState, action: PaginationAction): Pa
  * ### Empty-page behaviour
  * When `fetchNext` or `fetchPrev` lands on a page that contains zero records
  * (possible if records are deleted between pages), the hook **keeps the
- * previously displayed page** and simply sets `hasNext: false` /
- * `hasPrev: false` as appropriate. The cursor refs are updated independently
- * of the record count so that navigation back via `fetchPrev` / `fetchNext`
- * always remains available whenever Horizon provides the corresponding cursor.
+ * previously displayed page** and only updates the navigation state. The
+ * cursor refs are updated independently of the record count so that
+ * navigation back via `fetchPrev` / `fetchNext` always remains available
+ * whenever Horizon provides the corresponding cursor.
  *
  * @example
  * const { transactions, fetchNext } = useTransactionHistory({ address: "G..." })
@@ -128,35 +42,13 @@ export function useTransactionHistory({
   order = "desc",
   cursor,
 }: UseTransactionHistoryOptions = {}): UseTransactionHistoryReturn {
-  const { network, networkConfig, wallet, queryStore } = useStellarContext()
+  const { network, networkConfig, wallet } = useStellarContext()
   const resolvedAddress = address ?? wallet.address
 
-  const queryKeyArr = resolvedAddress
-    ? transactionHistoryKey(
-        networkConfig.horizonUrl,
-        network,
-        resolvedAddress,
-        limit,
-        order,
-        cursor
-      )
-    : (["transactionHistory", "disabled"] as const)
-  const currentQueryKey = JSON.stringify(queryKeyArr)
+  const [transactions, setTransactions] = useState<NormalizedTransaction[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<StellarError | null>(null)
 
-  const [pageState, dispatch] = useReducer(paginationReducer, {
-    queryKey: currentQueryKey,
-    transactions: null,
-    next: null,
-    prev: null,
-    hasNext: null,
-    hasPrev: null,
-    loading: false,
-    error: null,
-  })
-
-  if (pageState.queryKey !== currentQueryKey) {
-    dispatch({ type: "RESET", queryKey: currentQueryKey })
-  }
   // Store page navigation functions from the Horizon response
   const nextRef = useRef<(() => Promise<TransactionPage>) | null>(null)
   const prevRef = useRef<(() => Promise<TransactionPage>) | null>(null)
@@ -181,6 +73,7 @@ export function useTransactionHistory({
       setHasNext(false)
       setHasPrev(false)
       setLoading(false)
+      setError(null)
       return
     }
 
@@ -189,68 +82,36 @@ export function useTransactionHistory({
     setError(null)
 
     try {
-      const server = getHorizonServer(network)
-      let query = server.transactions().forAccount(resolvedAddress).limit(limit).order(order)
-      if (cursor) {
-        query = query.cursor(cursor)
-      }
-  const [pageLoading, setPageLoading] = useState(false)
-  const [pageError, setPageError] = useState<StellarError | null>(null)
-  // Override transactions for paginated responses beyond the first page.
-  const [pageTransactions, setPageTransactions] = useState<NormalizedTransaction[] | null>(null)
-  const [pageHasNext, setPageHasNext] = useState<boolean | null>(null)
-  const [pageHasPrev, setPageHasPrev] = useState<boolean | null>(null)
-
-  const {
-    data,
-    loading: cacheLoading,
-    error: rawError,
-    refetch,
-  } = useQuery<PageData>({
-    queryKey: queryKeyArr,
-    queryFn: async () => {
       const server = getHorizonServer(networkConfig)
       // Request limit+1 to detect whether a further page exists without
       // relying on the record-count >= limit heuristic.
       let query = server
         .transactions()
-        .forAccount(resolvedAddress!)
+        .forAccount(resolvedAddress)
         .limit(limit + 1)
         .order(order)
-      if (cursor) query = query.cursor(cursor)
-
-      const res = await query.call()
-      const hasNext = res.records.length > limit
-      const records = hasNext ? res.records.slice(0, limit) : res.records
-      const normalized = records.map(normalizeTransaction)
-
-      // Set cursor refs unconditionally — they depend on Horizon's response,
-      // not on whether this particular page happened to be non-empty.
-      nextRef.current = () => res.next()
-      prevRef.current = () => res.prev()
-      const requestAddress = resolvedAddress
-      if (!requestAddress) throw new Error("Address is required")
-
-      let query = server.transactions().forAccount(requestAddress).limit(limit).order(order)
-      if (cursor) query = query.cursor(cursor)
+      if (cursor) {
+        query = query.cursor(cursor)
+      }
 
       const res = await query.call()
 
       if (cancelledRef.current || fetchId !== requestRef.current) return
 
-      const normalized = res.records.map(normalizeTransaction)
+      const hasNextPage = res.records.length > limit
+      const records = hasNextPage ? res.records.slice(0, limit) : res.records
+      const normalized = records.map(normalizeTransaction)
 
-      dispatch({
-        type: "FETCH_SUCCESS",
-        queryKey: currentQueryKey,
-        transactions: normalized,
-        next: res.records.length > 0 ? () => res.next() : null,
-        prev: res.records.length > 0 ? () => res.prev() : null,
-        hasNext: res.records.length >= limit,
-        hasPrev: !!cursor,
-      })
+      if (cancelledRef.current || fetchId !== requestRef.current) return
+      setTransactions(normalized)
 
-      setHasNext(res.records.length >= limit)
+      // Save pagination callbacks. On the initial fetch a page with zero
+      // records means there is genuinely nothing to navigate — leave the
+      // refs null so fetchNext/fetchPrev are no-ops.
+      nextRef.current = res.records.length > 0 ? () => res.next() : null
+      prevRef.current = res.records.length > 0 ? () => res.prev() : null
+
+      setHasNext(hasNextPage)
       setHasPrev(!!cursor)
     } catch (err) {
       if (cancelledRef.current || fetchId !== requestRef.current) return
@@ -260,33 +121,23 @@ export function useTransactionHistory({
         setLoading(false)
       }
     }
-  }, [resolvedAddress, network, limit, order, cursor])
+  }, [resolvedAddress, networkConfig, limit, order, cursor])
 
   const fetchNext = useCallback(async () => {
     if (!nextRef.current) return
     const fetchId = ++requestRef.current
     setLoading(true)
     setError(null)
-      return {
-        transactions: normalized,
-        hasNext,
-        hasPrev: !!cursor,
-      }
-    },
-    store: queryStore,
-    enabled: Boolean(resolvedAddress),
-  })
-
-  const fetchNext = useCallback(async () => {
-    if (pageState.queryKey !== currentQueryKey || !pageState.next) return
-    
-    dispatch({ type: "FETCH_START", queryKey: currentQueryKey })
     try {
-      const res = await pageState.next()
       const res = await nextRef.current()
-      const hasNext = res.records.length > limit
-      const records = hasNext ? res.records.slice(0, limit) : res.records
+
+      if (cancelledRef.current || fetchId !== requestRef.current) return
+
+      const hasNextPage = res.records.length > limit
+      const records = hasNextPage ? res.records.slice(0, limit) : res.records
       const normalized = records.map(normalizeTransaction)
+
+      if (cancelledRef.current || fetchId !== requestRef.current) return
 
       // Update cursor refs independently of record count so that landing on
       // an empty page never loses the ability to navigate back.
@@ -295,92 +146,13 @@ export function useTransactionHistory({
 
       if (normalized.length > 0) {
         // Normal case: render the new page.
-        setPageTransactions(normalized)
+        setTransactions(normalized)
       }
       // Empty-page UX: if zero records came back, keep the current page
       // displayed and just reflect the updated navigation state.
-      setPageHasNext(hasNext)
-      setPageHasPrev(true)
-
-      if (cancelledRef.current || fetchId !== requestRef.current) return
-
-      const normalized = res.records.map(normalizeTransaction)
-
-      dispatch({
-        type: "FETCH_SUCCESS",
-        queryKey: currentQueryKey,
-        transactions: normalized,
-        next: res.records.length > 0 ? () => res.next() : null,
-        prev: res.records.length > 0 ? () => res.prev() : null,
-        hasNext: res.records.length >= limit,
-        hasPrev: true,
-      })
+      setHasNext(hasNextPage)
+      setHasPrev(true)
     } catch (err) {
-      dispatch({
-        type: "FETCH_ERROR",
-        queryKey: currentQueryKey,
-        error: toStellarError(err),
-      })
-      if (cancelledRef.current || fetchId !== requestRef.current) return
-      setError(toStellarError(err))
-    } finally {
-      if (!cancelledRef.current && fetchId === requestRef.current) {
-        setLoading(false)
-      }
-      setPageError(toStellarError(err))
-    } finally {
-      setPageLoading(false)
-    }
-  }, [pageState.queryKey, pageState.next, currentQueryKey, limit])
-
-  const fetchPrev = useCallback(async () => {
-    if (pageState.queryKey !== currentQueryKey || !pageState.prev) return
-    
-    dispatch({ type: "FETCH_START", queryKey: currentQueryKey })
-    try {
-      const res = await pageState.prev()
-    if (!prevRef.current) return
-    const fetchId = ++requestRef.current
-    setLoading(true)
-    setError(null)
-    setPageLoading(true)
-    setPageError(null)
-    try {
-      const res = await prevRef.current()
-      // Request limit+1 for prev too so hasPrev is symmetrically accurate.
-      const hasPrev = res.records.length > limit
-      const records = hasPrev ? res.records.slice(0, limit) : res.records
-      const normalized = records.map(normalizeTransaction)
-
-      // Update cursor refs independently of record count.
-      nextRef.current = () => res.next()
-      prevRef.current = () => res.prev()
-
-      if (normalized.length > 0) {
-        setPageTransactions(normalized)
-      }
-      setPageHasNext(true)
-      setPageHasPrev(hasPrev)
-
-      if (cancelledRef.current || fetchId !== requestRef.current) return
-
-      const normalized = res.records.map(normalizeTransaction)
-
-      dispatch({
-        type: "FETCH_SUCCESS",
-        queryKey: currentQueryKey,
-        transactions: normalized,
-        next: res.records.length > 0 ? () => res.next() : null,
-        prev: res.records.length > 0 ? () => res.prev() : null,
-        hasNext: true,
-        hasPrev: res.records.length >= limit,
-      })
-    } catch (err) {
-      dispatch({
-        type: "FETCH_ERROR",
-        queryKey: currentQueryKey,
-        error: toStellarError(err),
-      })
       if (cancelledRef.current || fetchId !== requestRef.current) return
       setError(toStellarError(err))
     } finally {
@@ -390,6 +162,58 @@ export function useTransactionHistory({
     }
   }, [limit])
 
+  const fetchPrev = useCallback(async () => {
+    if (!prevRef.current) return
+    const fetchId = ++requestRef.current
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await prevRef.current()
+
+      if (cancelledRef.current || fetchId !== requestRef.current) return
+
+      // Request limit+1 for prev too so hasPrev is symmetrically accurate.
+      const hasPrevPage = res.records.length > limit
+      const records = hasPrevPage ? res.records.slice(0, limit) : res.records
+      const normalized = records.map(normalizeTransaction)
+
+      if (cancelledRef.current || fetchId !== requestRef.current) return
+
+      // Update cursor refs independently of record count.
+      nextRef.current = () => res.next()
+      prevRef.current = () => res.prev()
+
+      if (normalized.length > 0) {
+        setTransactions(normalized)
+      }
+      setHasPrev(hasPrevPage)
+      setHasNext(true)
+    } catch (err) {
+      if (cancelledRef.current || fetchId !== requestRef.current) return
+      setError(toStellarError(err))
+    } finally {
+      if (!cancelledRef.current && fetchId === requestRef.current) {
+        setLoading(false)
+      }
+    }
+  }, [limit])
+
+  // Clear stale data synchronously the moment the query changes (address or
+  // network), before the new fetch resolves — otherwise there's a window
+  // where the previous account's transactions render under the new query.
+  // The pagination refs are dropped too (regression #225): a fetchNext from
+  // the old query must not reach the old page's Horizon callbacks.
+  // Refetches (including fetchNext/fetchPrev) must NOT hit this: they keep
+  // the old data in place until the new fetch settles.
+  useEffect(() => {
+    nextRef.current = null
+    prevRef.current = null
+    setTransactions([])
+    setHasNext(false)
+    setHasPrev(false)
+    setError(null)
+  }, [resolvedAddress, network])
+
   useEffect(() => {
     cancelledRef.current = false
     fetchTransactions()
@@ -397,23 +221,30 @@ export function useTransactionHistory({
       cancelledRef.current = true
     }
   }, [fetchTransactions])
-      setPageError(toStellarError(err))
-    } finally {
-      setPageLoading(false)
-    }
-  }, [pageState.queryKey, pageState.prev, currentQueryKey, limit])
-
-  const error = pageState.error ?? (rawError ? toStellarError(rawError) : null)
-  const loading = pageState.loading || cacheLoading
 
   return {
-    transactions: pageState.transactions ?? data?.transactions ?? [],
+    transactions,
     loading,
     error,
-    refetch,
+    refetch: fetchTransactions,
     fetchNext,
     fetchPrev,
-    hasNext: pageState.hasNext ?? data?.hasNext ?? false,
-    hasPrev: pageState.hasPrev ?? data?.hasPrev ?? false,
+    hasNext,
+    hasPrev,
+  }
+}
+
+// ── Normalize Transaction Records ──────────────────────────────────────────
+function normalizeTransaction(record: TransactionRecord): NormalizedTransaction {
+  return {
+    hash: record.hash,
+    ledger: Number(record.ledger),
+    createdAt: record.created_at,
+    sourceAccount: record.source_account,
+    fee: String(record.fee_charged),
+    operationCount: record.operation_count,
+    successful: record.successful,
+    memo: record.memo,
+    memoType: record.memo_type,
   }
 }

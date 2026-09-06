@@ -31,10 +31,15 @@ import { StellarProvider } from "../context/StellarProvider"
 import type { WalletState } from "../types"
 
 // ── Top-level mock declarations (hoisted by Jest) ──────────────────────────────
-// Activates the manual mock at __mocks__/@stellar/stellar-sdk.ts.
-// The manual mock re-exports real TransactionBuilder/Asset/Operation/Memo so
-// XDR encoding is real; only Horizon.Server is a jest.fn() double.
-jest.mock("@stellar/stellar-sdk")
+// Route the SDK to the manual mock at src/__mocks__/@stellar/stellar-sdk.ts.
+// It re-exports the real TransactionBuilder/Asset/Operation/Memo/Networks so
+// XDR encoding reaches the actual path (only Horizon Server is a jest.fn()
+// double). A bare jest.mock("@stellar/stellar-sdk") would automock every
+// symbol, so we resolve the manual mock file explicitly instead.
+jest.mock("@stellar/stellar-sdk", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return jest.requireActual("../../src/__mocks__/@stellar/stellar-sdk.ts")
+})
 
 jest.mock("../utils", () => ({
   ...jest.requireActual("../utils"),
@@ -55,7 +60,7 @@ jest.mock("../wallets", () => ({
 // causing WALLET_NOT_CONNECTED before any submission path is reached.
 const mockWalletState: WalletState = {
   connected: true,
-  address: "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN",
+  address: "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI",
   network: "testnet",
   wallet: "freighter",
   connecting: false,
@@ -100,12 +105,12 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 function makeSourceAccount() {
   return {
     sequenceNumber: () => "123",
-    accountId: () => "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN",
+    accountId: () => "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI",
     incrementSequenceNumber: jest.fn(),
   }
 }
 
-const DESTINATION = "GBBD47IF6LWK7P7MABN5KIK65Y6XVTX3CHGYVM4PBZSTSTBHX7WEEHQK"
+const DESTINATION = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
 
 describe("useSendPayment - 504 Gateway Timeout handling", () => {
   beforeEach(() => {

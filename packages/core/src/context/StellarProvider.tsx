@@ -292,14 +292,27 @@ export function StellarProvider({
 
   const queryStore = useMemo(() => new QueryStore(queryConfig), []) // eslint-disable-line
 
-  const value: StellarContextValue = {
-    network,
-    networkConfig: resolvedNetworkConfig,
-    wallet,
-    setWallet,
-    autoConnect: resolveAutoConnect(autoConnect),
-    queryStore,
-  }
+  const resolvedAutoConnect = useMemo(
+    () => resolveAutoConnect(autoConnect),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [typeof autoConnect === "boolean" ? autoConnect : autoConnect?.enabled]
+  )
+
+  // The context value is memoized so its identity is stable across rerenders
+  // with unchanged props. Without this, every provider render would create a
+  // new value object and re-render every consumer, defeating `useMemo` in
+  // downstream hooks and breaking context-value identity guarantees.
+  const value = useMemo<StellarContextValue>(
+    () => ({
+      network,
+      networkConfig: resolvedNetworkConfig,
+      wallet,
+      setWallet,
+      autoConnect: resolvedAutoConnect,
+      queryStore,
+    }),
+    [network, resolvedNetworkConfig, wallet, setWallet, resolvedAutoConnect, queryStore]
+  )
 
   return <StellarContext.Provider value={value}>{children}</StellarContext.Provider>
 }

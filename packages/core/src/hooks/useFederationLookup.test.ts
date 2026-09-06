@@ -70,12 +70,16 @@ describe("useFederationLookup", () => {
     expect(result.current.loading).toBe(true)
     await waitFor(() => expect(mockResolve).toHaveBeenCalledWith(FEDERATED_ADDRESS))
 
-    expect(result.current.record).toEqual({
-      stellarAddress: FEDERATED_ADDRESS,
-      accountId: ACCOUNT_ID,
-      memoType: "text",
-      memo: "hello",
-    })
+    // The query writes into the shared cache store on a microtask, so poll
+    // with waitFor for the settled result to flush into the rendered state.
+    await waitFor(() =>
+      expect(result.current.record).toEqual({
+        stellarAddress: FEDERATED_ADDRESS,
+        accountId: ACCOUNT_ID,
+        memoType: "text",
+        memo: "hello",
+      })
+    )
     expect(result.current.loading).toBe(false)
     expect(result.current.error).toBeNull()
   })
@@ -100,8 +104,11 @@ describe("useFederationLookup", () => {
 
     await waitFor(() => expect(mockResolve).toHaveBeenCalled())
 
+    // The error lands in the shared cache store on a microtask — poll with
+    // waitFor so the settled error flushes into the rendered state.
+    await waitFor(() => expect(result.current.error?.code).toBe("ACCOUNT_NOT_FOUND"))
+
     expect(result.current.record).toBeNull()
-    expect(result.current.error?.code).toBe("ACCOUNT_NOT_FOUND")
     expect(result.current.loading).toBe(false)
   })
 

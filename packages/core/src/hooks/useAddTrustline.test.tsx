@@ -39,7 +39,7 @@ jest.mock("../utils", () => ({
   isBrowser: () => true,
 }))
 
-const mockTx = { toXDR: () => "xdr" }
+const mockTx = { toXDR: () => "xdr", hash: () => ({ toString: () => "abc123" }) }
 const mockSignedTx = { toXDR: () => "signed_xdr" }
 
 // `moduleNameMapper` in jest.config.js redirects "@stellar/stellar-sdk" to the

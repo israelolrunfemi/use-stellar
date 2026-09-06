@@ -42,7 +42,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
 }
 
 // ── Fixtures ───────────────────────────────────────────────────────────────
-const CLAIMABLE_ADDRESS = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
+const CLAIMABLE_ADDRESS = "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI"
 
 const MOCK_RECORD = {
   id: "000000000123abc",
@@ -270,7 +270,7 @@ describe("useClaimableBalance — stale-while-revalidate", () => {
 
     await waitFor(() => expect(result.current.balances).toHaveLength(1))
 
-    mockCall.mockRejectedValueOnce(new Error("Request failed with status code 404"))
+    mockCall.mockRejectedValueOnce(notFoundError())
 
     await act(() => {
       result.current.refetch()

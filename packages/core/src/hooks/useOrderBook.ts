@@ -5,7 +5,13 @@ import { useStellarContext } from "../context/StellarProvider"
 import { getHorizonServer } from "../utils"
 import { Asset as StellarAsset } from "@stellar/stellar-sdk"
 import { toStellarError } from "../errors"
-import type { UseOrderbookReturn, UseOrderbookOptions, OrderbookEntry, Asset, StellarError } from "../types"
+import type {
+  UseOrderbookReturn,
+  UseOrderbookOptions,
+  OrderbookEntry,
+  Asset,
+  StellarError,
+} from "../types"
 
 // Converts BigInt rational (n/d) to a precise decimal string
 function formatRational(n: bigint, d: bigint, decimals = 7): string {
@@ -14,11 +20,11 @@ function formatRational(n: bigint, d: bigint, decimals = 7): string {
   const scaled = (n * multiplier) / d
   const isNegative = scaled < 0n
   const absValue = isNegative ? -scaled : scaled
-  
+
   const strValue = absValue.toString().padStart(decimals + 1, "0")
   const intPart = strValue.slice(0, -decimals) || "0"
   const fracPart = strValue.slice(-decimals).replace(/0+$/, "")
-  
+
   const sign = isNegative ? "-" : ""
   return fracPart ? `${sign}${intPart}.${fracPart}` : `${sign}${intPart}`
 }
@@ -33,7 +39,7 @@ export function useOrderbook({
   limit = 20,
   watch = false,
   interval = 5000,
-  enabled = true
+  enabled = true,
 }: UseOrderbookOptions): UseOrderbookReturn {
   const { networkConfig } = useStellarContext()
   const [bids, setBids] = useState<OrderbookEntry[]>([])
@@ -60,18 +66,21 @@ export function useOrderbook({
       const sellingAsset = toStellarAsset(selling)
       const buyingAsset = toStellarAsset(buying)
 
-      const response = await server
-        .orderbook(sellingAsset, buyingAsset)
-        .limit(limit)
-        .call()
+      const response = await server.orderbook(sellingAsset, buyingAsset).limit(limit).call()
 
       // Guard out-of-order responses and unmounts
       if (!mounted.current || currentFetchId !== fetchCount.current) return
 
-      const mapEntry = (record: any): OrderbookEntry => ({
+      interface OrderbookRecord {
+        price: string
+        amount: string
+        price_r: { n: number; d: number }
+      }
+
+      const mapEntry = (record: OrderbookRecord): OrderbookEntry => ({
         price: record.price,
         amount: record.amount,
-        priceR: { n: record.price_r.n, d: record.price_r.d }
+        priceR: { n: record.price_r.n, d: record.price_r.d },
       })
 
       setBids(response.bids.map(mapEntry))

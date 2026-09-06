@@ -15,7 +15,7 @@ describe("isBrowser", () => {
 
 // ── isValidStellarAddress ──────────────────────────────────────────────────
 describe("isValidStellarAddress", () => {
-  const VALID = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
+  const VALID = "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI"
 
   it("accepts a valid G address", () => expect(isValidStellarAddress(VALID)).toBe(true))
   it("rejects an S (secret) key", () =>
@@ -27,17 +27,17 @@ describe("isValidStellarAddress", () => {
 
 // ── shortenAddress ─────────────────────────────────────────────────────────
 describe("shortenAddress", () => {
-  const ADDR = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
+  const ADDR = "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI"
 
   it("returns first and last N chars with ...", () => {
     const result = shortenAddress(ADDR, 4)
-    expect(result).toBe("GAAZ...CCWN")
+    expect(result).toBe("GCL2...4PRI")
   })
 
   it("defaults to 6 chars each side", () => {
     const result = shortenAddress(ADDR)
-    expect(result.startsWith("GAAZI4")).toBe(true)
-    expect(result.endsWith("OACCWN")).toBe(true)
+    expect(result.startsWith("GCL2KR")).toBe(true)
+    expect(result.endsWith("ZM4PRI")).toBe(true)
     expect(result.includes("...")).toBe(true)
   })
 

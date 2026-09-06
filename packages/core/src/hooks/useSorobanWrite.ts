@@ -2,15 +2,16 @@
 
 import { useState, useCallback } from "react"
 import { useStellarContext } from "../context/StellarProvider"
-import { getHorizonServer, isBrowser, getWalletAdapter } from "../utils"
+import { getHorizonServer, isBrowser } from "../utils"
+import { getWalletAdapter } from "../wallets"
 import { rpc, Contract, TransactionBuilder, scValToNative, Account } from "@stellar/stellar-sdk"
-import { toStellarError } from "../errors"
+import { toStellarError, createStellarError } from "../errors"
 import type { SorobanInvokeOptions, UseSorobanWriteReturn } from "../types"
 import type { StellarError } from "../errors"
 
 export function useSorobanWrite<T = unknown>(): UseSorobanWriteReturn<T> {
   const { network, networkConfig, wallet } = useStellarContext()
-  
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<StellarError | null>(null)
   const [result, setResult] = useState<{ hash: string; result: T } | null>(null)
@@ -35,15 +36,15 @@ export function useSorobanWrite<T = unknown>(): UseSorobanWriteReturn<T> {
         }
 
         const { contractId, method, args = [], fee, timeout = 30000 } = options
-        
+
         const server = new rpc.Server(networkConfig.sorobanUrl)
         const horizon = getHorizonServer(networkConfig)
-        
+
         const accountInfo = await horizon.loadAccount(wallet.address)
         const account = new Account(wallet.address, accountInfo.sequence)
 
         const contract = new Contract(contractId)
-        
+
         // 1. Build initial tx for simulation
         const tx = new TransactionBuilder(account, {
           fee: fee || "100", // Inclusion fee
@@ -55,7 +56,7 @@ export function useSorobanWrite<T = unknown>(): UseSorobanWriteReturn<T> {
 
         // 2. Simulate transaction
         const simResult = await server.simulateTransaction(tx)
-        
+
         if (rpc.Api.isSimulationError(simResult)) {
           const err = new Error(simResult.error)
           err.name = "SIMULATION_FAILED"
@@ -63,7 +64,9 @@ export function useSorobanWrite<T = unknown>(): UseSorobanWriteReturn<T> {
         }
 
         if (rpc.Api.isSimulationRestore(simResult)) {
-          const err = new Error("Contract state is archived. A restorePreamble transaction is required before invoking this method.")
+          const err = new Error(
+            "Contract state is archived. A restorePreamble transaction is required before invoking this method."
+          )
           err.name = "RESTORE_PREAMBLE_REQUIRED"
           throw err
         }
@@ -83,74 +86,90 @@ export function useSorobanWrite<T = unknown>(): UseSorobanWriteReturn<T> {
           err.name = "WALLET_NOT_FOUND"
           throw err
         }
-        
+
         // 4. Sign
-        const signedXdr = await adapter.signTransaction(
-          assembledTx.toXDR(),
-          networkConfig.networkPassphrase,
-          networkConfig.network
-        )
+        const signedXdr = await adapter.signTransaction(assembledTx.toXDR(), {
+          address: wallet.address!,
+          network: networkConfig.network,
+          networkPassphrase: networkConfig.networkPassphrase,
+        })
         const signedTx = TransactionBuilder.fromXDR(signedXdr, networkConfig.networkPassphrase)
 
         // 5. Send & Poll
         const sendResult = await server.sendTransaction(signedTx)
-        
-        if (sendResult.errorResultXdr) {
-            const err = new Error(`Transaction submission failed: ${sendResult.errorResultXdr}`)
-            err.name = "TX_FAILED"
-            throw err
+
+        if (sendResult.errorResult) {
+          const err = new Error("Transaction submission failed")
+          err.name = "TX_FAILED"
+          throw err
         }
 
         const txHash = sendResult.hash
         const startTime = Date.now()
-        let txStatus: rpc.Api.GetTransactionResponse
-        
-        while (true) {
-          if (Date.now() - startTime > timeout) {
-            const err = new Error(`Transaction polling timed out after ${timeout}ms`)
-            err.name = "TX_TIMEOUT"
-            ;(err as any).hash = txHash
-            throw err
-          }
+        let txStatus: rpc.Api.GetTransactionResponse = await server.getTransaction(txHash)
+        const deadline = startTime + timeout
 
-          txStatus = await server.getTransaction(txHash)
-          
-          if (txStatus.status !== rpc.Api.GetTransactionStatus.NOT_FOUND && txStatus.status !== rpc.Api.GetTransactionStatus.PENDING) {
+        while (Date.now() < deadline) {
+          if (
+            txStatus.status === rpc.Api.GetTransactionStatus.SUCCESS ||
+            txStatus.status === rpc.Api.GetTransactionStatus.FAILED
+          ) {
             break
           }
-          
+
           await new Promise(resolve => setTimeout(resolve, 2000))
+          txStatus = await server.getTransaction(txHash)
+        }
+
+        if (
+          txStatus.status !== rpc.Api.GetTransactionStatus.SUCCESS &&
+          txStatus.status !== rpc.Api.GetTransactionStatus.FAILED
+        ) {
+          const err = new Error(`Transaction polling timed out after ${timeout}ms`)
+          err.name = "TX_TIMEOUT"
+          ;(err as Error & { hash?: string }).hash = txHash
+          throw err
         }
 
         if (txStatus.status === rpc.Api.GetTransactionStatus.FAILED) {
-            const err = new Error(`Transaction failed on-chain: ${txStatus.resultXdr}`)
-            err.name = "TX_FAILED"
-            throw err
+          const err = new Error(`Transaction failed on-chain: ${txStatus.resultXdr}`)
+          err.name = "TX_FAILED"
+          throw err
         }
 
         let decodedResult: unknown
         const returnValue = (txStatus as rpc.Api.GetSuccessfulTransactionResponse).returnValue
-        
+
         if (returnValue) {
           try {
             decodedResult = scValToNative(returnValue)
-          } catch (e) {
+          } catch {
             decodedResult = returnValue // Fallback to raw XDR
           }
         }
 
         const finalResult = {
           hash: txHash,
-          result: decodedResult as T
+          result: decodedResult as T,
         }
-        
+
         setResult(finalResult)
         return finalResult
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const hash =
+          err && typeof err === "object" && "hash" in err
+            ? (err as { hash?: unknown }).hash
+            : undefined
         const stellarError = toStellarError(err)
-        if (err.hash) (stellarError as any).hash = err.hash // Preserve hash on timeout
-        setError(stellarError)
-        throw stellarError
+        const finalError =
+          stellarError && typeof hash === "string"
+            ? createStellarError(stellarError.code, stellarError.message, {
+                raw: stellarError.raw,
+                hash,
+              })
+            : stellarError
+        setError(finalError)
+        throw finalError
       } finally {
         setLoading(false)
       }
@@ -169,6 +188,6 @@ export function useSorobanWrite<T = unknown>(): UseSorobanWriteReturn<T> {
     loading,
     error,
     result,
-    reset
+    reset,
   }
 }

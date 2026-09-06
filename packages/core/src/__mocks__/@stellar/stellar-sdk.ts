@@ -30,8 +30,11 @@
  */
 
 // ── Real SDK (pure, no I/O) ───────────────────────────────────────────────────
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const actual = jest.requireActual("@stellar/stellar-sdk") as any
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const actual = jest.requireActual(
+  require.resolve("@stellar/stellar-sdk", { paths: [__dirname] })
+) as any
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 // Re-export the pure encoding types verbatim.  Tests that use these will
 // assert against Stellar's real XDR encoding, not a homemade fake.
@@ -45,6 +48,7 @@ export const TransactionBuilder = actual.TransactionBuilder
 export const Account = actual.Account
 export const Contract = actual.Contract
 export const xdr = actual.xdr
+export const rpc = actual.rpc
 export const scValToNative = actual.scValToNative
 export const nativeToScVal = actual.nativeToScVal
 export const Address = actual.Address
@@ -57,27 +61,27 @@ export const FeeBumpTransaction = actual.FeeBumpTransaction
  * Real Stellar testnet public keys used as sender/destination in fixtures.
  * Safe to hardcode — testnet only, no real-world value.
  */
-export const TESTNET_ADDRESS_A =
-  "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
+export const TESTNET_ADDRESS_A = "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI"
 
-export const TESTNET_ADDRESS_B =
-  "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+export const TESTNET_ADDRESS_B = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
 
 /**
  * A throwaway testnet keypair — hardcoded for test stability.
  * This is NOT a mainnet key and holds no real-world value.
  *
- * Public key : GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN
- * Secret key : SCZANGBA5QLSR7HZLQ57UH3VXCBLWXRGKEVXHXBE4BKHE45EX44YFQ6
+ * Public key : GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI
+ * Secret key : SAGKQCMSCROHS4S3JEDVZVQODZ2USPJT73H2ZFMBHELH772DUMJEPP2V
  *
- * The old mock returned a fake "SAAZI4TCR3TY..." secret — the public key with
- * the first character swapped.  That is 56 chars instead of 56 and fails the
- * strkey checksum, so Keypair.fromSecret() would throw.  This one is real.
+ * Both values are a single generated ed25519 keypair verified against the
+ * real SDK (StrKey.isValidEd25519PublicKey / fromSecret round-trip).
+ * The earlier hardcoded "SAAZI4TCR3TY..." secret and "GAAZI4TCR3TY..." public
+ * key both failed the strkey checksum, so Keypair.fromSecret() threw
+ * "invalid encoded string" and `new Account(...)` threw "accountId is invalid".
  */
 export const TESTNET_KEYPAIR = {
   publicKey: TESTNET_ADDRESS_A,
   // Valid Stellar testnet secret (throwaway key, testnet only).
-  secret: "SCZANGBA5QLSR7HZLQ57UH3VXCBLWXRGKEVXHXBE4BKHE45EX44YFQ6",
+  secret: "SAGKQCMSCROHS4S3JEDVZVQODZ2USPJT73H2ZFMBHELH772DUMJEPP2V",
 }
 
 // ── Account fixture ────────────────────────────────────────────────────────────
@@ -113,9 +117,7 @@ export const mockAccountData = {
   sequence: "100",
   subentry_count: 2,
   thresholds: { low_threshold: 1, med_threshold: 2, high_threshold: 3 },
-  signers: [
-    { key: TESTNET_ADDRESS_A, weight: 1, type: "ed25519_public_key" },
-  ],
+  signers: [{ key: TESTNET_ADDRESS_A, weight: 1, type: "ed25519_public_key" }],
   balances: [
     { asset_type: "native", balance: "100.0000000" },
     {
@@ -295,14 +297,36 @@ export function createMockHorizonServer(
       last_ledger_base_fee: "100",
       ledger_capacity_usage: "0.5",
       fee_charged: {
-        max: "1000", min: "100", mode: "100",
-        p10: "100", p20: "100", p30: "100", p40: "100", p50: "100",
-        p60: "100", p70: "100", p80: "100", p90: "100", p95: "100", p99: "100",
+        max: "1000",
+        min: "100",
+        mode: "100",
+        p10: "100",
+        p20: "100",
+        p30: "100",
+        p40: "100",
+        p50: "100",
+        p60: "100",
+        p70: "100",
+        p80: "100",
+        p90: "100",
+        p95: "100",
+        p99: "100",
       },
       max_fee: {
-        max: "1000", min: "100", mode: "100",
-        p10: "100", p20: "100", p30: "100", p40: "100", p50: "100",
-        p60: "100", p70: "100", p80: "100", p90: "100", p95: "100", p99: "100",
+        max: "1000",
+        min: "100",
+        mode: "100",
+        p10: "100",
+        p20: "100",
+        p30: "100",
+        p40: "100",
+        p50: "100",
+        p60: "100",
+        p70: "100",
+        p80: "100",
+        p90: "100",
+        p95: "100",
+        p99: "100",
       },
     }),
     assets: jest.fn().mockReturnValue({

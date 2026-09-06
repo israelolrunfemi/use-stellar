@@ -1,6 +1,12 @@
 import { type StellarErrorCode } from "./codes"
+import { STELLAR_ERROR_CODES } from "./codes"
 import { isStellarError, StellarError, type StellarErrorOptions } from "./StellarError"
 import type { WalletAdapterErrorCode } from "../wallets/types"
+
+/** Returns `true` if `value` is one of the known error-code strings. */
+function isStellarErrorCode(value: string): value is StellarErrorCode {
+  return (STELLAR_ERROR_CODES as Record<string, string>)[value] === value
+}
 
 /**
  * Create a typed {@link StellarError}. When `message` is omitted the default
@@ -61,20 +67,13 @@ const WALLET_ERROR_CODES: Record<WalletAdapterErrorCode, StellarErrorCode> = {
 
 /** Classify a transaction that Horizon accepted but whose operations failed. */
 export function toSubmissionError(result: HorizonSubmissionResult): StellarError {
-  const operations = result.extras?.result_codes?.operations ?? []
   const resultCodes = result.extras?.result_codes
-  let code: StellarErrorCode = "TRANSACTION_FAILED"
-
-  if (operations.includes("op_no_trust")) {
-    code = "NO_TRUSTLINE"
-  } else if (
-    operations.includes("op_underfunded") ||
-    resultCodes?.transaction === "tx_insufficient_balance"
-  ) {
-    code = "INSUFFICIENT_BALANCE"
-  }
-
-  return createStellarError(code, undefined, {
+  // Reuse the same result-code classification as toStellarError so that
+  // transaction-level codes (tx_bad_seq, tx_insufficient_fee, tx_too_late,
+  // tx_no_source_account, ...) are named consistently instead of collapsing
+  // into a generic TRANSACTION_FAILED.
+  const code = resultCodes ? fromResultCodes(resultCodes) : undefined
+  return createStellarError(code ?? "TRANSACTION_FAILED", undefined, {
     raw: result,
     hash: result.hash,
   })
@@ -185,6 +184,16 @@ export function toStellarError(error: unknown): StellarError | null {
   if (isStellarError(error)) {
     // Plain object carrying a known code — normalise to a real instance.
     return new StellarError(error.code, error.message, { raw: error })
+  }
+
+  // 1.5. Hooks use `err.name = "<CODE>"` for early validation/guard failures
+  // (e.g. `WALLET_NOT_CONNECTED`, `VALIDATION_ERROR`). Treat a known code in
+  // `error.name` as the code so those guards surface typed errors too.
+  const rawName = error instanceof Error ? error.name : undefined
+  if (rawName && isStellarErrorCode(rawName)) {
+    return createStellarError(rawName, error instanceof Error ? error.message : undefined, {
+      raw: error,
+    })
   }
 
   if (

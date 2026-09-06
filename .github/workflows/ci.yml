@@ -41,7 +41,8 @@ jobs:
           node-version: "20"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile=false
-      - run: pnpm test
+      - name: Unit tests with coverage
+        run: pnpm --filter use-stellar test:coverage
 
   build:
     name: Build SDK
@@ -57,6 +58,8 @@ jobs:
       - run: pnpm build:lib
       - name: Check package size
         run: pnpm size
+      - name: Lint package (publint + attw)
+        run: pnpm lint:package
 
   build-demo:
     name: Build demo app

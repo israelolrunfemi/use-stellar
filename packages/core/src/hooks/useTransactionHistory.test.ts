@@ -47,7 +47,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
 
 // ── Fixtures ───────────────────────────────────────────────────────────────
 // Testnet address — never use mainnet addresses in tests.
-const ACCOUNT = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
+const ACCOUNT = "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI"
 
 const MOCK_RECORD = {
   hash: "abc123hash",
@@ -92,7 +92,10 @@ beforeEach(() => {
 
 describe("useTransactionHistory — empty address", () => {
   it("returns empty transactions and does not call Horizon when address is null", () => {
-    const { result } = renderHook(() => useTransactionHistory({ address: null as any }), { wrapper })
+    const { result } = renderHook(
+      () => useTransactionHistory({ address: null as unknown as string }),
+      { wrapper }
+    )
 
     expect(result.current.transactions).toEqual([])
     expect(result.current.loading).toBe(false)
@@ -479,11 +482,11 @@ describe("useTransactionHistory — refetch", () => {
 
     await waitFor(() => expect(mockCall).toHaveBeenCalledTimes(2))
   })
-  
+
   it("regression #225: aborts fetchNext execution if query properties change", async () => {
     const TESTNET_ACCOUNT_A = "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASUIYIC7FEM"
     const TESTNET_ACCOUNT_B = "GDRW7AJYGBJPJB5SPIZENZZZ45EIZHJOZDLUPZHX6X67KAGM3K3NX4VN"
-    
+
     const mockNext = jest.fn()
     mockCall.mockResolvedValue({
       records: [MOCK_RECORD],
@@ -491,10 +494,13 @@ describe("useTransactionHistory — refetch", () => {
       prev: jest.fn(),
     })
 
-    const { result, rerender } = renderHook(({ addr }) => useTransactionHistory({ address: addr }), { 
-      wrapper, 
-      initialProps: { addr: TESTNET_ACCOUNT_A } 
-    })
+    const { result, rerender } = renderHook(
+      ({ addr }) => useTransactionHistory({ address: addr }),
+      {
+        wrapper,
+        initialProps: { addr: TESTNET_ACCOUNT_A },
+      }
+    )
 
     await waitFor(() => expect(result.current.loading).toBe(false))
 

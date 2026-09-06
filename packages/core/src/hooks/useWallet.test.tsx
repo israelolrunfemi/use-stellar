@@ -596,7 +596,7 @@ describe("useWallet — wallet change events", () => {
 
   it("updates the address when the user switches account in the extension", async () => {
     mockConnectedFreighter()
-    const SECOND_ADDRESS = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
+    const SECOND_ADDRESS = "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI"
 
     const { result } = renderHook(() => useWallet(), { wrapper: createWrapper("testnet") })
 
@@ -661,7 +661,7 @@ describe("useWallet — wallet change events", () => {
     // Even if a late tick slips through, nothing updates state after unmount.
     act(() => {
       emitWalletChange({
-        address: "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN",
+        address: "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI",
         network: "TESTNET",
         networkPassphrase: NETWORK_PASSPHRASES.testnet,
       })

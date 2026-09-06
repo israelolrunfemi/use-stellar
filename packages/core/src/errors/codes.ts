@@ -35,6 +35,8 @@ export const STELLAR_ERROR_CODES = {
   SEQUENCE_MISMATCH: "SEQUENCE_MISMATCH",
   TRUSTLINE_LIMIT_EXCEEDED: "TRUSTLINE_LIMIT_EXCEEDED",
   SIMULATION_FAILED: "SIMULATION_FAILED",
+  /** The account lacks the XLM reserve to create another offer. */
+  LOW_RESERVE: "LOW_RESERVE",
   /** Contract state is archived and requires a RestoreFootprint transaction. */
   RESTORE_PREAMBLE_REQUIRED: "RESTORE_PREAMBLE_REQUIRED",
   ASSET_NOT_FOUND: "ASSET_NOT_FOUND",
@@ -81,14 +83,16 @@ export const DEFAULT_ERROR_MESSAGES: Record<StellarErrorCode, string> = {
   INSUFFICIENT_BALANCE: "The account does not have sufficient funds to complete this transaction.",
   NO_TRUSTLINE: "The destination account does not trust the asset you are trying to send.",
   TRANSACTION_FAILED: "The transaction failed on the network.",
-  ALREADY_FUNDED: "This account is already funded on the test network.",
   DESTINATION_NOT_FOUND:
     "The destination account does not exist on this network. It must be created and funded before it can receive a payment.",
   SEQUENCE_MISMATCH:
     "The transaction's sequence number was out of date. Reload the source account and rebuild the transaction.",
   TRUSTLINE_LIMIT_EXCEEDED: "The recipient has reached the maximum trust limit for this asset.",
   SIMULATION_FAILED: "The Soroban transaction could not be simulated successfully.",
-  RESTORE_PREAMBLE_REQUIRED: "Contract state is archived. A RestoreFootprint transaction must be submitted before invoking this method.",
+  LOW_RESERVE:
+    "Your account does not have enough XLM reserve to create another offer. Send more XLM to your account to meet the minimum reserve requirement.",
+  RESTORE_PREAMBLE_REQUIRED:
+    "Contract state is archived. A RestoreFootprint transaction must be submitted before invoking this method.",
   ASSET_NOT_FOUND: "The requested asset could not be found on the ledger.",
   FEE_TOO_LOW:
     "The fee was too low for the current network conditions. Retry with a higher fee or feeMultiplier.",
@@ -102,13 +106,12 @@ export const DEFAULT_ERROR_MESSAGES: Record<StellarErrorCode, string> = {
   MEMO_REQUIRED: "The destination account requires a memo. Add one before sending.",
   NETWORK_ERROR: "Unable to reach the Stellar network. Check your connection and try again.",
   UNKNOWN: "An unknown error occurred.",
-o  SEP10_VALIDATION_FAILED: "The SEP-10 authentication challenge failed validation. It may be malformed or tampered with.",
-  LOW_RESERVE: "Your account does not have enough XLM reserve to create another offer. Send more XLM to your account to meet the minimum reserve requirement.",
+  SEP10_VALIDATION_FAILED:
+    "The SEP-10 authentication challenge failed validation. It may be malformed or tampered with.",
+  ALREADY_FUNDED: "This account is already funded on the test network.",
 }
 
 /** Type guard: is `value` one of the known {@link StellarErrorCode}s? */
 export function isStellarErrorCode(value: unknown): value is StellarErrorCode {
   return typeof value === "string" && value in DEFAULT_ERROR_MESSAGES
 }
-}
-

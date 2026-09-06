@@ -23,7 +23,7 @@ jest.mock("../utils", () => {
 // @ts-expect-error - import mocked internal state
 import { __mockServer as mockServer } from "../utils"
 
-const TEST_ADDRESS = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
+const TEST_ADDRESS = "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI"
 
 const mockAccountData = {
   id: TEST_ADDRESS,
@@ -155,7 +155,7 @@ describe("Cache integration — request deduplication", () => {
     function shortStaleTimeWrapper({ children }: { children: React.ReactNode }) {
       return React.createElement(
         StellarProvider,
-        { network: "testnet", queryConfig: { staleTime: 100 } },
+        { network: "testnet", queryConfig: { staleTime: 100 }, children },
         children
       )
     }

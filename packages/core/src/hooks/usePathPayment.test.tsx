@@ -10,7 +10,7 @@ import type { PathPaymentOptions, WalletState } from "../types"
 
 /** Testnet-only addresses. */
 const TEST_ADDRESS = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
-const DESTINATION = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOACCWN"
+const DESTINATION = "GCL2KR4CDAZU3SECOM4CNJGBDYHWYD7UZ6OJMPRXZJM7TFPXHQZM4PRI"
 const TEST_ISSUER = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
 
 let strictSendOps: Record<string, unknown>[] = []
@@ -122,6 +122,7 @@ jest.mock("../context/StellarProvider", () => ({
     wallet: mockWalletState,
     setWallet: jest.fn(),
     autoConnect: { enabled: false, persistAddress: false, storage: "local" as const },
+    queryStore: { invalidate: jest.fn() },
   }),
 }))
 
