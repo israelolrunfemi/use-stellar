@@ -31,10 +31,12 @@ import { StellarProvider } from "../context/StellarProvider"
 import type { WalletState } from "../types"
 
 // ── Top-level mock declarations (hoisted by Jest) ──────────────────────────────
-// Activates the manual mock at __mocks__/@stellar/stellar-sdk.ts.
-// The manual mock re-exports real TransactionBuilder/Asset/Operation/Memo so
-// XDR encoding is real; only Horizon.Server is a jest.fn() double.
-jest.mock("@stellar/stellar-sdk")
+// The manual mock at __mocks__/@stellar/stellar-sdk.ts is already wired in by
+// jest.config.js `moduleNameMapper`, and it re-exports the real
+// TransactionBuilder/Asset/Operation/Memo so XDR encoding is real; only
+// Horizon.Server is a jest.fn() double. A bare `jest.mock("@stellar/stellar-sdk")`
+// here would AUTOMOCK that mapped file — every export replaced by a stub whose
+// methods return undefined — so it must not be added back.
 
 jest.mock("../utils", () => ({
   ...jest.requireActual("../utils"),

@@ -73,11 +73,9 @@ export const authorizeInvocation = actual.authorizeInvocation
  * Real Stellar testnet public keys used as sender/destination in fixtures.
  * Safe to hardcode — testnet only, no real-world value.
  */
-export const TESTNET_ADDRESS_A =
-  "GDX76CSVSJMYE7PMG2JI7CMERG4CK3UNKX4G6SXZJCY2NLJEWXA2XRSS"
+export const TESTNET_ADDRESS_A = "GDX76CSVSJMYE7PMG2JI7CMERG4CK3UNKX4G6SXZJCY2NLJEWXA2XRSS"
 
-export const TESTNET_ADDRESS_B =
-  "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+export const TESTNET_ADDRESS_B = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
 
 /**
  * A throwaway testnet keypair — hardcoded for test stability.
@@ -129,9 +127,7 @@ export const mockAccountData = {
   sequence: "100",
   subentry_count: 2,
   thresholds: { low_threshold: 1, med_threshold: 2, high_threshold: 3 },
-  signers: [
-    { key: TESTNET_ADDRESS_A, weight: 1, type: "ed25519_public_key" },
-  ],
+  signers: [{ key: TESTNET_ADDRESS_A, weight: 1, type: "ed25519_public_key" }],
   balances: [
     { asset_type: "native", balance: "100.0000000" },
     {
@@ -311,14 +307,36 @@ export function createMockHorizonServer(
       last_ledger_base_fee: "100",
       ledger_capacity_usage: "0.5",
       fee_charged: {
-        max: "1000", min: "100", mode: "100",
-        p10: "100", p20: "100", p30: "100", p40: "100", p50: "100",
-        p60: "100", p70: "100", p80: "100", p90: "100", p95: "100", p99: "100",
+        max: "1000",
+        min: "100",
+        mode: "100",
+        p10: "100",
+        p20: "100",
+        p30: "100",
+        p40: "100",
+        p50: "100",
+        p60: "100",
+        p70: "100",
+        p80: "100",
+        p90: "100",
+        p95: "100",
+        p99: "100",
       },
       max_fee: {
-        max: "1000", min: "100", mode: "100",
-        p10: "100", p20: "100", p30: "100", p40: "100", p50: "100",
-        p60: "100", p70: "100", p80: "100", p90: "100", p95: "100", p99: "100",
+        max: "1000",
+        min: "100",
+        mode: "100",
+        p10: "100",
+        p20: "100",
+        p30: "100",
+        p40: "100",
+        p50: "100",
+        p60: "100",
+        p70: "100",
+        p80: "100",
+        p90: "100",
+        p95: "100",
+        p99: "100",
       },
     }),
     assets: jest.fn().mockReturnValue({
@@ -449,6 +467,13 @@ export const SorobanRpc = {
       typeof r === "object" && r !== null && "restorePreamble" in r,
   },
 }
+
+/**
+ * `rpc` is the SDK's newer name for the same namespace. Code and tests use both,
+ * so the mock exposes both — pointing at the same object, or a test spying on
+ * `rpc.Api` would not affect what the hook reads through `SorobanRpc.Api`.
+ */
+export const rpc = SorobanRpc
 
 // ── Keypair ────────────────────────────────────────────────────────────────────
 /**

@@ -194,7 +194,7 @@ export function usePayments({
 
   const fetchNext = useCallback(async () => {
     if (pageState.queryKey !== currentQueryKey || !pageState.next) return
-    
+
     const fetchId = ++requestRef.current
     dispatch({ type: "FETCH_START", queryKey: currentQueryKey })
     try {
@@ -230,11 +230,11 @@ export function usePayments({
         error: stellarError,
       })
     }
-  }, [pageState.queryKey, pageState.next, currentQueryKey, resolvedAddress, limit])
+  }, [pageState, currentQueryKey, resolvedAddress, limit])
 
   const fetchPrev = useCallback(async () => {
     if (pageState.queryKey !== currentQueryKey || !pageState.prev) return
-    
+
     const fetchId = ++requestRef.current
     dispatch({ type: "FETCH_START", queryKey: currentQueryKey })
     try {
@@ -270,7 +270,7 @@ export function usePayments({
         error: stellarError,
       })
     }
-  }, [pageState.queryKey, pageState.prev, currentQueryKey, resolvedAddress, limit])
+  }, [pageState, currentQueryKey, resolvedAddress, limit])
 
   /** Drops any page navigation and supersedes in-flight page fetches. */
   const refetchLatest = useCallback(() => {

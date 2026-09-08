@@ -136,7 +136,6 @@ export interface UpdateOfferOptions extends FeeOptions {
   side?: "sell" | "buy"
 }
 
-
 export interface CreateAccountOptions extends FeeOptions {
   destination: string
   /** In XLM. Must meet the network's current base reserve. */
@@ -161,9 +160,9 @@ export const NETWORK_PASSPHRASES: Record<Exclude<StellarNetwork, "custom">, stri
 }
 
 export interface UseFriendbotReturn {
-  /** 
-   * Funds the provided address via Friendbot. 
-   * Defaults to the connected wallet address if omitted. 
+  /**
+   * Funds the provided address via Friendbot.
+   * Defaults to the connected wallet address if omitted.
    */
   fund: (address?: string) => Promise<void>
   loading: boolean
@@ -720,8 +719,6 @@ export interface Offer {
   lastModifiedLedger: number
   lastModifiedTime: string
 }
-
-
 
 export interface ManageOfferParams {
   selling: Asset

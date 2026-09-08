@@ -208,7 +208,7 @@ export function useTransactionHistory({
 
   const fetchNext = useCallback(async () => {
     if (pageState.queryKey !== currentQueryKey || !pageState.next) return
-    
+
     const fetchId = ++requestRef.current
     dispatch({ type: "FETCH_START", queryKey: currentQueryKey })
     try {
@@ -241,11 +241,11 @@ export function useTransactionHistory({
         error: stellarError,
       })
     }
-  }, [pageState.queryKey, pageState.next, currentQueryKey, limit])
+  }, [pageState, currentQueryKey, limit])
 
   const fetchPrev = useCallback(async () => {
     if (pageState.queryKey !== currentQueryKey || !pageState.prev) return
-    
+
     const fetchId = ++requestRef.current
     dispatch({ type: "FETCH_START", queryKey: currentQueryKey })
     try {
@@ -278,7 +278,7 @@ export function useTransactionHistory({
         error: stellarError,
       })
     }
-  }, [pageState.queryKey, pageState.prev, currentQueryKey, limit])
+  }, [pageState, currentQueryKey, limit])
 
   /** Drops any page navigation and supersedes in-flight page fetches. */
   const refetchLatest = useCallback(() => {

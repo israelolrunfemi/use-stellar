@@ -1,6 +1,5 @@
 // packages/core/src/hooks/useFriendbot.test.tsx
 
-import React from "react"
 import { renderHook, act } from "@testing-library/react"
 import { useFriendbot } from "./useFriendBot"
 import { useStellarContext } from "../context/StellarProvider"
@@ -11,13 +10,13 @@ jest.mock("../context/StellarProvider")
 
 describe("useFriendbot", () => {
   const mockFetch = jest.fn()
-  global.fetch = mockFetch as any
+  global.fetch = mockFetch as unknown as typeof fetch
 
   beforeEach(() => {
     jest.clearAllMocks()
     ;(useStellarContext as jest.Mock).mockReturnValue({
       network: "testnet",
-      wallet: { address: TESTNET_ACCOUNT }
+      wallet: { address: TESTNET_ACCOUNT },
     })
   })
 
@@ -36,7 +35,8 @@ describe("useFriendbot", () => {
 
   it("throws VALIDATION_ERROR instantly when on mainnet without making a request", async () => {
     ;(useStellarContext as jest.Mock).mockReturnValue({
-      network: "mainnet", wallet: { address: TESTNET_ACCOUNT }
+      network: "mainnet",
+      wallet: { address: TESTNET_ACCOUNT },
     })
     const { result } = renderHook(() => useFriendbot())
 
@@ -50,7 +50,8 @@ describe("useFriendbot", () => {
 
   it("throws WALLET_NOT_CONNECTED when no address is provided and wallet is disconnected", async () => {
     ;(useStellarContext as jest.Mock).mockReturnValue({
-      network: "testnet", wallet: { address: null }
+      network: "testnet",
+      wallet: { address: null },
     })
     const { result } = renderHook(() => useFriendbot())
 

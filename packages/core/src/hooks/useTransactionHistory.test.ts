@@ -92,7 +92,9 @@ beforeEach(() => {
 
 describe("useTransactionHistory — empty address", () => {
   it("returns empty transactions and does not call Horizon when address is null", () => {
-    const { result } = renderHook(() => useTransactionHistory({ address: null as any }), { wrapper })
+    const { result } = renderHook(() => useTransactionHistory({ address: null }), {
+      wrapper,
+    })
 
     expect(result.current.transactions).toEqual([])
     expect(result.current.loading).toBe(false)
@@ -479,11 +481,11 @@ describe("useTransactionHistory — refetch", () => {
 
     await waitFor(() => expect(mockCall).toHaveBeenCalledTimes(2))
   })
-  
+
   it("regression #225: aborts fetchNext execution if query properties change", async () => {
     const TESTNET_ACCOUNT_A = "GCQXGSYENBXMSLQ6ZEUTKI472VRITITZXTWEQBOOLMBWD347CPC3XLZ5"
     const TESTNET_ACCOUNT_B = "GDS3CXXLBJO6MK3W7HQ777S6Y4MNBCBR7BHKV44FS2QC5QKQPZ5EF4OO"
-    
+
     const mockNext = jest.fn()
     mockCall.mockResolvedValue({
       records: [MOCK_RECORD],
@@ -491,10 +493,13 @@ describe("useTransactionHistory — refetch", () => {
       prev: jest.fn(),
     })
 
-    const { result, rerender } = renderHook(({ addr }) => useTransactionHistory({ address: addr }), { 
-      wrapper, 
-      initialProps: { addr: TESTNET_ACCOUNT_A } 
-    })
+    const { result, rerender } = renderHook(
+      ({ addr }) => useTransactionHistory({ address: addr }),
+      {
+        wrapper,
+        initialProps: { addr: TESTNET_ACCOUNT_A },
+      }
+    )
 
     await waitFor(() => expect(result.current.loading).toBe(false))
 

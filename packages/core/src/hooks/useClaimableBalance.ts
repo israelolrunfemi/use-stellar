@@ -55,7 +55,6 @@ export function useClaimableBalance({
     ? claimableBalanceKey(networkConfig.horizonUrl, network, resolvedAddress)
     : (["claimableBalance", "disabled"] as const)
 
-
   const {
     data,
     loading,

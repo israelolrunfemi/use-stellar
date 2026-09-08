@@ -1,7 +1,7 @@
 // packages/core/src/hooks/usePaymentHistory.ts
 import { isIssuedAsset } from "../utils"
 
-import { useEffect, useMemo, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { usePayments } from "./usePayments"
 import type { UsePaymentHistoryOptions, UsePaymentHistoryReturn, NormalizedPayment } from "../types"
 
@@ -17,7 +17,7 @@ export function usePaymentHistory({
   const [accumulatedPayments, setAccumulatedPayments] = useState<NormalizedPayment[]>([])
   const [accumulationBoundHit, setAccumulationBoundHit] = useState(false)
   const [isAccumulating, setIsAccumulating] = useState(false)
-  
+
   // Track the number of underlying pages fetched for the current accumulation cycle
   const pagesFetchedRef = useRef(0)
   // Track seen IDs to prevent duplicates during accumulation
@@ -42,7 +42,7 @@ export function usePaymentHistory({
   useEffect(() => {
     if (basePayments.loading || basePayments.error) return
 
-    const newMatches = basePayments.payments.filter((p) => {
+    const newMatches = basePayments.payments.filter(p => {
       if (seenIdsRef.current.has(p.id)) return false
 
       let match = true
@@ -62,7 +62,7 @@ export function usePaymentHistory({
 
     if (newMatches.length > 0 || basePayments.payments.length > 0) {
       newMatches.forEach(p => seenIdsRef.current.add(p.id))
-      setAccumulatedPayments((prev) => [...prev, ...newMatches])
+      setAccumulatedPayments(prev => [...prev, ...newMatches])
     }
 
     // Check if we need more pages to fulfill the limit
@@ -80,8 +80,16 @@ export function usePaymentHistory({
     } else {
       setIsAccumulating(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [basePayments.payments, basePayments.loading, basePayments.error, limit, direction, assetFilter, maxAccumulationPages])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    basePayments.payments,
+    basePayments.loading,
+    basePayments.error,
+    limit,
+    direction,
+    assetFilter,
+    maxAccumulationPages,
+  ])
 
   const fetchNext = useCallback(async () => {
     if (basePayments.hasNext && !isAccumulating) {

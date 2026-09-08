@@ -222,10 +222,7 @@ function buildMemo(memo: MemoInput): Memo {
     default: {
       // Exhaustive: a new MemoInput variant fails to compile here.
       const unreachable: never = memo
-      throw createStellarError(
-        "INVALID_MEMO",
-        `Unsupported memo: ${JSON.stringify(unreachable)}.`
-      )
+      throw createStellarError("INVALID_MEMO", `Unsupported memo: ${JSON.stringify(unreachable)}.`)
     }
   }
 }

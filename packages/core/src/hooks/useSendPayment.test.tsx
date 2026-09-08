@@ -5,10 +5,11 @@ import { StellarProvider } from "../context/StellarProvider"
 import type { ReactNode } from "react"
 import type { WalletState } from "../types"
 
-// Activates the manual mock at src/__mocks__/@stellar/stellar-sdk.ts which
-// re-exports real TransactionBuilder/Asset/Operation/Memo/Networks from
-// jest.requireActual. No factory needed — the manual mock handles everything.
-jest.mock("@stellar/stellar-sdk")
+// The manual mock at src/__mocks__/@stellar/stellar-sdk.ts — which re-exports the
+// real TransactionBuilder/Asset/Operation/Memo/Networks via jest.requireActual —
+// is already wired in by jest.config.js `moduleNameMapper`. A bare
+// `jest.mock("@stellar/stellar-sdk")` here would AUTOMOCK that mapped file,
+// stubbing out every re-export, so it must not be added back.
 
 jest.mock("@stellar/freighter-api")
 jest.mock("../wallets", () => ({ getWalletAdapter: jest.fn() }))
@@ -60,6 +61,9 @@ function createWrapper(network: "testnet" | "mainnet" = "testnet") {
   }
 }
 
+/** A funded testnet account — the real Operation.payment validates the strkey. */
+const DESTINATION = "GDHHCCQQFR6THLXLZQWVU545C4IN42CZ2A3IPYHYMI4LKELGMWAPP7ZR"
+
 describe("useSendPayment - Payment Flow", () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -95,13 +99,10 @@ describe("useSendPayment - Payment Flow", () => {
 
     // Mock wallet adapter
     const { getWalletAdapter } = jest.requireMock("../wallets") as { getWalletAdapter: jest.Mock }
+    // The hook parses the signed envelope back through the real
+    // TransactionBuilder.fromXDR, so the signer has to round-trip real XDR.
     getWalletAdapter.mockReturnValue({
-      signTransaction: jest.fn().mockResolvedValue(
-        // A minimal valid-looking signed XDR string; TransactionBuilder.fromXDR
-        // will parse it via the real SDK.  We return the unsigned XDR unchanged
-        // here because the test's signTransaction mock just passes it through.
-        "signed_xdr"
-      ),
+      signTransaction: jest.fn((xdr: string) => Promise.resolve(xdr)),
     })
   })
 
@@ -110,7 +111,7 @@ describe("useSendPayment - Payment Flow", () => {
       wrapper: createWrapper("testnet"),
     })
 
-    const paymentOpts = { to: "GDEST", amount: "10", asset: "XLM" as const }
+    const paymentOpts = { to: DESTINATION, amount: "10", asset: "XLM" as const }
     await act(async () => {
       await result.current.send(paymentOpts)
     })
@@ -139,7 +140,7 @@ describe("useSendPayment - Payment Flow", () => {
       wrapper: createWrapper("testnet"),
     })
 
-    const paymentOpts = { to: "GDEST", amount: "10", asset: "XLM" as const }
+    const paymentOpts = { to: DESTINATION, amount: "10", asset: "XLM" as const }
 
     await act(async () => {
       await expect(result.current.send(paymentOpts)).rejects.toThrow("Submission failed")
@@ -168,7 +169,7 @@ describe("useSendPayment - Payment Flow", () => {
     await act(async () => {
       await expect(
         result.current.send({
-          to: "GDEST",
+          to: DESTINATION,
           amount: "10",
           // @ts-expect-error - malformed runtime input must be rejected at the hook boundary
           asset,

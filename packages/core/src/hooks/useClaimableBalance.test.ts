@@ -270,7 +270,7 @@ describe("useClaimableBalance — stale-while-revalidate", () => {
 
     await waitFor(() => expect(result.current.balances).toHaveLength(1))
 
-    mockCall.mockRejectedValueOnce(new Error("Request failed with status code 404"))
+    mockCall.mockRejectedValueOnce(notFoundError())
 
     await act(() => {
       result.current.refetch()

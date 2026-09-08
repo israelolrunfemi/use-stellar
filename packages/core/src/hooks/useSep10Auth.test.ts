@@ -20,8 +20,8 @@ jest.mock("@stellar/stellar-sdk", () => {
   return {
     ...actual,
     WebAuth: {
-      readChallengeTx: jest.fn()
-    }
+      readChallengeTx: jest.fn(),
+    },
   }
 })
 
@@ -30,17 +30,17 @@ describe("useSep10Auth", () => {
     connected: true,
     address: "GCQXGSYENBXMSLQ6ZEUTKI472VRITITZXTWEQBOOLMBWD347CPC3XLZ5",
     wallet: "test-wallet",
-    walletNetwork: "testnet"
+    walletNetwork: "testnet",
   }
 
   const mockNetworkConfig = {
     network: "testnet",
-    networkPassphrase: Networks.TESTNET
+    networkPassphrase: Networks.TESTNET,
   }
 
   const mockSignTransaction = jest.fn()
   const mockFetch = jest.fn()
-  global.fetch = mockFetch as any
+  global.fetch = mockFetch as unknown as typeof fetch
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -48,40 +48,40 @@ describe("useSep10Auth", () => {
     ;(useStellarContext as jest.Mock).mockReturnValue({
       network: "testnet",
       networkConfig: mockNetworkConfig,
-      wallet: mockWallet
+      wallet: mockWallet,
     })
     ;(useAnchor as jest.Mock).mockReturnValue({
       anchor: {
         webAuthEndpoint: "https://testanchor.stellar.org/auth",
         signingKey: "GCSIGNINGKEY...",
-        homeDomain: "testanchor.stellar.org"
+        homeDomain: "testanchor.stellar.org",
       },
       loading: false,
-      error: null
+      error: null,
     })
     ;(getWalletAdapter as jest.Mock).mockReturnValue({
-      signTransaction: mockSignTransaction
+      signTransaction: mockSignTransaction,
     })
   })
 
   it("completes full round trip against testanchor.stellar.org and returns a JWT", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ transaction: "mock-challenge-xdr" })
+      json: async () => ({ transaction: "mock-challenge-xdr" }),
     })
-    
+
     ;(WebAuth.readChallengeTx as jest.Mock).mockReturnValue({
-      clientAccountID: mockWallet.address
+      clientAccountID: mockWallet.address,
     })
 
     mockSignTransaction.mockResolvedValue("mock-signed-xdr")
 
     const futureTime = Math.floor(Date.now() / 1000) + 3600
     const mockJwt = `header.${btoa(JSON.stringify({ exp: futureTime }))}.signature`
-    
+
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ token: mockJwt })
+      json: async () => ({ token: mockJwt }),
     })
 
     const { result } = renderHook(() => useSep10Auth({ homeDomain: "testanchor.stellar.org" }))
@@ -95,12 +95,18 @@ describe("useSep10Auth", () => {
     // Ensures expected signing key comes from useAnchor (GCSIGNINGKEY...)
     expect(WebAuth.readChallengeTx).toHaveBeenCalledWith(
       "mock-challenge-xdr",
-      "GCSIGNINGKEY...", 
+      "GCSIGNINGKEY...",
       Networks.TESTNET,
       "testanchor.stellar.org",
       "testanchor.stellar.org"
     )
-    expect(mockSignTransaction).toHaveBeenCalledWith("mock-challenge-xdr", Networks.TESTNET, "testnet")
+    // The wallet adapter takes the challenge XDR plus an options object — the
+    // passphrase is what binds the signature to a network, so it must be there.
+    expect(mockSignTransaction).toHaveBeenCalledWith("mock-challenge-xdr", {
+      address: mockWallet.address,
+      network: "testnet",
+      networkPassphrase: Networks.TESTNET,
+    })
     expect(token).toBe(mockJwt)
     expect(result.current.token).toBe(mockJwt)
     expect(result.current.authenticated).toBe(true)
@@ -110,9 +116,9 @@ describe("useSep10Auth", () => {
   it("feeds a tampered challenge and asserts signTransaction was never called", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ transaction: "tampered-challenge-xdr" })
+      json: async () => ({ transaction: "tampered-challenge-xdr" }),
     })
-    
+
     ;(WebAuth.readChallengeTx as jest.Mock).mockImplementation(() => {
       throw new Error("Invalid sequence number")
     })
@@ -126,15 +132,15 @@ describe("useSep10Auth", () => {
     expect(mockSignTransaction).not.toHaveBeenCalled() // MUST NOT sign invalid challenge
     expect(result.current.error?.code).toBe("SEP10_VALIDATION_FAILED")
   })
-  
+
   it("refuses a challenge naming a different account than the connected wallet", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ transaction: "mock-challenge-xdr" })
+      json: async () => ({ transaction: "mock-challenge-xdr" }),
     })
-    
+
     ;(WebAuth.readChallengeTx as jest.Mock).mockReturnValue({
-      clientAccountID: "GDIFFERENTACCOUNT..."
+      clientAccountID: "GDIFFERENTACCOUNT...",
     })
 
     const { result } = renderHook(() => useSep10Auth({ homeDomain: "testanchor.stellar.org" }))
@@ -150,21 +156,23 @@ describe("useSep10Auth", () => {
   it("clears token on wallet disconnect", async () => {
     const futureTime = Math.floor(Date.now() / 1000) + 3600
     const mockJwt = `header.${btoa(JSON.stringify({ exp: futureTime }))}.signature`
-    
+
     Storage.prototype.getItem = jest.fn(() => mockJwt)
     Storage.prototype.removeItem = jest.fn()
-    
-    const { result, rerender } = renderHook(() => useSep10Auth({ homeDomain: "testanchor.stellar.org", persist: true }))
+
+    const { result, rerender } = renderHook(() =>
+      useSep10Auth({ homeDomain: "testanchor.stellar.org", persist: true })
+    )
     expect(result.current.token).toBe(mockJwt)
 
     ;(useStellarContext as jest.Mock).mockReturnValue({
       network: "testnet",
       networkConfig: mockNetworkConfig,
-      wallet: { ...mockWallet, address: null } // wallet disconnected
+      wallet: { ...mockWallet, address: null }, // wallet disconnected
     })
-    
+
     rerender()
-    
+
     expect(result.current.token).toBeNull()
     expect(localStorage.removeItem).toHaveBeenCalled()
   })
@@ -172,11 +180,11 @@ describe("useSep10Auth", () => {
   it("surfaces WALLET_REQUEST_REJECTED when user rejects signing", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ transaction: "mock-challenge-xdr" })
+      json: async () => ({ transaction: "mock-challenge-xdr" }),
     })
-    
+
     ;(WebAuth.readChallengeTx as jest.Mock).mockReturnValue({
-      clientAccountID: mockWallet.address
+      clientAccountID: mockWallet.address,
     })
 
     mockSignTransaction.mockRejectedValue(new Error("User rejected"))

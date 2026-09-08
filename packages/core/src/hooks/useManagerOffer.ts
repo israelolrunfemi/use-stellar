@@ -12,7 +12,12 @@ import {
   ManageOfferParams,
   UseManageOfferReturn,
 } from "../types"
-import { isNativeAsset, isLiquidityPoolShares } from "../utils"
+import { isNativeAsset, isIssuedAsset, isLiquidityPoolShares } from "../utils"
+
+/** The Horizon submission failure shape this hook reads result codes from. */
+interface HorizonSubmissionError {
+  response?: { data?: { extras?: { result_codes?: { operations?: string[] } } } }
+}
 
 // Helper to convert library Asset to StellarSdk Asset
 function toSdkAsset(asset: Asset): SdkAsset {
@@ -26,8 +31,8 @@ function toSdkAsset(asset: Asset): SdkAsset {
 // Compare assets
 function assetsEqual(a: Asset, b: Asset): boolean {
   if (isNativeAsset(a) && isNativeAsset(b)) return true
-  if (!isNativeAsset(a) && !isNativeAsset(b) && !isLiquidityPoolShares(a) && !isLiquidityPoolShares(b)) {
-    return (a as any).code === (b as any).code && (a as any).issuer === (b as any).issuer
+  if (isIssuedAsset(a) && isIssuedAsset(b)) {
+    return a.code === b.code && a.issuer === b.issuer
   }
   return false
 }
@@ -38,7 +43,7 @@ function isPositive(val: string | { n: number; d: number }): boolean {
     const match = val.match(/^-?([0-9]*\.?[0-9]+)$/)
     if (!match || val.startsWith("-")) return false
     const numStr = match[1].replace(".", "")
-    return numStr.split("").some((c) => c !== "0")
+    return numStr.split("").some(c => c !== "0")
   }
   return val.n > 0 && val.d > 0
 }
@@ -126,12 +131,12 @@ export function useManageOffer(): UseManageOfferReturn {
         status: res.successful ? "success" : "failed",
         ledger: res.ledger,
       }
-      
+
       setResult(txResult)
       return txResult
-    } catch (err: any) {
-      let mappedErr = err
-      const resultCodes = err?.response?.data?.extras?.result_codes
+    } catch (err: unknown) {
+      let mappedErr: unknown = err
+      const resultCodes = (err as HorizonSubmissionError)?.response?.data?.extras?.result_codes
 
       if (resultCodes?.operations?.includes("op_low_reserve")) {
         mappedErr = new Error("Low reserve: You need more XLM to hold another offer")
@@ -173,7 +178,7 @@ export function useManageOffer(): UseManageOfferReturn {
       // Look up the existing offer so the cancel carries exactly matching assets.
       const server = getHorizonServer(networkConfig)
       const offer = await server.offers().offer(offerId).call()
-      
+
       const selling: Asset =
         offer.selling.asset_type === "native"
           ? "XLM"
@@ -189,7 +194,7 @@ export function useManageOffer(): UseManageOfferReturn {
         offerId,
         true
       )
-    } catch (err: any) {
+    } catch (err) {
       setError(toStellarError(err))
       return null
     } finally {
